@@ -1,0 +1,106 @@
+name: App Pro (Flutter)
+
+on:
+  push:
+    branches: ['**']
+    paths: ['app_pro/**', '.github/workflows/app_pro.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: app-pro-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app_pro
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Generar carpetas de Android/iOS si faltan
+        id: plataformas
+        run: |
+          if [ ! -d android ] || [ ! -d ios ]; then
+            flutter create --org com.nailsyqueens --project-name nailsy_pro --platforms android,ios .
+            echo "generadas=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Dependencias
+        run: flutter pub get 2>&1 | tee ../pub.log
+
+      - name: Análisis estático
+        id: analyze
+        continue-on-error: true
+        run: flutter analyze --no-fatal-infos 2>&1 | tee ../analyze.log; exit ${PIPESTATUS[0]}
+
+      - name: Tests
+        id: tests
+        continue-on-error: true
+        run: flutter test 2>&1 | tee ../test.log; exit ${PIPESTATUS[0]}
+
+      - name: Compilar APK de Android
+        id: apk
+        continue-on-error: true
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          flutter build apk --release \
+            --dart-define=SUPABASE_URL="$SUPABASE_URL" \
+            --dart-define=SUPABASE_ANON_KEY="$SUPABASE_ANON_KEY" 2>&1 | tail -n 60 | tee ../apk.log
+          exit ${PIPESTATUS[0]}
+
+      - name: Subir APK (descargable en la pestaña Actions)
+        if: steps.apk.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: nailsy-pro-apk
+          path: app_pro/build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 30
+
+      - name: Guardar carpetas de Android/iOS en el repositorio
+        if: steps.plataformas.outputs.generadas == 'true' && github.ref == 'refs/heads/main'
+        run: |
+          git config user.name "nailsy-ci"
+          git config user.email "ci@users.noreply.github.com"
+          git add android ios .metadata .gitignore
+          git commit -m "chore: generar proyectos Android e iOS (flutter create)" || exit 0
+          git pull --rebase origin main
+          git push origin HEAD:main
+
+      - name: Publicar informe en la rama ci-results
+        if: always()
+        working-directory: .
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p /tmp/informe && cd /tmp/informe
+          {
+            echo "commit: ${{ github.sha }}"
+            echo "rama: ${{ github.ref_name }}"
+            echo "analyze: ${{ steps.analyze.outcome }}"
+            echo "tests: ${{ steps.tests.outcome }}"
+            echo "apk: ${{ steps.apk.outcome }}"
+            echo "run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          } > RESUMEN.txt
+          cp "$GITHUB_WORKSPACE"/*.log . 2>/dev/null || true
+          git init -q -b ci-results
+          git config user.name "nailsy-ci"
+          git config user.email "ci@users.noreply.github.com"
+          git add . && git commit -qm "Informe CI ${{ github.sha }}"
+          git push -qf "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" ci-results
