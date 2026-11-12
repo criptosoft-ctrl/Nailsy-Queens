@@ -25,7 +25,7 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: '21'
 
       - uses: subosito/flutter-action@v2
         with:
@@ -78,7 +78,7 @@ jobs:
         run: |
           git config user.name "nailsy-ci"
           git config user.email "ci@users.noreply.github.com"
-          git add android ios .metadata .gitignore
+          git add -A .
           git commit -m "chore: generar proyectos Android e iOS (flutter create)" || exit 0
           git pull --rebase origin main
           git push origin HEAD:main
