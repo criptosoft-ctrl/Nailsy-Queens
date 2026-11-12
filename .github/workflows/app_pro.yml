@@ -96,6 +96,7 @@ jobs:
             echo "analyze: ${{ steps.analyze.outcome }}"
             echo "tests: ${{ steps.tests.outcome }}"
             echo "apk: ${{ steps.apk.outcome }}"
+            echo "supabase_conectado: ${{ secrets.SUPABASE_URL != '' && secrets.SUPABASE_ANON_KEY != '' }}"
             echo "run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           } > RESUMEN.txt
           cp "$GITHUB_WORKSPACE"/*.log . 2>/dev/null || true
