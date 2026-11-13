@@ -31,6 +31,7 @@ class _HorarioScreenState extends State<HorarioScreen> {
   final _dias = List.generate(7, (i) => _Dia(activo: i < 5, inicio: 9 * 60, fin: 19 * 60));
   bool _cargando = true;
   bool _guardando = false;
+  bool _sinGuardar = false;
 
   @override
   void initState() {
@@ -42,6 +43,7 @@ class _HorarioScreenState extends State<HorarioScreen> {
     try {
       final franjas = await widget.repo.horario();
       if (!mounted) return;
+      _sinGuardar = franjas.isEmpty;
       if (franjas.isNotEmpty) {
         for (var d = 1; d <= 7; d++) {
           final del = franjas.where((f) => f.dia == d).toList()..sort((a, b) => a.inicioMin.compareTo(b.inicioMin));
@@ -132,6 +134,21 @@ class _HorarioScreenState extends State<HorarioScreen> {
           : ListView(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 120),
               children: [
+                if (_sinGuardar)
+                  Container(
+                    margin: const EdgeInsets.only(top: 8),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: NailsyColors.ambar.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: NailsyColors.ambar),
+                    ),
+                    child: const Text(
+                      'Aún no has guardado tu horario. Este es un horario de ejemplo: ajústalo y pulsa "Guardar horario" '
+                      'para que las clientas puedan reservar.',
+                      style: TextStyle(color: NailsyColors.ambar, fontWeight: FontWeight.w600),
+                    ),
+                  ),
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 8),
                   child: Text(

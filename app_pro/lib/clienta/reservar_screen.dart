@@ -239,6 +239,13 @@ class _ReservarScreenState extends State<ReservarScreen> {
           const TituloSeccion('Elige hora'),
           if (_cargandoHuecos)
             const Padding(padding: EdgeInsets.all(24), child: Center(child: CircularProgressIndicator()))
+          else if (perfil.diasLaborables.isEmpty)
+            Tarjeta(
+              child: Text(
+                '${perfil.nombre} todavía no ha publicado su horario, así que aún no se puede reservar online.',
+                style: const TextStyle(color: NailsyColors.textoSecundario),
+              ),
+            )
           else if (_huecos.isEmpty)
             const Tarjeta(
               child: Text('No quedan huecos libres este día. Prueba con otro.',
