@@ -109,8 +109,28 @@ class SupabaseAgendaRepo implements AgendaRepo {
 
   String get _uid => _db.auth.currentUser!.id;
 
+  bool _perfilAsegurado = false;
+
+  /// Las cuentas creadas antes de que existiera el alta automática no tienen ficha
+  /// de manicurista; sin ella no se pueden guardar fotos, servicios, clientas…
+  /// Si falta, se crea aquí (las reglas de seguridad lo permiten solo para uno mismo).
+  Future<void> _asegurarPerfil() async {
+    if (_perfilAsegurado) return;
+    final fila = await _db.from('manicuristas').select('id').eq('id', _uid).maybeSingle();
+    if (fila == null) {
+      final u = _db.auth.currentUser!;
+      final nombre = (u.userMetadata?['nombre'] as String?)?.trim();
+      await _db.from('manicuristas').insert({
+        'id': _uid,
+        'nombre': (nombre == null || nombre.isEmpty) ? (u.email ?? 'Manicurista').split('@').first : nombre,
+      });
+    }
+    _perfilAsegurado = true;
+  }
+
   @override
   Future<String> nombreManicurista() async {
+    await _asegurarPerfil();
     final fila = await _db.from('manicuristas').select('nombre').eq('id', _uid).maybeSingle();
     return (fila?['nombre'] as String?) ?? '';
   }
@@ -156,6 +176,7 @@ class SupabaseAgendaRepo implements AgendaRepo {
   @override
   Future<void> crearCita(NuevaCita c) async {
     try {
+    await _asegurarPerfil();
       final fila = await _db
           .from('citas')
           .insert({
@@ -200,6 +221,7 @@ class SupabaseAgendaRepo implements AgendaRepo {
 
   @override
   Future<void> guardarServicio(Servicio s) async {
+    await _asegurarPerfil();
     if (s.id == null) {
       await _db.from('servicios').insert({...s.toMap(), 'manicurista_id': _uid});
     } else {
@@ -221,6 +243,7 @@ class SupabaseAgendaRepo implements AgendaRepo {
 
   @override
   Future<void> guardarAnadido(Anadido a) async {
+    await _asegurarPerfil();
     if (a.id == null) {
       await _db.from('anadidos').insert({...a.toMap(), 'manicurista_id': _uid});
     } else {
@@ -242,6 +265,7 @@ class SupabaseAgendaRepo implements AgendaRepo {
 
   @override
   Future<Clienta> guardarClienta(Clienta c) async {
+    await _asegurarPerfil();
     if (c.id == null) {
       final fila = await _db.from('clientas').insert({...c.toMap(), 'manicurista_id': _uid}).select('id').single();
       return c.copyWith(id: fila['id'] as String);
@@ -293,6 +317,7 @@ class SupabaseAgendaRepo implements AgendaRepo {
   // ---------- Perfil público, horario y portafolio ----------
   @override
   Future<MiPerfil> miPerfil() async {
+    await _asegurarPerfil();
     final fila = await _db.from('manicuristas').select().eq('id', _uid).single();
     return MiPerfil.fromMap(fila);
   }
@@ -310,6 +335,7 @@ class SupabaseAgendaRepo implements AgendaRepo {
 
   @override
   Future<void> guardarHorario(List<FranjaHorario> franjas) async {
+    await _asegurarPerfil();
     await _db.from('horario_semanal').delete().eq('manicurista_id', _uid);
     if (franjas.isEmpty) return;
     await _db.from('horario_semanal').insert([
@@ -328,6 +354,7 @@ class SupabaseAgendaRepo implements AgendaRepo {
 
   @override
   Future<String> subirFoto(Uint8List bytes, {required String extension, String? mime, bool alPortafolio = true}) async {
+    await _asegurarPerfil();
     final (ext, tipo) = _tipoImagen(extension, mime);
     final ruta = '$_uid/${DateTime.now().millisecondsSinceEpoch}.$ext';
     await _db.storage.from('portafolio').uploadBinary(
