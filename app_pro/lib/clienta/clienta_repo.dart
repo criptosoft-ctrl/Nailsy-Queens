@@ -185,7 +185,13 @@ class SupabaseClientaRepo implements ClientaRepo {
         emailRedirectTo: urlRetorno,
         data: {'nombre': nombre.trim(), 'rol': 'clienta', 'telefono': (telefono ?? '').trim()},
       );
+      // Si el email ya estaba registrado, Supabase no envía correo y devuelve un usuario sin identidades.
+      if (res.session == null && (res.user?.identities?.isEmpty ?? false)) {
+        throw const ErrorNailsy('Ya existe una cuenta con ese email. Pulsa "¿Ya tienes cuenta? Entra".');
+      }
       return res.session != null;
+    } on ErrorNailsy {
+      rethrow;
     } catch (e) {
       _relanzar(e);
     }

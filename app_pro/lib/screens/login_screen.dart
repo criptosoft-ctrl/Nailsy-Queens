@@ -40,8 +40,10 @@ class _LoginScreenState extends State<LoginScreen> {
           data: {'nombre': _nombre.text.trim()},
           emailRedirectTo: kIsWeb ? '${Uri.base.origin}/pro/' : null,
         );
-        if (res.session == null && mounted) {
-          _aviso('Te hemos enviado un email para confirmar la cuenta.');
+        if (res.session == null && (res.user?.identities?.isEmpty ?? false)) {
+          _aviso('Ya existe una cuenta con ese email. Pulsa "¿Ya tienes cuenta? Entra".');
+        } else if (res.session == null && mounted) {
+          _aviso('Te hemos enviado un email para confirmar la cuenta. Mira también en spam.');
         }
       } else {
         await auth.signInWithPassword(email: _email.text.trim(), password: _password.text);
