@@ -78,7 +78,7 @@ abstract class AgendaRepo {
   Future<List<FotoPortafolio>> fotos();
 
   /// Sube una foto y devuelve su ruta en Storage. Si [alPortafolio] la añade a la galería.
-  Future<String> subirFoto(Uint8List bytes, {required String extension, bool alPortafolio = true});
+  Future<String> subirFoto(Uint8List bytes, {required String extension, String? mime, bool alPortafolio = true});
   Future<void> cambiarVisibilidadFoto(String id, bool publica);
   Future<void> borrarFoto(FotoPortafolio f);
 
@@ -87,6 +87,17 @@ abstract class AgendaRepo {
 }
 
 DateTime _inicioDia(DateTime d) => DateTime(d.year, d.month, d.day);
+
+/// Extensión y tipo MIME fiables para una imagen (las del iPhone a veces llegan sin extensión o como HEIC).
+(String, String) _tipoImagen(String extension, String? mime) {
+  final m = (mime ?? '').toLowerCase();
+  var ext = extension.toLowerCase().replaceAll('.', '').trim();
+  if (m == 'image/png' || ext == 'png') return ('png', 'image/png');
+  if (m == 'image/webp' || ext == 'webp') return ('webp', 'image/webp');
+  if (m == 'image/heic' || m == 'image/heif' || ext == 'heic' || ext == 'heif') return ('heic', 'image/heic');
+  ext = 'jpg';
+  return (ext, 'image/jpeg');
+}
 
 const _selectCita = 'id, clienta_id, inicio, fin, precio_total, estado, estado_pago, '
     'clientas(nombre, fichas_una(alergias)), servicios(nombre)';
@@ -316,13 +327,13 @@ class SupabaseAgendaRepo implements AgendaRepo {
   }
 
   @override
-  Future<String> subirFoto(Uint8List bytes, {required String extension, bool alPortafolio = true}) async {
-    final ext = extension.toLowerCase().replaceAll('.', '');
+  Future<String> subirFoto(Uint8List bytes, {required String extension, String? mime, bool alPortafolio = true}) async {
+    final (ext, tipo) = _tipoImagen(extension, mime);
     final ruta = '$_uid/${DateTime.now().millisecondsSinceEpoch}.$ext';
     await _db.storage.from('portafolio').uploadBinary(
           ruta,
           bytes,
-          fileOptions: FileOptions(contentType: ext == 'png' ? 'image/png' : 'image/jpeg', upsert: false),
+          fileOptions: FileOptions(contentType: tipo, upsert: false),
         );
     if (alPortafolio) {
       await _db.from('fotos').insert({'manicurista_id': _uid, 'storage_path': ruta, 'publica': true});
@@ -582,8 +593,8 @@ class DemoAgendaRepo implements AgendaRepo {
   Future<List<FotoPortafolio>> fotos() async => List.of(_fotos);
 
   @override
-  Future<String> subirFoto(Uint8List bytes, {required String extension, bool alPortafolio = true}) async {
-    final ruta = 'demo/${_contador++}.$extension';
+  Future<String> subirFoto(Uint8List bytes, {required String extension, String? mime, bool alPortafolio = true}) async {
+    final ruta = 'demo/${_contador++}.${_tipoImagen(extension, mime).$1}';
     if (alPortafolio) _fotos.insert(0, FotoPortafolio(id: _nuevoId('f'), ruta: ruta, publica: true));
     return ruta;
   }

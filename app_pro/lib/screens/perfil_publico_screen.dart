@@ -122,7 +122,7 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
     try {
       final bytes = await img.readAsBytes();
       final ext = img.name.contains('.') ? img.name.split('.').last : 'jpg';
-      final ruta = await widget.repo.subirFoto(bytes, extension: ext, alPortafolio: false);
+      final ruta = await widget.repo.subirFoto(bytes, extension: ext, mime: img.mimeType, alPortafolio: false);
       _perfil = _construir().copyWith(foto: ruta);
       await widget.repo.guardarPerfil(_perfil);
     } catch (e) {

@@ -53,7 +53,7 @@ class _PortafolioScreenState extends State<PortafolioScreen> {
       try {
         final bytes = await img.readAsBytes();
         final ext = img.name.contains('.') ? img.name.split('.').last : 'jpg';
-        await widget.repo.subirFoto(bytes, extension: ext);
+        await widget.repo.subirFoto(bytes, extension: ext, mime: img.mimeType);
       } catch (e) {
         if (mounted) aviso(context, 'No se pudo subir una foto. ${mensajeError(e)}');
       } finally {

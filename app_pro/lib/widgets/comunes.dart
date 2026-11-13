@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../data/agenda_repo.dart';
 import '../theme.dart';
@@ -18,7 +19,14 @@ void aviso(BuildContext context, String texto) {
 }
 
 /// Traduce cualquier error a un mensaje para la manicurista.
-String mensajeError(Object e) => e is ErrorNailsy ? e.mensaje : 'Algo ha fallado. Inténtalo de nuevo.';
+String mensajeError(Object e) {
+  if (e is ErrorNailsy) return e.mensaje;
+  // Mientras probamos, enseñamos el motivo técnico para poder arreglarlo.
+  if (e is StorageException) return 'Error al guardar el archivo (${e.statusCode ?? '-'}): ${e.message}';
+  if (e is PostgrestException) return 'Error de la base de datos (${e.code ?? '-'}): ${e.message}';
+  if (e is AuthException) return 'Error de sesión: ${e.message}';
+  return 'Algo ha fallado: $e';
+}
 
 class EstadoVacio extends StatelessWidget {
   const EstadoVacio({super.key, required this.icono, required this.texto, this.accion});
