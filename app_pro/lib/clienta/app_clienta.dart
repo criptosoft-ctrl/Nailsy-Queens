@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
+import '../screens/nueva_contrasena_screen.dart';
 import '../theme.dart';
 import 'buscar_screen.dart';
 import 'clienta_repo.dart';
@@ -40,6 +43,30 @@ class ClientaShell extends StatefulWidget {
 class _ClientaShellState extends State<ClientaShell> {
   int _tab = 0;
   int _visitas = 0;
+  StreamSubscription<void>? _sub;
+
+  @override
+  void initState() {
+    super.initState();
+    _sub = widget.repo.pideNuevaContrasena.listen((_) => _pedirContrasena());
+  }
+
+  @override
+  void dispose() {
+    _sub?.cancel();
+    super.dispose();
+  }
+
+  void _pedirContrasena() {
+    if (!mounted) return;
+    Navigator.of(context).push(MaterialPageRoute(
+      fullscreenDialog: true,
+      builder: (ctx) => NuevaContrasenaScreen(
+        guardar: widget.repo.cambiarContrasena,
+        alTerminar: () => Navigator.of(ctx).pop(),
+      ),
+    ));
+  }
 
   void irAMisCitas() => setState(() {
         _tab = 1;

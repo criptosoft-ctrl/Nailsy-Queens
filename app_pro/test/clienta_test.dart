@@ -126,4 +126,19 @@ void main() {
     expect(f.inicioMin, 570);
     expect(f.toMap()['hora_fin'], '14:00');
   });
+
+  testWidgets('En "Entrar" aparece la opción de recuperar contraseña', (tester) async {
+    _movil(tester);
+    await tester.pumpWidget(ClientaApp(repo: DemoClientaRepo(conSesion: false)));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Cuenta').last);
+    await tester.pumpAndSettle();
+    expect(find.text('¿Olvidaste tu contraseña?'), findsNothing); // en "Crear cuenta" no sale
+    await tester.tap(find.text('¿Ya tienes cuenta? Entra'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.widgetWithText(TextFormField, 'Email'), 'ana@correo.com');
+    await tester.tap(find.text('¿Olvidaste tu contraseña?'));
+    await tester.pump();
+    expect(find.textContaining('Te hemos enviado un enlace a ana@correo.com'), findsOneWidget);
+  });
 }

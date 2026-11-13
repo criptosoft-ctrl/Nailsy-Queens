@@ -32,6 +32,13 @@ abstract class ClientaRepo {
   Future<bool> registrarse({required String nombre, required String email, required String password, String? telefono});
   Future<void> salir();
 
+  /// Envía el email con el enlace para elegir contraseña nueva.
+  Future<void> recuperarContrasena(String email);
+  Future<void> cambiarContrasena(String nueva);
+
+  /// Emite cuando la clienta llega desde el enlace de recuperación.
+  Stream<void> get pideNuevaContrasena;
+
   String? urlFoto(String? ruta);
 }
 
@@ -58,6 +65,9 @@ Never _relanzar(Object e) {
     if (m.contains('invalid login')) throw const ErrorNailsy('Email o contraseña incorrectos.');
     if (m.contains('already registered')) throw const ErrorNailsy('Ya existe una cuenta con ese email.');
     if (m.contains('email not confirmed')) throw const ErrorNailsy('Confirma tu email antes de entrar.');
+    if (m.contains('rate limit') || m.contains('security purposes')) {
+      throw const ErrorNailsy('Espera un minuto antes de pedir otro email.');
+    }
     throw ErrorNailsy(e.message);
   }
   throw e;
@@ -183,6 +193,24 @@ class SupabaseClientaRepo implements ClientaRepo {
 
   @override
   Future<void> salir() => _db.auth.signOut();
+
+  @override
+  Future<void> recuperarContrasena(String email) async {
+    try {
+      await _db.auth.resetPasswordForEmail(email.trim(), redirectTo: urlRetorno);
+    } catch (e) {
+      _relanzar(e);
+    }
+  }
+
+  @override
+  Future<void> cambiarContrasena(String nueva) async {
+    await _db.auth.updateUser(UserAttributes(password: nueva));
+  }
+
+  @override
+  Stream<void> get pideNuevaContrasena =>
+      _db.auth.onAuthStateChange.where((s) => s.event == AuthChangeEvent.passwordRecovery).map((_) {});
 
   @override
   String? urlFoto(String? ruta) =>
@@ -331,6 +359,15 @@ class DemoClientaRepo implements ClientaRepo {
 
   @override
   Future<void> salir() async => conSesion = false;
+
+  @override
+  Future<void> recuperarContrasena(String email) async {}
+
+  @override
+  Future<void> cambiarContrasena(String nueva) async {}
+
+  @override
+  Stream<void> get pideNuevaContrasena => const Stream.empty();
 
   @override
   String? urlFoto(String? ruta) => null;

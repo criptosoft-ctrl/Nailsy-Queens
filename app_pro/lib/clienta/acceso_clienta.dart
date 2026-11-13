@@ -79,6 +79,23 @@ class _FormAccesoState extends State<FormAcceso> {
     }
   }
 
+  Future<void> _olvide() async {
+    final email = _email.text.trim();
+    if (!email.contains('@')) {
+      aviso(context, 'Escribe tu email y vuelve a pulsar "¿Olvidaste tu contraseña?".');
+      return;
+    }
+    setState(() => _cargando = true);
+    try {
+      await widget.repo.recuperarContrasena(email);
+      if (mounted) aviso(context, 'Te hemos enviado un enlace a $email. Ábrelo en este mismo móvil o navegador.');
+    } catch (e) {
+      if (mounted) aviso(context, mensajeError(e));
+    } finally {
+      if (mounted) setState(() => _cargando = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_esperandoEmail) {
@@ -163,6 +180,11 @@ class _FormAccesoState extends State<FormAcceso> {
                     ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.5))
                     : Text(_registro ? 'Crear cuenta' : 'Entrar'),
               ),
+              if (!_registro)
+                TextButton(
+                  onPressed: _cargando ? null : _olvide,
+                  child: const Text('¿Olvidaste tu contraseña?', style: TextStyle(color: NailsyColors.textoSecundario)),
+                ),
               TextButton(
                 onPressed: _cargando ? null : () => setState(() => _registro = !_registro),
                 child: Text(_registro ? '¿Ya tienes cuenta? Entra' : '¿No tienes cuenta? Créala',

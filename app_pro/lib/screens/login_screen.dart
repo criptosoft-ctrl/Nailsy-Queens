@@ -54,11 +54,34 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Future<void> _olvide() async {
+    final email = _email.text.trim();
+    if (!email.contains('@')) {
+      _aviso('Escribe arriba tu email y vuelve a pulsar "¿Olvidaste tu contraseña?".');
+      return;
+    }
+    setState(() => _cargando = true);
+    try {
+      await Supabase.instance.client.auth.resetPasswordForEmail(
+        email,
+        redirectTo: kIsWeb ? '${Uri.base.origin}/pro/' : null,
+      );
+      _aviso('Te hemos enviado un enlace a $email. Ábrelo en este mismo móvil o navegador.');
+    } on AuthException catch (e) {
+      _aviso(_traducir(e.message));
+    } catch (_) {
+      _aviso('No se pudo enviar el email. Inténtalo de nuevo.');
+    } finally {
+      if (mounted) setState(() => _cargando = false);
+    }
+  }
+
   String _traducir(String msg) {
     final m = msg.toLowerCase();
     if (m.contains('invalid login')) return 'Email o contraseña incorrectos.';
     if (m.contains('already registered')) return 'Ya existe una cuenta con ese email.';
     if (m.contains('email not confirmed')) return 'Confirma tu email antes de entrar.';
+    if (m.contains('rate limit') || m.contains('security purposes')) return 'Espera un minuto antes de pedir otro email.';
     return msg;
   }
 
@@ -126,6 +149,12 @@ class _LoginScreenState extends State<LoginScreen> {
                           : Text(_registro ? 'Crear cuenta' : 'Entrar'),
                     ),
                     const SizedBox(height: 12),
+                    if (!_registro)
+                      TextButton(
+                        onPressed: _cargando ? null : _olvide,
+                        child: const Text('¿Olvidaste tu contraseña?',
+                            style: TextStyle(color: NailsyColors.textoSecundario)),
+                      ),
                     TextButton(
                       onPressed: _cargando ? null : () => setState(() => _registro = !_registro),
                       child: Text(

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -6,6 +8,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'data/agenda_repo.dart';
 import 'screens/home_shell.dart';
 import 'screens/login_screen.dart';
+import 'screens/nueva_contrasena_screen.dart';
 import 'theme.dart';
 
 /// Se pasan al compilar:
@@ -43,23 +46,50 @@ class NailsyProApp extends StatelessWidget {
   }
 }
 
-/// Muestra el login o la app según haya sesión iniciada.
-class _PuertaSesion extends StatelessWidget {
+/// Muestra el login, la app o la pantalla de nueva contraseña según la sesión.
+class _PuertaSesion extends StatefulWidget {
   const _PuertaSesion();
 
   @override
+  State<_PuertaSesion> createState() => _PuertaSesionState();
+}
+
+class _PuertaSesionState extends State<_PuertaSesion> {
+  final _auth = Supabase.instance.client.auth;
+  late final StreamSubscription<AuthState> _sub;
+  bool _recuperando = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _sub = _auth.onAuthStateChange.listen((estado) {
+      if (!mounted) return;
+      setState(() {
+        if (estado.event == AuthChangeEvent.passwordRecovery) _recuperando = true;
+        if (estado.event == AuthChangeEvent.signedOut) _recuperando = false;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _sub.cancel();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final auth = Supabase.instance.client.auth;
-    return StreamBuilder<AuthState>(
-      stream: auth.onAuthStateChange,
-      builder: (context, _) {
-        final sesion = auth.currentSession;
-        if (sesion == null) return const LoginScreen();
-        return HomeShell(
-          key: ValueKey(sesion.user.id),
-          repo: SupabaseAgendaRepo(Supabase.instance.client),
-        );
-      },
+    final sesion = _auth.currentSession;
+    if (sesion == null) return const LoginScreen();
+    if (_recuperando) {
+      return NuevaContrasenaScreen(
+        guardar: (nueva) => _auth.updateUser(UserAttributes(password: nueva)),
+        alTerminar: () => setState(() => _recuperando = false),
+      );
+    }
+    return HomeShell(
+      key: ValueKey(sesion.user.id),
+      repo: SupabaseAgendaRepo(Supabase.instance.client),
     );
   }
 }
