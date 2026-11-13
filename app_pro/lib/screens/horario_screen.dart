@@ -69,12 +69,7 @@ class _HorarioScreenState extends State<HorarioScreen> {
   }
 
   Future<void> _elegir(int actual, ValueChanged<int> onElegido) async {
-    final h = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay(hour: actual ~/ 60, minute: actual % 60),
-      initialEntryMode: TimePickerEntryMode.input,
-      builder: (ctx, child) => MediaQuery(data: MediaQuery.of(ctx).copyWith(alwaysUse24HourFormat: true), child: child!),
-    );
+    final h = await elegirHoraRueda(context, inicial: TimeOfDay(hour: actual ~/ 60, minute: actual % 60));
     if (h != null) setState(() => onElegido(h.hour * 60 + h.minute));
   }
 

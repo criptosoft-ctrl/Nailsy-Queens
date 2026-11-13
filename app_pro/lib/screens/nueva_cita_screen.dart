@@ -111,13 +111,7 @@ class _NuevaCitaScreenState extends State<NuevaCitaScreen> {
   }
 
   Future<void> _elegirHora() async {
-    final h = await showTimePicker(
-      context: context,
-      initialTime: _hora ?? const TimeOfDay(hour: 10, minute: 0),
-      initialEntryMode: TimePickerEntryMode.input,
-      builder: (ctx, child) =>
-          MediaQuery(data: MediaQuery.of(ctx).copyWith(alwaysUse24HourFormat: true), child: child!),
-    );
+    final h = await elegirHoraRueda(context, inicial: _hora, titulo: 'Hora de la cita');
     if (h != null) setState(() => _hora = h);
   }
 

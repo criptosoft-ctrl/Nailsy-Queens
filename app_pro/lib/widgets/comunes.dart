@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -175,4 +176,47 @@ class FotoRemota extends StatelessWidget {
       loadingBuilder: (_, child, progreso) => progreso == null ? child : fondo,
     );
   }
+}
+
+/// Selector de hora con ruedas (horas y minutos), en 24 h y de 5 en 5 minutos.
+Future<TimeOfDay?> elegirHoraRueda(BuildContext context, {TimeOfDay? inicial, String titulo = 'Elige la hora'}) {
+  final base = inicial ?? const TimeOfDay(hour: 10, minute: 0);
+  var elegida = TimeOfDay(hour: base.hour, minute: (base.minute ~/ 5) * 5);
+  return showModalBottomSheet<TimeOfDay>(
+    context: context,
+    backgroundColor: NailsyColors.superficie,
+    showDragHandle: true,
+    builder: (ctx) => SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(titulo, textAlign: TextAlign.center, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+            SizedBox(
+              height: 200,
+              child: CupertinoTheme(
+                data: const CupertinoThemeData(
+                  brightness: Brightness.dark,
+                  textTheme: CupertinoTextThemeData(
+                    dateTimePickerTextStyle: TextStyle(color: NailsyColors.texto, fontSize: 24),
+                  ),
+                ),
+                child: CupertinoDatePicker(
+                  mode: CupertinoDatePickerMode.time,
+                  use24hFormat: true,
+                  minuteInterval: 5,
+                  initialDateTime: DateTime(2000, 1, 1, elegida.hour, elegida.minute),
+                  onDateTimeChanged: (d) => elegida = TimeOfDay(hour: d.hour, minute: d.minute),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            FilledButton(onPressed: () => Navigator.pop(ctx, elegida), child: const Text('Aceptar')),
+          ],
+        ),
+      ),
+    ),
+  );
 }
