@@ -86,7 +86,8 @@ jobs:
           exit ${PIPESTATUS[0]}
 
       - name: Publicar web en la rama "web" (la despliega Netlify)
-        if: steps.web.outcome == 'success' && github.ref == 'refs/heads/main'
+        # Solo se publica si el commit lleva [web] o se lanza a mano (ahorra créditos de Netlify)
+        if: steps.web.outcome == 'success' && github.ref == 'refs/heads/main' && (contains(github.event.head_commit.message, '[web]') || github.event_name == 'workflow_dispatch')
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
