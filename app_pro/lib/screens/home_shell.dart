@@ -106,7 +106,7 @@ class _Ajustes extends StatelessWidget {
           const Divider(),
           const ListTile(
             leading: Icon(Icons.info_outline),
-            title: Text('Nailsy Queens Pro'),
+            title: Text('Nailsy Queens PRO'),
             subtitle: Text('Versión 0.3'),
           ),
           if (!modoDemo)

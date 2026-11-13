@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../theme.dart';
 
@@ -104,14 +105,24 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const Text(
-                      'Nailsy Queens',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 34, fontWeight: FontWeight.w800, color: NailsyColors.rosa),
+                    const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            'Nailsy Queens',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(fontSize: 34, fontWeight: FontWeight.w800, color: NailsyColors.rosa),
+                          ),
+                        ),
+                        SizedBox(width: 8),
+                        _InsigniaPro(),
+                      ],
                     ),
                     const SizedBox(height: 6),
                     const Text(
-                      'Tu agenda de manicura, sin ausencias',
+                      'Para manicuristas · Tu agenda, sin ausencias',
                       textAlign: TextAlign.center,
                       style: TextStyle(color: NailsyColors.textoSecundario),
                     ),
@@ -162,6 +173,18 @@ class _LoginScreenState extends State<LoginScreen> {
                         style: const TextStyle(color: NailsyColors.rosaSuave),
                       ),
                     ),
+                    const SizedBox(height: 28),
+                    const Divider(color: NailsyColors.borde),
+                    const SizedBox(height: 8),
+                    TextButton.icon(
+                      onPressed: () => launchUrl(
+                        kIsWeb ? Uri.parse('${Uri.base.origin}/') : Uri.parse('https://nailsy-queens.netlify.app/'),
+                        webOnlyWindowName: '_self',
+                      ),
+                      icon: const Icon(Icons.search, size: 18, color: NailsyColors.textoSecundario),
+                      label: const Text('¿Eres clienta? Busca manicurista y reserva aquí',
+                          style: TextStyle(color: NailsyColors.textoSecundario)),
+                    ),
                   ],
                 ),
               ),
@@ -169,6 +192,21 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Etiqueta "PRO" junto al nombre, para distinguir la app de manicuristas.
+class _InsigniaPro extends StatelessWidget {
+  const _InsigniaPro();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+      decoration: BoxDecoration(color: NailsyColors.rosa, borderRadius: BorderRadius.circular(8)),
+      child: const Text('PRO',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 16, letterSpacing: 1.5)),
     );
   }
 }
