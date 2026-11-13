@@ -57,7 +57,7 @@ jobs:
         id: apk
         continue-on-error: true
         env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_URL: https://izatwbdzlcmjvmlpieaq.supabase.co  # pública, no es secreta
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
         run: |
           flutter build apk --release \
@@ -77,7 +77,7 @@ jobs:
         id: web
         continue-on-error: true
         env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_URL: https://izatwbdzlcmjvmlpieaq.supabase.co  # pública, no es secreta
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
         run: |
           flutter build web --release \
@@ -123,7 +123,7 @@ jobs:
             echo "tests: ${{ steps.tests.outcome }}"
             echo "apk: ${{ steps.apk.outcome }}"
             echo "web: ${{ steps.web.outcome }}"
-            echo "supabase_conectado: ${{ secrets.SUPABASE_URL != '' && secrets.SUPABASE_ANON_KEY != '' }}"
+            echo "supabase_conectado: ${{ secrets.SUPABASE_ANON_KEY != '' }}"
             echo "run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           } > RESUMEN.txt
           cp "$GITHUB_WORKSPACE"/*.log . 2>/dev/null || true
