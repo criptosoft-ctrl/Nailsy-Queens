@@ -96,6 +96,7 @@ class _ReservarScreenState extends State<ReservarScreen> {
         notas: _notas.text,
       );
       if (!mounted) return;
+      setState(() => _reservando = false);
       await showDialog<void>(
         context: context,
         builder: (ctx) => AlertDialog(

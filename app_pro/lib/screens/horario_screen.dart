@@ -16,13 +16,13 @@ class HorarioScreen extends StatefulWidget {
 }
 
 class _Dia {
-  _Dia({required this.activo, required this.inicio, required this.fin, this.pausa = false, int? pausaIni, int? pausaFin})
+  _Dia({required this.activo, required this.inicio, required this.fin, int? pausaIni, int? pausaFin})
       : pausaIni = pausaIni ?? 14 * 60,
         pausaFin = pausaFin ?? 15 * 60;
   bool activo;
   int inicio;
   int fin;
-  bool pausa;
+  bool pausa = false;
   int pausaIni;
   int pausaFin;
 }
