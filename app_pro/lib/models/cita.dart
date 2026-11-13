@@ -39,6 +39,7 @@ String etiquetaEstado(EstadoCita e) => switch (e) {
 class Cita {
   const Cita({
     required this.id,
+    this.clientaId,
     required this.clientaNombre,
     required this.servicioNombre,
     required this.inicio,
@@ -46,9 +47,11 @@ class Cita {
     required this.precio,
     required this.estado,
     this.estadoPago = EstadoPago.sinPago,
+    this.alergias = const [],
   });
 
   final String id;
+  final String? clientaId;
   final String clientaNombre;
   final String servicioNombre;
   final DateTime inicio;
@@ -57,10 +60,14 @@ class Cita {
   final EstadoCita estado;
   final EstadoPago estadoPago;
 
+  /// Alergias de la clienta (de su ficha), para avisar en la agenda.
+  final List<String> alergias;
+
   bool get activa => estado != EstadoCita.cancelada && estado != EstadoCita.noShow;
 
   Cita copyWith({EstadoCita? estado}) => Cita(
         id: id,
+        clientaId: clientaId,
         clientaNombre: clientaNombre,
         servicioNombre: servicioNombre,
         inicio: inicio,
@@ -68,15 +75,23 @@ class Cita {
         precio: precio,
         estado: estado ?? this.estado,
         estadoPago: estadoPago,
+        alergias: alergias,
       );
 
   /// Construye una cita a partir de una fila de Supabase:
-  /// `select('id, inicio, fin, precio_total, estado, estado_pago, clientas(nombre), servicios(nombre)')`
+  /// `select('id, clienta_id, inicio, fin, precio_total, estado, estado_pago,
+  ///          clientas(nombre, fichas_una(alergias)), servicios(nombre)')`
   factory Cita.fromMap(Map<String, dynamic> m) {
     final clienta = m['clientas'] as Map<String, dynamic>?;
     final servicio = m['servicios'] as Map<String, dynamic>?;
+    final ficha = clienta?['fichas_una'];
+    Object? alergias;
+    if (ficha is Map) alergias = ficha['alergias'];
+    if (ficha is List && ficha.isNotEmpty) alergias = (ficha.first as Map)['alergias'];
     return Cita(
       id: m['id'] as String,
+      clientaId: m['clienta_id'] as String?,
+      alergias: alergias == null ? const [] : (alergias as List).map((e) => e.toString()).toList(),
       clientaNombre: (clienta?['nombre'] as String?) ?? 'Clienta',
       servicioNombre: (servicio?['nombre'] as String?) ?? 'Servicio',
       inicio: DateTime.parse(m['inicio'] as String).toLocal(),

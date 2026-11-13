@@ -1,7 +1,7 @@
 name: nailsy_pro
 description: Nailsy Queens — App Pro para manicuristas (agenda, fichas y cobros).
 publish_to: 'none'
-version: 0.1.4+5
+version: 0.2.0+6
 
 environment:
   sdk: ">=3.4.0 <4.0.0"

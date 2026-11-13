@@ -3,7 +3,11 @@ import 'package:intl/intl.dart';
 
 import '../data/agenda_repo.dart';
 import '../models/cita.dart';
+import '../models/clienta.dart';
 import '../theme.dart';
+import '../widgets/comunes.dart';
+import 'clienta_detalle_screen.dart';
+import 'nueva_cita_screen.dart';
 
 final _hora = DateFormat('HH:mm');
 final _euros = NumberFormat.currency(locale: 'es_ES', symbol: '€', decimalDigits: 0);
@@ -69,6 +73,17 @@ class _AgendaScreenState extends State<AgendaScreen> {
     }
   }
 
+  Future<void> _nuevaCita() async {
+    final creada = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(builder: (_) => NuevaCitaScreen(repo: widget.repo, dia: _dia)),
+    );
+    if (creada == true) {
+      await _cargar();
+      if (mounted) aviso(context, 'Cita guardada');
+    }
+  }
+
   void _moverDia(int dias) {
     setState(() => _dia = _dia.add(Duration(days: dias)));
     _cargar();
@@ -89,7 +104,7 @@ class _AgendaScreenState extends State<AgendaScreen> {
   }
 
   Future<void> _accionesCita(Cita cita) async {
-    final nuevo = await showModalBottomSheet<EstadoCita>(
+    final nuevo = await showModalBottomSheet<Object>(
       context: context,
       backgroundColor: NailsyColors.superficie,
       showDragHandle: true,
@@ -101,7 +116,18 @@ class _AgendaScreenState extends State<AgendaScreen> {
               title: Text(cita.clientaNombre, style: const TextStyle(fontWeight: FontWeight.w700)),
               subtitle: Text('${cita.servicioNombre} · ${_euros.format(cita.precio)}'),
             ),
+            if (cita.alergias.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                child: AvisoAlergia(alergias: cita.alergias.map(etiquetaAlergia).toList()),
+              ),
             const Divider(height: 1),
+            if (cita.clientaId != null)
+              ListTile(
+                leading: const Icon(Icons.badge_outlined, color: NailsyColors.rosaSuave),
+                title: const Text('Ver ficha de la clienta'),
+                onTap: () => Navigator.pop(ctx, 'ficha'),
+              ),
             for (final e in [EstadoCita.enCurso, EstadoCita.completada, EstadoCita.noShow, EstadoCita.cancelada])
               if (e != cita.estado)
                 ListTile(
@@ -113,7 +139,21 @@ class _AgendaScreenState extends State<AgendaScreen> {
         ),
       ),
     );
-    if (nuevo == null) return;
+    if (nuevo == null || !mounted) return;
+    if (nuevo == 'ficha') {
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ClientaDetalleScreen(
+            repo: widget.repo,
+            clienta: Clienta(id: cita.clientaId, nombre: cita.clientaNombre, alergias: cita.alergias),
+          ),
+        ),
+      );
+      await _cargar();
+      return;
+    }
+    if (nuevo is! EstadoCita) return;
     try {
       await widget.repo.cambiarEstado(cita.id, nuevo);
       await _cargar();
@@ -194,9 +234,7 @@ class _AgendaScreenState extends State<AgendaScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         tooltip: 'Nueva cita',
-        onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Crear citas: en el próximo bloque')),
-        ),
+        onPressed: _nuevaCita,
         child: const Icon(Icons.add),
       ),
     );
@@ -364,6 +402,8 @@ class _FilaCita extends StatelessWidget {
                           _Etiqueta(texto: etiquetaEstado(cita.estado), color: color),
                           if (cita.estadoPago == EstadoPago.pagado)
                             const _Etiqueta(texto: 'Pagada', color: NailsyColors.verde),
+                          if (cita.alergias.isNotEmpty)
+                            AvisoAlergia(alergias: cita.alergias.map(etiquetaAlergia).toList(), compacto: true),
                         ],
                       ),
                     ],

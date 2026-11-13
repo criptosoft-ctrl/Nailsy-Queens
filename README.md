@@ -15,9 +15,10 @@ Plataforma 100% especializada en manicura: **App Pro** para la manicurista (agen
 - [x] Modelo de datos: manicuristas, horario, tarifario (servicios + añadidos de Nail Art), clientas, ficha de la uña con consentimiento RGPD, citas sin solapes, fotos
 - [x] Inicio de sesión / registro
 - [x] Agenda diaria con resumen de ingresos, bloqueos (almuerzo) y cambio de estado de citas
-- [ ] Crear y editar citas
-- [ ] Clientas y ficha de la uña
-- [ ] Tarifario y calculador de tiempos
+- [x] Crear citas: clienta → servicio → añadidos de Nail Art → día y hora, con duración y precio automáticos y aviso de alergias
+- [x] Clientas: lista, búsqueda, alta, historial y ficha de la uña con consentimiento RGPD
+- [x] Tarifario: servicios y añadidos (por uña o fijos)
+- [ ] Editar / mover citas y bloquear huecos (descansos, vacaciones)
 - [ ] Portafolio con cámara
 
 ## Puesta en marcha
