@@ -233,6 +233,7 @@ class _AgendaScreenState extends State<AgendaScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: 'fab-agenda',
         tooltip: 'Nueva cita',
         onPressed: _nuevaCita,
         child: const Icon(Icons.add),

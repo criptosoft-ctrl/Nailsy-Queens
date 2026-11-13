@@ -69,6 +69,7 @@ class _ClientasScreenState extends State<ClientasScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Clientas', style: TextStyle(fontWeight: FontWeight.w700))),
       floatingActionButton: FloatingActionButton(
+        heroTag: 'fab-clientas',
         tooltip: 'Nueva clienta',
         onPressed: _nueva,
         child: const Icon(Icons.person_add_alt_1),
