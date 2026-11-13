@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="nailsy_pro"
+        android:label="Nailsy Pro"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
