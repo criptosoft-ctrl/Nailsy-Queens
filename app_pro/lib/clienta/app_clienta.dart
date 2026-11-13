@@ -54,6 +54,8 @@ class _ClientaShellState extends State<ClientaShell> {
       CuentaScreen(key: ValueKey('cuenta-$_visitas'), repo: widget.repo),
     ];
     return Scaffold(
+      // Cada pantalla interior ya se adapta al teclado; si lo hiciera también esta, se restaría dos veces.
+      resizeToAvoidBottomInset: false,
       body: Column(
         children: [
           if (widget.demo)

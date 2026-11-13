@@ -110,7 +110,8 @@ class _FormAccesoState extends State<FormAcceso> {
       );
     }
     return Padding(
-      padding: EdgeInsets.fromLTRB(20, 0, 20, MediaQuery.viewInsetsOf(context).bottom + 20),
+      // En hoja inferior hay que dejar sitio al teclado; en pantalla completa ya lo hace el Scaffold.
+      padding: EdgeInsets.fromLTRB(20, 0, 20, (widget.enHoja ? MediaQuery.viewInsetsOf(context).bottom : 0) + 20),
       child: Form(
         key: _form,
         child: SingleChildScrollView(

@@ -35,6 +35,8 @@ class _HomeShellState extends State<HomeShell> {
     ];
 
     return Scaffold(
+      // Cada pantalla interior ya se adapta al teclado; si lo hiciera también esta, se restaría dos veces.
+      resizeToAvoidBottomInset: false,
       body: Column(
         children: [
           if (widget.modoDemo)
