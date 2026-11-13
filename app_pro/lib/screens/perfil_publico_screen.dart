@@ -100,7 +100,11 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
       );
 
   Future<void> _guardar() async {
-    if (!_form.currentState!.validate()) return;
+    if (!_form.currentState!.validate()) {
+      // El campo con error puede estar fuera de la pantalla: avisamos aquí también.
+      aviso(context, 'Para aparecer en el buscador falta la ciudad (más abajo, en "Dónde trabajas").');
+      return;
+    }
     setState(() => _guardando = true);
     try {
       _perfil = _construir();
