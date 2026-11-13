@@ -73,17 +73,24 @@ jobs:
           path: app_pro/build/app/outputs/flutter-apk/app-release.apk
           retention-days: 30
 
-      - name: Compilar versión web
+      - name: Compilar versión web (clientas en / y Pro en /pro/)
         id: web
         continue-on-error: true
         env:
           SUPABASE_URL: https://izatwbdzlcmjvmlpieaq.supabase.co  # pública, no es secreta
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
         run: |
-          flutter build web --release \
-            --dart-define=SUPABASE_URL="$SUPABASE_URL" \
-            --dart-define=SUPABASE_ANON_KEY="$SUPABASE_ANON_KEY" 2>&1 | tail -n 40 | tee ../web.log
-          exit ${PIPESTATUS[0]}
+          set -o pipefail
+          DEF="--dart-define=SUPABASE_URL=$SUPABASE_URL --dart-define=SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY"
+          {
+            flutter build web --release -t lib/main_clienta.dart -o build/web_clienta $DEF &&
+            flutter build web --release -t lib/main.dart --base-href /pro/ -o build/web_pro $DEF
+          } 2>&1 | tail -n 60 | tee ../web.log
+          rm -rf build/sitio && cp -r build/web_clienta build/sitio && cp -r build/web_pro build/sitio/pro
+          # La app Pro con su propio nombre y descripción
+          sed -i 's|<title>Nailsy Queens</title>|<title>Nailsy Pro</title>|; s|content="Nailsy Queens: encuentra[^"]*"|content="Nailsy Pro: agenda, fichas de la uña y reservas para manicuristas."|; s|og:title" content="Nailsy Queens"|og:title" content="Nailsy Pro"|; s|og:description" content="[^"]*"|og:description" content="Tu agenda de manicura, sin ausencias."|; s|apple-mobile-web-app-title" content="Nailsy Queens"|apple-mobile-web-app-title" content="Nailsy Pro"|' build/sitio/pro/index.html
+          sed -i 's|"name": "Nailsy Queens"|"name": "Nailsy Pro"|; s|"short_name": "Nailsy"|"short_name": "Nailsy Pro"|' build/sitio/pro/manifest.json
+          printf '/pro/*  /pro/index.html  200\n/*  /index.html  200\n' > build/sitio/_redirects
 
       - name: Publicar web en la rama "web" (la despliega Netlify)
         # Solo se publica si el commit lleva [web] o se lanza a mano (ahorra créditos de Netlify)
@@ -91,8 +98,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          cd build/web
-          echo '/*  /index.html  200' > _redirects
+          cd build/sitio
           git init -q -b web
           git config user.name "nailsy-ci"
           git config user.email "ci@users.noreply.github.com"

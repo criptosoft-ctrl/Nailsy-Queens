@@ -5,7 +5,7 @@
     "display": "standalone",
     "background_color": "#17121A",
     "theme_color": "#17121A",
-    "description": "Tu agenda de manicura, sin ausencias.",
+    "description": "Encuentra tu manicurista y reserva al momento.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

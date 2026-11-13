@@ -1,8 +1,11 @@
+import 'dart:typed_data';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../models/catalogo.dart';
 import '../models/cita.dart';
 import '../models/clienta.dart';
+import '../models/publico.dart';
 
 /// Datos de una cita nueva.
 class NuevaCita {
@@ -66,6 +69,21 @@ abstract class AgendaRepo {
   Future<void> registrarConsentimiento(String clientaId, String metodo);
   Future<FichaUna?> ficha(String clientaId);
   Future<void> guardarFicha(FichaUna f);
+
+  // Perfil público, horario y portafolio
+  Future<MiPerfil> miPerfil();
+  Future<void> guardarPerfil(MiPerfil p);
+  Future<List<FranjaHorario>> horario();
+  Future<void> guardarHorario(List<FranjaHorario> franjas);
+  Future<List<FotoPortafolio>> fotos();
+
+  /// Sube una foto y devuelve su ruta en Storage. Si [alPortafolio] la añade a la galería.
+  Future<String> subirFoto(Uint8List bytes, {required String extension, bool alPortafolio = true});
+  Future<void> cambiarVisibilidadFoto(String id, bool publica);
+  Future<void> borrarFoto(FotoPortafolio f);
+
+  /// URL pública de una foto guardada (null si no hay que cargar nada, p. ej. en modo demo).
+  String? urlFoto(String? ruta);
 }
 
 DateTime _inicioDia(DateTime d) => DateTime(d.year, d.month, d.day);
@@ -260,6 +278,72 @@ class SupabaseAgendaRepo implements AgendaRepo {
       rethrow;
     }
   }
+
+  // ---------- Perfil público, horario y portafolio ----------
+  @override
+  Future<MiPerfil> miPerfil() async {
+    final fila = await _db.from('manicuristas').select().eq('id', _uid).single();
+    return MiPerfil.fromMap(fila);
+  }
+
+  @override
+  Future<void> guardarPerfil(MiPerfil p) async {
+    await _db.from('manicuristas').update(p.toMap()).eq('id', _uid);
+  }
+
+  @override
+  Future<List<FranjaHorario>> horario() async {
+    final filas = await _db.from('horario_semanal').select('dia_semana, hora_inicio, hora_fin').order('dia_semana');
+    return filas.map(FranjaHorario.fromMap).toList();
+  }
+
+  @override
+  Future<void> guardarHorario(List<FranjaHorario> franjas) async {
+    await _db.from('horario_semanal').delete().eq('manicurista_id', _uid);
+    if (franjas.isEmpty) return;
+    await _db.from('horario_semanal').insert([
+      for (final f in franjas) {...f.toMap(), 'manicurista_id': _uid},
+    ]);
+  }
+
+  @override
+  Future<List<FotoPortafolio>> fotos() async {
+    final filas = await _db
+        .from('fotos')
+        .select('id, storage_path, publica')
+        .order('creado_en', ascending: false);
+    return filas.map(FotoPortafolio.fromMap).toList();
+  }
+
+  @override
+  Future<String> subirFoto(Uint8List bytes, {required String extension, bool alPortafolio = true}) async {
+    final ext = extension.toLowerCase().replaceAll('.', '');
+    final ruta = '$_uid/${DateTime.now().millisecondsSinceEpoch}.$ext';
+    await _db.storage.from('portafolio').uploadBinary(
+          ruta,
+          bytes,
+          fileOptions: FileOptions(contentType: ext == 'png' ? 'image/png' : 'image/jpeg', upsert: false),
+        );
+    if (alPortafolio) {
+      await _db.from('fotos').insert({'manicurista_id': _uid, 'storage_path': ruta, 'publica': true});
+    }
+    return ruta;
+  }
+
+  @override
+  Future<void> cambiarVisibilidadFoto(String id, bool publica) async {
+    await _db.from('fotos').update({'publica': publica}).eq('id', id);
+  }
+
+  @override
+  Future<void> borrarFoto(FotoPortafolio f) async {
+    await _db.from('fotos').delete().eq('id', f.id);
+    await _db.storage.from('portafolio').remove([f.ruta]);
+  }
+
+  @override
+  String? urlFoto(String? ruta) =>
+      (ruta == null || ruta.isEmpty) ? null : _db.storage.from('portafolio').getPublicUrl(ruta);
 }
 
 /// Datos de ejemplo (los de la maqueta) para enseñar la app sin Supabase.
@@ -469,4 +553,50 @@ class DemoAgendaRepo implements AgendaRepo {
     final i = _clientas.indexWhere((c) => c.id == f.clientaId);
     if (i >= 0) _clientas[i] = _clientas[i].copyWith(alergias: f.alergias);
   }
+
+  MiPerfil _perfil = const MiPerfil(
+    nombre: 'Eudy',
+    nombreNegocio: 'Eudy Nails',
+    ciudad: 'Las Palmas de Gran Canaria',
+    bio: 'Especialista en manicura rusa y Nail Art a mano alzada.',
+    especialidades: ['rusa', 'gel', 'nail_art'],
+  );
+  List<FranjaHorario> _horario = [
+    for (var d = 1; d <= 5; d++) FranjaHorario(dia: d, inicioMin: 9 * 60, finMin: 18 * 60),
+  ];
+  final List<FotoPortafolio> _fotos = [];
+
+  @override
+  Future<MiPerfil> miPerfil() async => _perfil;
+
+  @override
+  Future<void> guardarPerfil(MiPerfil p) async => _perfil = p;
+
+  @override
+  Future<List<FranjaHorario>> horario() async => List.of(_horario);
+
+  @override
+  Future<void> guardarHorario(List<FranjaHorario> franjas) async => _horario = List.of(franjas);
+
+  @override
+  Future<List<FotoPortafolio>> fotos() async => List.of(_fotos);
+
+  @override
+  Future<String> subirFoto(Uint8List bytes, {required String extension, bool alPortafolio = true}) async {
+    final ruta = 'demo/${_contador++}.$extension';
+    if (alPortafolio) _fotos.insert(0, FotoPortafolio(id: _nuevoId('f'), ruta: ruta, publica: true));
+    return ruta;
+  }
+
+  @override
+  Future<void> cambiarVisibilidadFoto(String id, bool publica) async {
+    final i = _fotos.indexWhere((f) => f.id == id);
+    if (i >= 0) _fotos[i] = FotoPortafolio(id: id, ruta: _fotos[i].ruta, publica: publica);
+  }
+
+  @override
+  Future<void> borrarFoto(FotoPortafolio f) async => _fotos.removeWhere((x) => x.id == f.id);
+
+  @override
+  String? urlFoto(String? ruta) => null;
 }

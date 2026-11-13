@@ -66,5 +66,11 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Para encontrar manicuristas cerca de ti.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Para subir fotos de tus trabajos al portafolio.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Para hacer fotos de tus trabajos.</string>
 </dict>
 </plist>

@@ -189,4 +189,29 @@ void main() {
     await tester.pump();
     expect(find.text('Falta elegir la hora.'), findsOneWidget);
   });
+
+  testWidgets('Ajustes abre el perfil público con sus datos', (tester) async {
+    _movil(tester);
+    await tester.pumpWidget(const NailsyProApp(demo: true));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Ajustes').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Mi perfil público'));
+    await tester.pumpAndSettle();
+    expect(find.text('Aparecer en el buscador'), findsOneWidget);
+    expect(find.widgetWithText(TextFormField, 'Eudy Nails'), findsOneWidget);
+  });
+
+  testWidgets('Horario de trabajo muestra lunes abierto y domingo cerrado', (tester) async {
+    _movil(tester);
+    await tester.pumpWidget(const NailsyProApp(demo: true));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Ajustes').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Horario de trabajo'));
+    await tester.pumpAndSettle();
+    expect(find.text('Lunes'), findsOneWidget);
+    expect(find.text('Abierto'), findsNWidgets(5));
+    expect(find.text('09:00'), findsWidgets);
+  });
 }

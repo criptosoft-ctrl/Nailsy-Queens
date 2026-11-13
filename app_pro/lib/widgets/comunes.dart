@@ -137,3 +137,34 @@ class Tarjeta extends StatelessWidget {
 
 /// Lee un número escrito con coma o punto ("12,5" → 12.5).
 double? leerNumero(String? s) => s == null ? null : double.tryParse(s.trim().replaceAll(',', '.'));
+
+/// Foto remota con fondo de marca mientras carga o si no hay foto.
+class FotoRemota extends StatelessWidget {
+  const FotoRemota({super.key, required this.url, this.fit = BoxFit.cover, this.icono = Icons.spa_outlined});
+
+  final String? url;
+  final BoxFit fit;
+  final IconData icono;
+
+  @override
+  Widget build(BuildContext context) {
+    final fondo = Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF3A1F33), Color(0xFF241C27)],
+        ),
+      ),
+      alignment: Alignment.center,
+      child: Icon(icono, color: NailsyColors.rosa.withValues(alpha: 0.6), size: 32),
+    );
+    if (url == null) return fondo;
+    return Image.network(
+      url!,
+      fit: fit,
+      errorBuilder: (_, __, ___) => fondo,
+      loadingBuilder: (_, child, progreso) => progreso == null ? child : fondo,
+    );
+  }
+}

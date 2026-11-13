@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -36,6 +37,7 @@ class _LoginScreenState extends State<LoginScreen> {
           email: _email.text.trim(),
           password: _password.text,
           data: {'nombre': _nombre.text.trim()},
+          emailRedirectTo: kIsWeb ? '${Uri.base.origin}/pro/' : null,
         );
         if (res.session == null && mounted) {
           _aviso('Te hemos enviado un email para confirmar la cuenta.');

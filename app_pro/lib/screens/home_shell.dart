@@ -4,6 +4,9 @@ import '../data/agenda_repo.dart';
 import '../theme.dart';
 import 'agenda_screen.dart';
 import 'clientas_screen.dart';
+import 'horario_screen.dart';
+import 'perfil_publico_screen.dart';
+import 'portafolio_screen.dart';
 import 'tarifario_screen.dart';
 
 /// Pantalla principal con la barra inferior: Agenda · Clientas · Portafolio · Ajustes.
@@ -26,6 +29,7 @@ class _HomeShellState extends State<HomeShell> {
     final pantallas = [
       AgendaScreen(repo: widget.repo),
       ClientasScreen(key: ValueKey('clientas-$_visitas'), repo: widget.repo),
+      PortafolioScreen(key: ValueKey('portafolio-$_visitas'), repo: widget.repo),
       TarifarioScreen(key: ValueKey('tarifario-$_visitas'), repo: widget.repo),
       _Ajustes(repo: widget.repo, modoDemo: widget.modoDemo),
     ];
@@ -62,6 +66,7 @@ class _HomeShellState extends State<HomeShell> {
         destinations: const [
           NavigationDestination(icon: Icon(Icons.calendar_today_outlined), label: 'Agenda'),
           NavigationDestination(icon: Icon(Icons.people_outline), label: 'Clientas'),
+          NavigationDestination(icon: Icon(Icons.photo_library_outlined), label: 'Portafolio'),
           NavigationDestination(icon: Icon(Icons.sell_outlined), label: 'Tarifario'),
           NavigationDestination(icon: Icon(Icons.settings_outlined), label: 'Ajustes'),
         ],
@@ -82,10 +87,25 @@ class _Ajustes extends StatelessWidget {
       appBar: AppBar(title: const Text('Ajustes')),
       body: ListView(
         children: [
+          ListTile(
+            leading: const Icon(Icons.storefront_outlined, color: NailsyColors.rosa),
+            title: const Text('Mi perfil público'),
+            subtitle: const Text('Lo que ven las clientas en el buscador'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => PerfilPublicoScreen(repo: repo))),
+          ),
+          ListTile(
+            leading: const Icon(Icons.schedule_outlined, color: NailsyColors.rosa),
+            title: const Text('Horario de trabajo'),
+            subtitle: const Text('Los huecos que pueden reservar las clientas'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => HorarioScreen(repo: repo))),
+          ),
+          const Divider(),
           const ListTile(
             leading: Icon(Icons.info_outline),
             title: Text('Nailsy Queens Pro'),
-            subtitle: Text('Versión 0.2 · Fase 1'),
+            subtitle: Text('Versión 0.3'),
           ),
           if (!modoDemo)
             ListTile(
