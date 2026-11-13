@@ -50,8 +50,7 @@ class _PerfilManicuristaScreenState extends State<PerfilManicuristaScreen> {
     if (ok == true && mounted) Navigator.pop(context, true);
   }
 
-  void _verFoto(int inicial) {
-    final fotos = _p!.fotos;
+  void _verImagen(List<String> rutas, int inicial) {
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -62,7 +61,7 @@ class _PerfilManicuristaScreenState extends State<PerfilManicuristaScreen> {
           body: PageView(
             controller: PageController(initialPage: inicial),
             children: [
-              for (final f in fotos)
+              for (final f in rutas)
                 InteractiveViewer(child: Center(child: FotoRemota(url: widget.repo.urlFoto(f), fit: BoxFit.contain))),
             ],
           ),
@@ -81,74 +80,100 @@ class _PerfilManicuristaScreenState extends State<PerfilManicuristaScreen> {
         body: const EstadoVacio(icono: Icons.storefront_outlined, texto: 'Este perfil ya no está disponible.'),
       );
     }
+    final urlPerfil = widget.repo.urlFoto(p.foto);
     return Scaffold(
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
             pinned: true,
-            expandedHeight: 220,
-            flexibleSpace: FlexibleSpaceBar(
-              title: Text(p.nombre, style: const TextStyle(fontWeight: FontWeight.w700)),
-              background: Stack(
-                fit: StackFit.expand,
-                children: [
-                  FotoRemota(url: widget.repo.urlFoto(p.fotos.isNotEmpty ? p.fotos.first : p.foto)),
-                  const DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [Colors.transparent, Color(0xDD17121A)],
+            title: Text(p.nombre, style: const TextStyle(fontWeight: FontWeight.w700)),
+          ),
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 40),
+            sliver: SliverList.list(
+              children: [
+                // ---- Foto de perfil y datos ----
+                Center(
+                  child: GestureDetector(
+                    onTap: urlPerfil == null ? null : () => _verImagen([p.foto!], 0),
+                    child: Container(
+                      padding: const EdgeInsets.all(3),
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: LinearGradient(colors: [NailsyColors.rosa, NailsyColors.rosaSuave]),
+                      ),
+                      child: ClipOval(
+                        child: SizedBox(
+                          width: 118,
+                          height: 118,
+                          child: FotoRemota(url: urlPerfil, icono: Icons.person_outline),
+                        ),
                       ),
                     ),
                   ),
-                ],
-              ),
-            ),
-          ),
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 40),
-            sliver: SliverList.list(
-              children: [
-                if (p.ciudad != null || p.direccion != null)
+                ),
+                const SizedBox(height: 12),
+                Text(p.nombre,
+                    textAlign: TextAlign.center, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800)),
+                if (p.ciudad != null || p.direccion != null) ...[
+                  const SizedBox(height: 4),
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.place_outlined, size: 18, color: NailsyColors.rosaSuave),
-                      const SizedBox(width: 6),
-                      Expanded(
+                      const Icon(Icons.place_outlined, size: 16, color: NailsyColors.rosaSuave),
+                      const SizedBox(width: 4),
+                      Flexible(
                         child: Text([p.direccion, p.ciudad].whereType<String>().join(', '),
-                            style: const TextStyle(color: NailsyColors.textoSecundario)),
+                            textAlign: TextAlign.center, style: const TextStyle(color: NailsyColors.textoSecundario)),
                       ),
                     ],
                   ),
+                ],
                 if (p.instagram != null) ...[
-                  const SizedBox(height: 4),
-                  Row(
+                  const SizedBox(height: 2),
+                  Text('@${p.instagram}',
+                      textAlign: TextAlign.center, style: const TextStyle(color: NailsyColors.rosaSuave)),
+                ],
+                if (p.especialidades.isNotEmpty) ...[
+                  const SizedBox(height: 10),
+                  Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 6,
+                    runSpacing: 6,
                     children: [
-                      const Icon(Icons.camera_alt_outlined, size: 18, color: NailsyColors.rosaSuave),
-                      const SizedBox(width: 6),
-                      Text('@${p.instagram}', style: const TextStyle(color: NailsyColors.textoSecundario)),
+                      for (final e in p.especialidades)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: NailsyColors.rosa.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(estilosBuscables[e] ?? e,
+                              style: const TextStyle(color: NailsyColors.rosaSuave, fontSize: 12)),
+                        ),
                     ],
                   ),
                 ],
                 if (p.bio != null) ...[
                   const SizedBox(height: 12),
-                  Text(p.bio!, style: const TextStyle(height: 1.4)),
+                  Text(p.bio!, textAlign: TextAlign.center, style: const TextStyle(height: 1.4)),
                 ],
+
+                // ---- Trabajos ----
                 if (p.fotos.isNotEmpty) ...[
-                  const TituloSeccion('Trabajos'),
-                  SizedBox(
-                    height: 120,
-                    child: ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: p.fotos.length,
-                      separatorBuilder: (_, __) => const SizedBox(width: 8),
-                      itemBuilder: (_, i) => GestureDetector(
-                        onTap: () => _verFoto(i),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: SizedBox(width: 120, child: FotoRemota(url: widget.repo.urlFoto(p.fotos[i]))),
-                        ),
+                  TituloSeccion('Trabajos (${p.fotos.length})'),
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    padding: EdgeInsets.zero,
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 3, mainAxisSpacing: 6, crossAxisSpacing: 6),
+                    itemCount: p.fotos.length,
+                    itemBuilder: (_, i) => GestureDetector(
+                      onTap: () => _verImagen(p.fotos, i),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: FotoRemota(url: widget.repo.urlFoto(p.fotos[i])),
                       ),
                     ),
                   ),
