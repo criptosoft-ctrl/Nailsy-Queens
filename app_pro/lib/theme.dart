@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 /// Paleta de Nailsy Queens (basada en las maquetas).
@@ -26,6 +27,11 @@ ThemeData nailsyTheme() {
     onSurface: NailsyColors.texto,
     error: NailsyColors.rojo,
   );
+
+  // Tipografía base de la plataforma (Roboto en Android/web, SF en iPhone) para que
+  // los estilos propios hereden la familia de letra en vez de quedarse sin ella.
+  final base = Typography.material2021(platform: defaultTargetPlatform).white;
+  final etiquetaBoton = (base.labelLarge ?? const TextStyle()).copyWith(fontSize: 16, fontWeight: FontWeight.w600);
 
   return ThemeData(
     useMaterial3: true,
@@ -59,7 +65,7 @@ ThemeData nailsyTheme() {
         foregroundColor: Colors.white,
         minimumSize: const Size.fromHeight(52),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+        textStyle: etiquetaBoton,
       ),
     ),
     navigationBarTheme: NavigationBarThemeData(
