@@ -1,0 +1,24 @@
+
+::group::✅ Passing tests
+✅ /home/runner/work/Nailsy-Queens/Nailsy-Queens/app_pro/test/clienta_test.dart: El buscador muestra manicuristas y filtra por estilo
+✅ /home/runner/work/Nailsy-Queens/Nailsy-Queens/app_pro/test/clienta_test.dart: El perfil muestra servicios y botón de reservar
+✅ /home/runner/work/Nailsy-Queens/Nailsy-Queens/app_pro/test/widget_test.dart: El modo demo muestra la agenda de hoy con su resumen
+✅ /home/runner/work/Nailsy-Queens/Nailsy-Queens/app_pro/test/clienta_test.dart: Reservar: extras suman al precio y la reserva queda en Mis citas
+✅ /home/runner/work/Nailsy-Queens/Nailsy-Queens/app_pro/test/widget_test.dart: Marcar una cita como "no vino" la saca del resumen
+✅ /home/runner/work/Nailsy-Queens/Nailsy-Queens/app_pro/test/widget_test.dart: ResumenDia ignora canceladas y ausencias
+✅ /home/runner/work/Nailsy-Queens/Nailsy-Queens/app_pro/test/widget_test.dart: Cita.fromMap lee una fila de Supabase
+✅ /home/runner/work/Nailsy-Queens/Nailsy-Queens/app_pro/test/clienta_test.dart: Sin sesión, Mis citas pide entrar
+✅ /home/runner/work/Nailsy-Queens/Nailsy-Queens/app_pro/test/clienta_test.dart: MiPerfil.pendientes indica qué falta para aparecer
+✅ /home/runner/work/Nailsy-Queens/Nailsy-Queens/app_pro/test/clienta_test.dart: FranjaHorario lee las horas de Supabase
+✅ /home/runner/work/Nailsy-Queens/Nailsy-Queens/app_pro/test/widget_test.dart: Sin citas muestra el estado vacío
+✅ /home/runner/work/Nailsy-Queens/Nailsy-Queens/app_pro/test/widget_test.dart: Presupuesto suma servicio y añadidos (por uña y fijos)
+✅ /home/runner/work/Nailsy-Queens/Nailsy-Queens/app_pro/test/widget_test.dart: Clienta.fromMap lee las alergias embebidas como objeto o lista
+✅ /home/runner/work/Nailsy-Queens/Nailsy-Queens/app_pro/test/clienta_test.dart: En "Entrar" aparece la opción de recuperar contraseña
+✅ /home/runner/work/Nailsy-Queens/Nailsy-Queens/app_pro/test/widget_test.dart: Pestaña Clientas: lista, alergia en rojo y ficha
+✅ /home/runner/work/Nailsy-Queens/Nailsy-Queens/app_pro/test/widget_test.dart: Pestaña Tarifario muestra servicios y añadidos
+✅ /home/runner/work/Nailsy-Queens/Nailsy-Queens/app_pro/test/widget_test.dart: Nueva cita calcula duración y precio, y pide la hora
+✅ /home/runner/work/Nailsy-Queens/Nailsy-Queens/app_pro/test/widget_test.dart: Ajustes abre el perfil público con sus datos
+✅ /home/runner/work/Nailsy-Queens/Nailsy-Queens/app_pro/test/widget_test.dart: Horario de trabajo muestra lunes abierto y domingo cerrado
+::endgroup::
+
+🎉 19 tests passed.

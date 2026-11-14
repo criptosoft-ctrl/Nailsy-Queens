@@ -1,0 +1,48 @@
+MaterialIcons-Regular.otf
+MaterialIcons_LICENSE.txt
+Roboto-Black.ttf
+Roboto-BlackItalic.ttf
+Roboto-Bold.ttf
+Roboto-BoldItalic.ttf
+Roboto-Italic.ttf
+Roboto-Light.ttf
+Roboto-LightItalic.ttf
+Roboto-Medium.ttf
+Roboto-MediumItalic.ttf
+Roboto-Regular.ttf
+Roboto-Thin.ttf
+Roboto-ThinItalic.ttf
+RobotoCondensed-Bold.ttf
+RobotoCondensed-BoldItalic.ttf
+RobotoCondensed-Italic.ttf
+RobotoCondensed-Light.ttf
+RobotoCondensed-LightItalic.ttf
+RobotoCondensed-Regular.ttf
+RobotoCondensed_LICENSE.txt
+Roboto_LICENSE.txt
+codepoints
+
+::group::✅ Passing tests
+✅ Capturas · app de clientas
+✅ Capturas · Nailsy Pro
+::endgroup::
+
+🎉 2 tests passed.
+c01_buscar.png
+c02_perfil.png
+c03_reservar.png
+c04_confirmada.png
+c05_mis_citas.png
+c06_cuenta.png
+p01_login.png
+p02_agenda.png
+p03_cita.png
+p04_nueva_cita.png
+p05_rueda.png
+p06_clientas.png
+p07_ficha.png
+p08_portafolio.png
+p09_tarifario.png
+p10_ajustes.png
+p11_horario.png
+p12_perfil_publico.png
