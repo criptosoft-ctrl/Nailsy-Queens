@@ -38,6 +38,8 @@ Future<void> _cargarFuentes() async {
   ];
   for (final fam in [
     'Roboto',
+    'FlutterTest', // fuente por defecto de los tests: así nada sale como bloques
+    'Ahem',
     '.SF Pro Text',
     '.SF Pro Display',
     '.SF UI Text',
@@ -77,8 +79,9 @@ DateTime _proximoLunes() {
 }
 
 void main() {
+  setUp(() => debugDisableShadows = false);
+  tearDown(() => debugDisableShadows = true);
   setUpAll(() async {
-    debugDisableShadows = false;
     await initializeDateFormatting('es');
     await _cargarFuentes();
   });
