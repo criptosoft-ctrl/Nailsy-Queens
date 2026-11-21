@@ -22,8 +22,6 @@ class InicioGlamGoScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final principal = sectores.where((s) => s.activo).toList();
-    final proximos = sectores.where((s) => !s.activo).toList();
     return Scaffold(
       body: SafeArea(
         child: ListView(
@@ -35,14 +33,18 @@ class InicioGlamGoScreen extends StatelessWidget {
                 style: TextStyle(color: NailsyColors.textoSecundario, fontSize: 15)),
             const SizedBox(height: 26),
             const TituloSeccion('¿Qué te apetece hoy?'),
-            for (final s in principal) ...[
-              _TarjetaPrincipal(sector: s, onTap: () => _tocar(context, s)),
-              const SizedBox(height: 14),
-            ],
-            for (final s in proximos) ...[
-              _TarjetaProxima(sector: s, onTap: () => _tocar(context, s)),
-              const SizedBox(height: 12),
-            ],
+            // Todas las secciones con el mismo tamaño, en cuadrícula de 2 columnas.
+            GridView.count(
+              crossAxisCount: 2,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              mainAxisSpacing: 12,
+              crossAxisSpacing: 12,
+              childAspectRatio: 0.78,
+              children: [
+                for (final s in sectores) _TarjetaSector(sector: s, onTap: () => _tocar(context, s)),
+              ],
+            ),
           ],
         ),
       ),
@@ -65,115 +67,71 @@ class _Logo extends StatelessWidget {
   }
 }
 
-class _TarjetaPrincipal extends StatelessWidget {
-  const _TarjetaPrincipal({required this.sector, required this.onTap});
+/// Tarjeta de una sección. Las disponibles van en su color; las que llegan pronto, en oscuro.
+class _TarjetaSector extends StatelessWidget {
+  const _TarjetaSector({required this.sector, required this.onTap});
 
   final Sector sector;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
+    final activo = sector.activo;
+    final textoFuerte = activo ? sector.sobreColor : NailsyColors.texto;
+    final textoSuave = activo ? sector.sobreColor.withValues(alpha: 0.8) : NailsyColors.textoSecundario;
     return Material(
-      borderRadius: BorderRadius.circular(radioNailsy + 4),
+      color: activo ? null : NailsyColors.superficie,
+      borderRadius: BorderRadius.circular(radioNailsy + 2),
       clipBehavior: Clip.antiAlias,
       child: Ink(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [sector.color, Color.lerp(sector.color, Colors.black, 0.28)!],
-          ),
-        ),
+        decoration: activo
+            ? BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [sector.color, Color.lerp(sector.color, Colors.black, 0.28)!],
+                ),
+              )
+            : null,
         child: InkWell(
           onTap: onTap,
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 18),
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 52,
-                      height: 52,
-                      decoration: BoxDecoration(
-                        color: sector.sobreColor.withValues(alpha: 0.18),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Icon(sector.icono, color: sector.sobreColor, size: 28),
-                    ),
-                    const Spacer(),
-                    Pildora(texto: sector.nombre, color: sector.sobreColor, fondo: Colors.white24),
-                  ],
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: activo ? sector.sobreColor.withValues(alpha: 0.18) : sector.color.withValues(alpha: 0.14),
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  child: Icon(sector.icono, color: activo ? sector.sobreColor : sector.color, size: 26),
                 ),
-                const SizedBox(height: 26),
+                const Spacer(),
                 Text(sector.marca,
-                    style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: sector.sobreColor)),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800, height: 1.15, color: textoFuerte)),
                 const SizedBox(height: 4),
                 Text(sector.descripcion,
-                    style: TextStyle(fontSize: 15, color: sector.sobreColor.withValues(alpha: 0.8))),
-                const SizedBox(height: 18),
-                Row(
-                  children: [
-                    Text('Reservar',
-                        style: TextStyle(fontWeight: FontWeight.w800, color: sector.sobreColor, fontSize: 16)),
-                    const SizedBox(width: 6),
-                    Icon(Icons.arrow_forward, color: sector.sobreColor, size: 20),
-                  ],
-                ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 13, height: 1.3, color: textoSuave)),
+                const SizedBox(height: 12),
+                if (activo)
+                  Row(
+                    children: [
+                      Text('Reservar', style: TextStyle(fontWeight: FontWeight.w800, color: textoFuerte, fontSize: 15)),
+                      const SizedBox(width: 4),
+                      Icon(Icons.arrow_forward, color: textoFuerte, size: 18),
+                    ],
+                  )
+                else
+                  const Pildora(texto: 'Próximamente', color: NailsyColors.textoSecundario),
               ],
             ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _TarjetaProxima extends StatelessWidget {
-  const _TarjetaProxima({required this.sector, required this.onTap});
-
-  final Sector sector;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: NailsyColors.superficie,
-      borderRadius: BorderRadius.circular(radioNailsy),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Container(
-                width: 46,
-                height: 46,
-                decoration: BoxDecoration(
-                  color: sector.color.withValues(alpha: 0.14),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Icon(sector.icono, color: sector.color),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(sector.marca, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
-                    const SizedBox(height: 2),
-                    Text(sector.descripcion,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(color: NailsyColors.textoSecundario, fontSize: 13)),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              const Pildora(texto: 'Próximamente', color: NailsyColors.textoSecundario),
-            ],
           ),
         ),
       ),
