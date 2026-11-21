@@ -215,7 +215,7 @@ class _NuevaCitaScreenState extends State<NuevaCitaScreen> {
 
                 // ---- Añadidos ----
                 if (_anadidos.isNotEmpty) ...[
-                  const TituloSeccion('Nail Art y extras'),
+                  TituloSeccion(context.sector.cobroPorUna ? 'Nail Art y extras' : 'Extras'),
                   for (final a in _anadidos)
                     Padding(
                       padding: const EdgeInsets.only(bottom: 8),

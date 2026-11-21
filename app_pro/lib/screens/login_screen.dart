@@ -188,7 +188,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     TextButton(
                       onPressed: _cargando ? null : () => setState(() => _registro = !_registro),
                       child: Text(
-                        _registro ? '¿Ya tienes cuenta? Entra' : '¿Eres nueva? Crea tu cuenta',
+                        _registro ? '¿Ya tienes cuenta? Entra' : '¿No tienes cuenta? Créala',
                         style: const TextStyle(color: NailsyColors.oroSuave),
                       ),
                     ),
@@ -201,7 +201,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         webOnlyWindowName: '_self',
                       ),
                       icon: const Icon(Icons.search, size: 18, color: NailsyColors.textoSecundario),
-                      label: const Text('¿Eres clienta? Busca y reserva en GlamGo',
+                      label: const Text('¿Buscas cita? Reserva en GlamGo',
                           style: TextStyle(color: NailsyColors.textoSecundario)),
                     ),
                   ],

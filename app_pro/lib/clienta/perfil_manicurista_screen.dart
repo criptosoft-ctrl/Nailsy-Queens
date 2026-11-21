@@ -6,6 +6,7 @@ import '../theme.dart';
 import '../widgets/comunes.dart';
 import 'clienta_repo.dart';
 import 'reservar_screen.dart';
+import '../sectores.dart';
 
 /// Perfil de una manicurista tal como lo ve la clienta. Devuelve `true` si se reservó.
 class PerfilManicuristaScreen extends StatefulWidget {
@@ -210,7 +211,7 @@ class _PerfilManicuristaScreenState extends State<PerfilManicuristaScreen> {
                     ),
                   ),
                 if (p.anadidos.isNotEmpty) ...[
-                  const TituloSeccion('Nail Art y extras'),
+                  TituloSeccion(context.sector.cobroPorUna ? 'Nail Art y extras' : 'Extras'),
                   for (final a in p.anadidos)
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 4),
