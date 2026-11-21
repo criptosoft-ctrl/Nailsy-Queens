@@ -23,6 +23,7 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
   final _telefono = TextEditingController();
   final _ciudad = TextEditingController();
   final _direccion = TextEditingController();
+  final _nombre = TextEditingController();
   final _bio = TextEditingController();
   final _instagram = TextEditingController();
   MiPerfil _perfil = const MiPerfil(nombre: '');
@@ -43,7 +44,7 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
 
   @override
   void dispose() {
-    for (final c in [_negocio, _telefono, _ciudad, _direccion, _bio, _instagram]) {
+    for (final c in [_nombre, _negocio, _telefono, _ciudad, _direccion, _bio, _instagram]) {
       c.dispose();
     }
     super.dispose();
@@ -58,6 +59,7 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
       if (!mounted) return;
       setState(() {
         _perfil = p;
+        _nombre.text = p.nombre;
         _negocio.text = p.nombreNegocio ?? '';
         _telefono.text = p.telefono ?? '';
         _ciudad.text = p.ciudad ?? '';
@@ -84,7 +86,7 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
   String? _t(TextEditingController c) => c.text.trim().isEmpty ? null : c.text.trim();
 
   MiPerfil _construir() => MiPerfil(
-        nombre: _perfil.nombre,
+        nombre: _t(_nombre) ?? _perfil.nombre,
         nombreNegocio: _t(_negocio),
         telefono: _t(_telefono),
         ciudad: _t(_ciudad),
@@ -102,7 +104,11 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
   Future<void> _guardar() async {
     if (!_form.currentState!.validate()) {
       // El campo con error puede estar fuera de la pantalla: avisamos aquí también.
-      aviso(context, 'Para aparecer en el buscador falta la ciudad (más abajo, en "Dónde trabajas").');
+      aviso(
+          context,
+          _nombre.text.trim().isEmpty
+              ? 'Falta tu nombre (en "Tu negocio").'
+              : 'Para aparecer en el buscador falta la ciudad (más abajo, en "Dónde trabajas").');
       return;
     }
     setState(() => _guardando = true);
@@ -209,9 +215,16 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
             // ---- Datos ----
             const TituloSeccion('Tu negocio'),
             TextFormField(
+              controller: _nombre,
+              textCapitalization: TextCapitalization.words,
+              decoration: const InputDecoration(labelText: 'Tu nombre', hintText: 'Así te saludamos en la agenda'),
+              validator: (v) => (v == null || v.trim().isEmpty) ? 'Escribe tu nombre' : null,
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
               controller: _negocio,
               textCapitalization: TextCapitalization.words,
-              decoration: InputDecoration(labelText: 'Nombre comercial', hintText: 'Ej. ${_perfil.nombre} Nails'),
+              decoration: InputDecoration(labelText: 'Nombre comercial', hintText: 'Ej. ${_nombre.text.isEmpty ? 'Eudy' : _nombre.text} Nails'),
             ),
             const SizedBox(height: 12),
             TextFormField(

@@ -121,7 +121,10 @@ class _AgendaScreenState extends State<AgendaScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => AjustesScreen(repo: widget.repo, modoDemo: widget.modoDemo)),
-    ).then((_) => _cargar());
+    ).then((_) {
+      _cargarNombre();
+      _cargar();
+    });
   }
 
   @override
