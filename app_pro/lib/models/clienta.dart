@@ -135,6 +135,109 @@ class FichaUna {
       };
 }
 
+// ---------------- Barbería: ficha del pelo y la barba ----------------
+// Se guarda en la misma tabla que la ficha de la uña (fichas_una), con estos significados:
+// diagnosticos = pelo y piel · forma_deseada = corte habitual · largo_deseado = barba ·
+// tonos_favoritos = números de máquina.
+
+const diagnosticosPelo = <String, String>{
+  'liso': 'Liso',
+  'ondulado': 'Ondulado',
+  'rizado': 'Rizado',
+  'afro': 'Afro',
+  'fino': 'Fino',
+  'grueso': 'Grueso',
+  'entradas': 'Entradas / poco pelo',
+  'remolino': 'Remolino',
+  'caspa': 'Caspa',
+  'piel_sensible': 'Piel sensible',
+};
+
+const alergiasPelo = <String, String>{
+  'ppd': 'Tintes (PPD)',
+  'fragancias': 'Perfumes / after-shave',
+  'alcohol': 'Alcohol',
+  'latex': 'Látex',
+  'niquel': 'Níquel',
+};
+
+const cortesBarberia = [
+  'Degradado bajo',
+  'Degradado medio',
+  'Degradado alto',
+  'Taper',
+  'Clásico a tijera',
+  'Crop',
+  'Pompadour',
+  'Mullet',
+  'Rapado',
+];
+const barbasBarberia = ['Sin barba', 'Perfilada', 'Corta', 'Media', 'Larga', 'Bigote', 'Perilla'];
+
+/// Qué guarda la ficha técnica en cada sector y cómo se llama cada apartado.
+class FichaSector {
+  const FichaSector({
+    required this.titulo,
+    required this.tituloDiagnosticos,
+    required this.diagnosticos,
+    required this.alergias,
+    required this.tituloForma,
+    required this.formas,
+    required this.tituloLargo,
+    required this.largos,
+    required this.tituloTonos,
+    required this.pistaTonos,
+    required this.textoConsentimiento,
+    required this.versionConsentimiento,
+  });
+
+  final String titulo;
+  final String tituloDiagnosticos;
+  final Map<String, String> diagnosticos;
+  final Map<String, String> alergias;
+  final String tituloForma;
+  final List<String> formas;
+  final String tituloLargo;
+  final List<String> largos;
+  final String tituloTonos;
+  final String pistaTonos;
+  final String textoConsentimiento;
+  final String versionConsentimiento;
+}
+
+const fichaUnas = FichaSector(
+  titulo: 'Ficha de la uña',
+  tituloDiagnosticos: 'Diagnóstico de la uña',
+  diagnosticos: diagnosticosComunes,
+  alergias: alergiasComunes,
+  tituloForma: 'Forma preferida',
+  formas: formasUna,
+  tituloLargo: 'Largo preferido',
+  largos: largosUna,
+  tituloTonos: 'Tonos favoritos',
+  pistaTonos: 'Separados por comas: Nude rosado, Rojo cereza…',
+  textoConsentimiento: textoConsentimiento,
+  versionConsentimiento: versionConsentimiento,
+);
+
+const fichaBarberia = FichaSector(
+  titulo: 'Ficha del pelo',
+  tituloDiagnosticos: 'Pelo y piel',
+  diagnosticos: diagnosticosPelo,
+  alergias: alergiasPelo,
+  tituloForma: 'Corte habitual',
+  formas: cortesBarberia,
+  tituloLargo: 'Barba',
+  largos: barbasBarberia,
+  tituloTonos: 'Números de máquina',
+  pistaTonos: 'Separados por comas: 1 en los lados, 3 arriba…',
+  textoConsentimiento:
+      'Doy mi consentimiento para que mi barbero guarde en GlamGo información sobre mi pelo, mi piel y mis '
+      'alergias con el único fin de prestarme el servicio de forma segura. Puedo retirar este consentimiento '
+      'en cualquier momento y pedir que se borren mis datos.',
+  versionConsentimiento: 'v1-2026-11-barberia',
+);
+
 /// Nombre legible de un código de diagnóstico o alergia (o el texto tal cual si es libre).
-String etiquetaDiagnostico(String c) => diagnosticosComunes[c] ?? c;
-String etiquetaAlergia(String c) => alergiasComunes[c] ?? c;
+String etiquetaDiagnostico(String c) => diagnosticosComunes[c] ?? diagnosticosPelo[c] ?? c;
+String etiquetaAlergia(String c) => alergiasComunes[c] ?? alergiasPelo[c] ?? c;

@@ -10,6 +10,7 @@ import '../widgets/comunes.dart';
 import 'clientas_screen.dart';
 import 'ficha_form_screen.dart';
 import 'nueva_cita_screen.dart';
+import '../sectores.dart';
 
 final _diaCorto = DateFormat('d MMM', 'es');
 
@@ -87,10 +88,10 @@ class _ClientaDetalleScreenState extends State<ClientaDetalleScreen> {
               const Text('Consentimiento de datos de salud',
                   style: TextStyle(fontSize: 19, fontWeight: FontWeight.w700)),
               const SizedBox(height: 12),
-              const Text(
-                'Para guardar alergias y diagnósticos, la clienta debe aceptar este texto. '
+              Text(
+                'Para guardar alergias y diagnósticos, ${context.sector.laCliente} debe aceptar este texto. '
                 'Enséñale la pantalla o léeselo:',
-                style: TextStyle(color: NailsyColors.textoSecundario),
+                style: const TextStyle(color: NailsyColors.textoSecundario),
               ),
               const SizedBox(height: 12),
               Container(
@@ -100,12 +101,12 @@ class _ClientaDetalleScreenState extends State<ClientaDetalleScreen> {
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(color: NailsyColors.borde),
                 ),
-                child: Text('“$textoConsentimiento”', style: const TextStyle(height: 1.4)),
+                child: Text('“${context.sector.ficha.textoConsentimiento}”', style: const TextStyle(height: 1.4)),
               ),
               const SizedBox(height: 20),
               FilledButton(
                 onPressed: () => Navigator.pop(ctx, 'en_persona'),
-                child: const Text('La clienta acepta (en persona)'),
+                child: Text('${_mayus(context.sector.laCliente)} acepta (en persona)'),
               ),
               TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Ahora no')),
             ],
@@ -115,7 +116,7 @@ class _ClientaDetalleScreenState extends State<ClientaDetalleScreen> {
     );
     if (metodo == null || !mounted) return;
     try {
-      await widget.repo.registrarConsentimiento(_id, metodo);
+      await widget.repo.registrarConsentimiento(_id, metodo, version: context.sector.ficha.versionConsentimiento);
       await _cargar();
       if (mounted) await _editarFicha();
     } catch (e) {
@@ -196,9 +197,9 @@ class _ClientaDetalleScreenState extends State<ClientaDetalleScreen> {
                     children: [
                       BotonCuadrado(icono: Icons.chevron_left, tooltip: 'Volver', onTap: () => Navigator.pop(context)),
                       const SizedBox(width: 12),
-                      const Expanded(
-                          child: Text('Clientas',
-                              style: TextStyle(color: NailsyColors.textoSecundario, fontSize: 17, fontWeight: FontWeight.w600))),
+                      Expanded(
+                          child: Text(context.sector.clientes,
+                              style: const TextStyle(color: NailsyColors.textoSecundario, fontSize: 17, fontWeight: FontWeight.w600))),
                       IconButton(
                           tooltip: 'Editar datos', onPressed: _editarDatos, icon: const Icon(Icons.edit_outlined)),
                     ],
@@ -258,9 +259,9 @@ class _ClientaDetalleScreenState extends State<ClientaDetalleScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text(
-                'Para guardar alergias y diagnósticos hace falta el consentimiento de la clienta (RGPD).',
-                style: TextStyle(color: NailsyColors.textoSecundario),
+              Text(
+                'Para guardar alergias y diagnósticos hace falta el consentimiento de ${context.sector.laCliente} (RGPD).',
+                style: const TextStyle(color: NailsyColors.textoSecundario),
               ),
               const SizedBox(height: 12),
               FilledButton.icon(
@@ -303,7 +304,7 @@ class _ClientaDetalleScreenState extends State<ClientaDetalleScreen> {
       ],
       Row(
         children: [
-          const Expanded(child: TituloSeccion('Diagnóstico')),
+          Expanded(child: TituloSeccion(context.sector.ficha.tituloDiagnosticos)),
           TextButton.icon(
             onPressed: _editarFicha,
             icon: const Icon(Icons.edit_outlined, size: 16),
@@ -329,15 +330,15 @@ class _ClientaDetalleScreenState extends State<ClientaDetalleScreen> {
                 child: Text(etiquetaDiagnostico(d), style: const TextStyle(fontWeight: FontWeight.w600)),
               ),
             if (f.diagnosticos.isEmpty)
-              const Text('Sin diagnóstico', style: TextStyle(color: NailsyColors.textoSecundario)),
+              const Text('Sin datos', style: TextStyle(color: NailsyColors.textoSecundario)),
           ],
         ),
         const SizedBox(height: 14),
         Row(
           children: [
-            Expanded(child: _Dato('Forma deseada', f.formaDeseada ?? '—')),
+            Expanded(child: _Dato(context.sector.ficha.tituloForma, f.formaDeseada ?? '—')),
             const SizedBox(width: 10),
-            Expanded(child: _Dato('Tono favorito', f.tonosFavoritos.isEmpty ? '—' : f.tonosFavoritos.first)),
+            Expanded(child: _Dato(context.sector.ficha.tituloTonos, f.tonosFavoritos.isEmpty ? '—' : f.tonosFavoritos.first)),
           ],
         ),
         if ((f.observaciones ?? '').isNotEmpty) ...[
@@ -370,7 +371,7 @@ class _ClientaDetalleScreenState extends State<ClientaDetalleScreen> {
                     Text(
                       [
                         _diaCorto.format(ultima.inicio),
-                        if (f != null && f.tonosFavoritos.isNotEmpty) 'Tono ${f.tonosFavoritos.first}',
+                        if (f != null && f.tonosFavoritos.isNotEmpty) f.tonosFavoritos.first,
                       ].join(' · '),
                       style: const TextStyle(color: NailsyColors.textoSecundario),
                     ),
@@ -522,3 +523,6 @@ class _Pestanas extends StatelessWidget {
     );
   }
 }
+
+
+String _mayus(String t) => t.isEmpty ? t : t[0].toUpperCase() + t.substring(1);

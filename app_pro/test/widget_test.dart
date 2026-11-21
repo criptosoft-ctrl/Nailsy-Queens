@@ -43,6 +43,22 @@ void main() {
     expect(find.text('Hueco libre'), findsOneWidget); // dato del resumen
   });
 
+  testWidgets('GlamGo Pro de un barbero habla de clientes y usa la ficha del pelo', (tester) async {
+    _movil(tester);
+    final h = DateTime.now();
+    await tester.pumpWidget(
+        NailsyProApp(demo: true, sector: 'barberia', ahora: () => DateTime(h.year, h.month, h.day, 9, 45)));
+    await tester.pumpAndSettle();
+    expect(find.text('Clientes'), findsOneWidget);
+    expect(find.text('Clientas'), findsNothing);
+
+    await tester.tap(find.text('Marta Gómez'));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.text('Ficha del pelo'), 300, scrollable: find.byType(Scrollable).first);
+    expect(find.text('Ficha del pelo'), findsOneWidget);
+    expect(find.text('Corte'), findsOneWidget);
+  });
+
   testWidgets('Ficha de cita: alergia con consejo, empezar y finalizar cobrando', (tester) async {
     await _abrirPro(tester);
     await tester.tap(find.text('Lucía Pérez'));

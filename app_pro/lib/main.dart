@@ -9,6 +9,7 @@ import 'data/agenda_repo.dart';
 import 'screens/home_shell.dart';
 import 'screens/login_screen.dart';
 import 'screens/nueva_contrasena_screen.dart';
+import 'sectores.dart';
 import 'theme.dart';
 
 /// Se pasan al compilar:
@@ -27,13 +28,29 @@ Future<void> main() async {
   runApp(const NailsyProApp(demo: modoDemo));
 }
 
-class NailsyProApp extends StatelessWidget {
-  const NailsyProApp({super.key, required this.demo, this.ahora});
+class NailsyProApp extends StatefulWidget {
+  const NailsyProApp({super.key, required this.demo, this.ahora, this.sector = 'nails'});
 
   final bool demo;
 
   /// Reloj fijo para pruebas (en la app real, la hora del móvil).
   final DateTime Function()? ahora;
+
+  /// Sector inicial (en la app real se lee del perfil al entrar).
+  final String sector;
+
+  @override
+  State<NailsyProApp> createState() => _NailsyProAppState();
+}
+
+class _NailsyProAppState extends State<NailsyProApp> {
+  late final _sector = ValueNotifier<Sector>(sectorPorId(widget.sector));
+
+  @override
+  void dispose() {
+    _sector.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,14 +61,24 @@ class NailsyProApp extends StatelessWidget {
       locale: const Locale('es', 'ES'),
       supportedLocales: const [Locale('es', 'ES'), Locale('es', 'CO'), Locale('en')],
       localizationsDelegates: GlobalMaterialLocalizations.delegates,
-      home: demo ? HomeShell(repo: DemoAgendaRepo(), modoDemo: true, ahora: ahora) : const _PuertaSesion(),
+      // El color y el vocabulario dependen del sector de la profesional (uñas en rosa, barbería en azul…).
+      builder: (context, child) => ValueListenableBuilder<Sector>(
+        valueListenable: _sector,
+        builder: (context, sector, _) =>
+            Theme(data: sector.tema, child: SectorScope(sector: sector, child: child!)),
+      ),
+      home: widget.demo
+          ? HomeShell(repo: DemoAgendaRepo(), modoDemo: true, ahora: widget.ahora)
+          : _PuertaSesion(sector: _sector),
     );
   }
 }
 
 /// Muestra el login, la app o la pantalla de nueva contraseña según la sesión.
 class _PuertaSesion extends StatefulWidget {
-  const _PuertaSesion();
+  const _PuertaSesion({required this.sector});
+
+  final ValueNotifier<Sector> sector;
 
   @override
   State<_PuertaSesion> createState() => _PuertaSesionState();
@@ -71,7 +98,29 @@ class _PuertaSesionState extends State<_PuertaSesion> {
         if (estado.event == AuthChangeEvent.passwordRecovery) _recuperando = true;
         if (estado.event == AuthChangeEvent.signedOut) _recuperando = false;
       });
+      if (estado.event == AuthChangeEvent.signedIn) _cargarSector();
     });
+    // Después del primer dibujo: cambiar el sector repinta toda la app.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _cargarSector());
+  }
+
+  /// Lee el sector de la profesional (uñas, barbería…) para poner su color y vocabulario.
+  Future<void> _cargarSector() async {
+    final usuario = _auth.currentUser;
+    if (usuario == null) return;
+    final delAlta = usuario.userMetadata?['sector'] as String?;
+    if (delAlta != null) widget.sector.value = sectorPorId(delAlta);
+    try {
+      final fila = await Supabase.instance.client
+          .from('manicuristas')
+          .select('sector')
+          .eq('id', usuario.id)
+          .maybeSingle();
+      final id = fila?['sector'] as String?;
+      if (id != null && mounted) widget.sector.value = sectorPorId(id);
+    } catch (_) {
+      // Sin conexión: se queda el sector del alta o el de uñas.
+    }
   }
 
   @override

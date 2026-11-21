@@ -4,6 +4,7 @@ import '../data/agenda_repo.dart';
 import '../models/catalogo.dart';
 import '../theme.dart';
 import '../widgets/comunes.dart';
+import '../sectores.dart';
 
 /// Servicios base y añadidos de Nail Art con su precio y duración.
 class TarifarioScreen extends StatefulWidget {
@@ -118,7 +119,7 @@ class _TarifarioScreenState extends State<TarifarioScreen> {
                                 children: [
                                   Text(s.nombre, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
                                   const SizedBox(height: 2),
-                                  Text('${categorias[s.categoria] ?? s.categoria} · ${formatoDuracion(s.duracionMin)}',
+                                  Text('${etiquetaCategoria(s.categoria)} · ${formatoDuracion(s.duracionMin)}',
                                       style: const TextStyle(color: NailsyColors.textoSecundario)),
                                 ],
                               ),
@@ -128,7 +129,7 @@ class _TarifarioScreenState extends State<TarifarioScreen> {
                         ),
                       ),
                     ),
-                  TituloSeccion('Añadidos de Nail Art',
+                  TituloSeccion(context.sector.cobroPorUna ? 'Añadidos de Nail Art' : 'Extras',
                       trailing: TextButton.icon(
                           onPressed: () => _editarAnadido(),
                           icon: const Icon(Icons.add, size: 18),
@@ -190,7 +191,21 @@ class _FormServicioState extends State<_FormServicio> {
   late final _nombre = TextEditingController(text: widget.inicial?.nombre);
   late final _minutos = TextEditingController(text: widget.inicial?.duracionMin.toString());
   late final _precio = TextEditingController(text: _textoPrecio(widget.inicial?.precio));
-  late String _categoria = widget.inicial?.categoria ?? 'semipermanente';
+  String _categoria = 'otro';
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.inicial != null) _categoria = widget.inicial!.categoria;
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Un servicio nuevo empieza con la primera categoría del sector (Semipermanente, Degradado…).
+    final cats = context.sector.categorias;
+    if (widget.inicial == null && !cats.containsKey(_categoria)) _categoria = cats.keys.first;
+  }
 
   @override
   void dispose() {
@@ -225,14 +240,19 @@ class _FormServicioState extends State<_FormServicio> {
         TextFormField(
           controller: _nombre,
           textCapitalization: TextCapitalization.sentences,
-          decoration: const InputDecoration(labelText: 'Nombre (ej. Manicura rusa + gel)'),
+          decoration: InputDecoration(
+              labelText: context.sector.cobroPorUna ? 'Nombre (ej. Manicura rusa + gel)' : 'Nombre (ej. Corte degradado)'),
           validator: (v) => (v == null || v.trim().isEmpty) ? 'Escribe un nombre' : null,
         ),
         const SizedBox(height: 12),
         DropdownButtonFormField<String>(
           initialValue: _categoria,
           decoration: const InputDecoration(labelText: 'Tipo'),
-          items: [for (final e in categorias.entries) DropdownMenuItem(value: e.key, child: Text(e.value))],
+          items: [
+            for (final e in context.sector.categorias.entries) DropdownMenuItem(value: e.key, child: Text(e.value)),
+            if (!context.sector.categorias.containsKey(_categoria))
+              DropdownMenuItem(value: _categoria, child: Text(etiquetaCategoria(_categoria))),
+          ],
           onChanged: (v) => setState(() => _categoria = v ?? _categoria),
         ),
         const SizedBox(height: 12),
@@ -296,7 +316,8 @@ class _FormAnadidoState extends State<_FormAnadido> {
         TextFormField(
           controller: _nombre,
           textCapitalization: TextCapitalization.sentences,
-          decoration: const InputDecoration(labelText: 'Nombre (ej. Diseño a mano alzada)'),
+          decoration: InputDecoration(
+              labelText: context.sector.cobroPorUna ? 'Nombre (ej. Diseño a mano alzada)' : 'Nombre (ej. Diseño / líneas)'),
           validator: (v) => (v == null || v.trim().isEmpty) ? 'Escribe un nombre' : null,
         ),
         const SizedBox(height: 12),
@@ -307,6 +328,7 @@ class _FormAnadidoState extends State<_FormAnadido> {
             Expanded(child: _CampoPrecio(controller: _precio, label: 'Precio extra (€)')),
           ],
         ),
+        if (context.sector.cobroPorUna || _porUna)
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
           value: _porUna,

@@ -10,6 +10,7 @@ import '../theme.dart';
 import '../widgets/comunes.dart';
 import 'agenda_screen.dart' show pildoraEstado, textoEnCurso;
 import 'clienta_detalle_screen.dart';
+import '../sectores.dart';
 
 final _hora = DateFormat('HH:mm');
 final _diaCorto = DateFormat('d MMM', 'es');
@@ -166,7 +167,7 @@ class _FichaCitaScreenState extends State<FichaCitaScreen> {
       builder: (ctx) => AlertDialog(
         backgroundColor: NailsyColors.superficie,
         title: const Text('¿Mostrarla en tu portafolio?'),
-        content: const Text('Si la publicas, la verán las clientas en tu perfil. Si no, solo queda en la ficha de esta clienta.'),
+        content: Text('Si la publicas, se verá en tu perfil público. Si no, solo queda en la ficha de ${context.sector.laCliente}.'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Solo en la ficha')),
           FilledButton(
@@ -237,8 +238,8 @@ class _FichaCitaScreenState extends State<FichaCitaScreen> {
     final estado = enCurso
         ? Pildora(
             texto: textoEnCurso(c, ahora).replaceFirst('En curso · quedan ', ''),
-            color: NailsyColors.rosaSuave,
-            fondo: NailsyColors.rosa.withValues(alpha: 0.16),
+            color: context.acentoSuave,
+            fondo: context.acento.withValues(alpha: 0.16),
             icono: Icons.schedule)
         : pildoraEstado(c);
 
@@ -270,7 +271,7 @@ class _FichaCitaScreenState extends State<FichaCitaScreen> {
                           if (c.estado != EstadoCita.confirmada)
                             const PopupMenuItem(value: EstadoCita.confirmada, child: Text('Marcar como confirmada')),
                           if (c.estado != EstadoCita.noShow)
-                            const PopupMenuItem(value: EstadoCita.noShow, child: Text('La clienta no vino')),
+                            PopupMenuItem(value: EstadoCita.noShow, child: Text('${_mayus(context.sector.laCliente)} no vino')),
                           if (c.estado != EstadoCita.cancelada)
                             const PopupMenuItem(
                                 value: EstadoCita.cancelada,
@@ -372,7 +373,7 @@ class _FichaCitaScreenState extends State<FichaCitaScreen> {
 
                   // ---- Ficha de la uña ----
                   const SizedBox(height: 22),
-                  const Text('Ficha de la uña', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+                  Text(context.sector.ficha.titulo, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
                   const SizedBox(height: 10),
                   if (_ficha == null)
                     Tarjeta(
@@ -405,21 +406,21 @@ class _FichaCitaScreenState extends State<FichaCitaScreen> {
                             onTap: _ocupado ? null : _fotoDeHoy,
                             child: BordeDiscontinuo(
                               radio: 18,
-                              color: NailsyColors.rosa,
+                              color: context.acento,
                               child: Container(
                                 width: 92,
                                 height: 92,
                                 decoration: BoxDecoration(
-                                  color: NailsyColors.rosa.withValues(alpha: 0.06),
+                                  color: context.acento.withValues(alpha: 0.06),
                                   borderRadius: BorderRadius.circular(18),
                                 ),
-                                child: const Column(
+                                child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Icon(Icons.photo_camera_outlined, color: NailsyColors.rosa),
-                                    SizedBox(height: 4),
+                                    Icon(Icons.photo_camera_outlined, color: context.acento),
+                                    const SizedBox(height: 4),
                                     Text('Hoy',
-                                        style: TextStyle(color: NailsyColors.rosa, fontWeight: FontWeight.w700)),
+                                        style: TextStyle(color: context.acento, fontWeight: FontWeight.w700)),
                                   ],
                                 ),
                               ),
@@ -510,13 +511,22 @@ class _RejillaFicha extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final unas = context.sector.id == 'nails';
     final tipos = ficha.diagnosticos.where((d) => d != 'cuticula_seca').map(etiquetaDiagnostico).toList();
-    final datos = [
-      ('Tipo de uña', tipos.isEmpty ? '—' : tipos.join(', ')),
-      ('Forma', ficha.formaDeseada ?? '—'),
-      ('Tono favorito', ficha.tonosFavoritos.isEmpty ? '—' : ficha.tonosFavoritos.first),
-      ('Cutícula', ficha.diagnosticos.contains('cuticula_seca') ? 'Seca' : 'Normal'),
-    ];
+    final primerTono = ficha.tonosFavoritos.isEmpty ? '—' : ficha.tonosFavoritos.first;
+    final datos = unas
+        ? [
+            ('Tipo de uña', tipos.isEmpty ? '—' : tipos.join(', ')),
+            ('Forma', ficha.formaDeseada ?? '—'),
+            ('Tono favorito', primerTono),
+            ('Cutícula', ficha.diagnosticos.contains('cuticula_seca') ? 'Seca' : 'Normal'),
+          ]
+        : [
+            ('Pelo', tipos.isEmpty ? '—' : tipos.join(', ')),
+            ('Corte', ficha.formaDeseada ?? '—'),
+            ('Barba', ficha.largoDeseado ?? '—'),
+            ('Máquina', ficha.tonosFavoritos.isEmpty ? '—' : ficha.tonosFavoritos.join(' · ')),
+          ];
     return GridView.count(
       crossAxisCount: 2,
       shrinkWrap: true,
@@ -547,3 +557,6 @@ class _RejillaFicha extends StatelessWidget {
     );
   }
 }
+
+
+String _mayus(String t) => t.isEmpty ? t : t[0].toUpperCase() + t.substring(1);

@@ -5,6 +5,7 @@ import '../data/agenda_repo.dart';
 import '../models/cita.dart';
 import '../theme.dart';
 import '../widgets/comunes.dart';
+import '../sectores.dart';
 
 /// Cifras del mes calculadas a partir de las citas.
 class ResumenMes {
@@ -129,12 +130,12 @@ class _EstadisticasScreenState extends State<EstadisticasScreen> {
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(22),
-                  gradient: const LinearGradient(
+                  gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [Color(0xFF4A1E3A), NailsyColors.superficie],
+                    colors: [Color.alphaBlend(context.acento.withValues(alpha: 0.28), NailsyColors.superficie), NailsyColors.superficie],
                   ),
-                  border: Border.all(color: NailsyColors.rosa.withValues(alpha: 0.4)),
+                  border: Border.all(color: context.acento.withValues(alpha: 0.4)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -144,7 +145,7 @@ class _EstadisticasScreenState extends State<EstadisticasScreen> {
                     Text(precio(r.ingresos), style: const TextStyle(fontSize: 36, fontWeight: FontWeight.w800)),
                     if (r.previsto > 0)
                       Text('+ ${precio(r.previsto)} previstos en citas próximas',
-                          style: const TextStyle(color: NailsyColors.rosaSuave, fontSize: 13.5)),
+                          style: TextStyle(color: context.acentoSuave, fontSize: 13.5)),
                     const SizedBox(height: 18),
                     _Barras(valores: r.porSemana),
                   ],
@@ -162,8 +163,8 @@ class _EstadisticasScreenState extends State<EstadisticasScreen> {
                 childAspectRatio: 1.9,
                 children: [
                   _Cifra('Citas hechas', '${r.completadas.length}', Icons.check_circle_outline, NailsyColors.verde),
-                  _Cifra('Ticket medio', precio(r.ticketMedio.roundToDouble()), Icons.sell_outlined, NailsyColors.rosa),
-                  _Cifra('Clientas', '${r.clientas}', Icons.people_outline, NailsyColors.rosaSuave),
+                  _Cifra('Ticket medio', precio(r.ticketMedio.roundToDouble()), Icons.sell_outlined, context.acento),
+                  _Cifra(context.sector.clientes, '${r.clientas}', Icons.people_outline, context.acentoSuave),
                   _Cifra('Ausencias', '${r.noShows} · ${(r.tasaAusencias * 100).round()} %', Icons.person_off_outlined,
                       r.noShows == 0 ? NailsyColors.verde : NailsyColors.rojo),
                 ],
@@ -274,7 +275,7 @@ class _Barras extends StatelessWidget {
                     Container(
                       height: maximo == 0 ? 4 : 4 + 70 * (valores[i] / maximo),
                       decoration: BoxDecoration(
-                        color: valores[i] == maximo && maximo > 0 ? NailsyColors.rosa : NailsyColors.rosa.withValues(alpha: 0.35),
+                        color: valores[i] == maximo && maximo > 0 ? context.acento : context.acento.withValues(alpha: 0.35),
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),

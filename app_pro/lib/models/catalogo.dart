@@ -1,6 +1,7 @@
 /// Tarifario: servicios base y añadidos de Nail Art.
 library;
 
+/// Categorías de servicio de uñas.
 const categorias = <String, String>{
   'semipermanente': 'Semipermanente',
   'gel': 'Gel',
@@ -10,6 +11,20 @@ const categorias = <String, String>{
   'retirada': 'Retirada',
   'otro': 'Otro',
 };
+
+/// Categorías de servicio de barbería.
+const categoriasBarberia = <String, String>{
+  'degradado': 'Degradado',
+  'clasico': 'Corte clásico',
+  'barba': 'Barba',
+  'afeitado': 'Afeitado',
+  'disenos': 'Diseños',
+  'ninos': 'Niños',
+  'otro': 'Otro',
+};
+
+/// Nombre legible de cualquier categoría.
+String etiquetaCategoria(String c) => categorias[c] ?? categoriasBarberia[c] ?? c;
 
 double _num(Object? v) => v == null ? 0 : (v as num).toDouble();
 

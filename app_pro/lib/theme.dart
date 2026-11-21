@@ -173,3 +173,13 @@ ThemeData nailsyTheme({
 /// Tema general de GlamGo (portada, cuenta, acceso de profesionales).
 ThemeData temaGlamGo() =>
     nailsyTheme(acento: NailsyColors.oro, sobreAcento: NailsyColors.sobreOro, acentoSuave: NailsyColors.oroSuave);
+
+/// Colores del acento de la sección actual (rosa en uñas, azul en barbería…), leídos del tema.
+extension AcentoDeSeccion on BuildContext {
+  Color get acento => Theme.of(this).colorScheme.primary;
+  Color get sobreAcento => Theme.of(this).colorScheme.onPrimary;
+  Color get acentoSuave => Theme.of(this).colorScheme.secondary;
+
+  /// Fondo oscuro teñido del acento (p. ej. la cita en curso).
+  Color get acentoOscuro => Color.alphaBlend(acento.withValues(alpha: 0.16), NailsyColors.superficie);
+}

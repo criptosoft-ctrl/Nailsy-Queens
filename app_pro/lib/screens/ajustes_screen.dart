@@ -5,6 +5,7 @@ import '../theme.dart';
 import 'horario_screen.dart';
 import 'perfil_publico_screen.dart';
 import 'tarifario_screen.dart';
+import '../sectores.dart';
 
 /// "Mi cuenta": perfil público, horario, tarifario y sesión.
 class AjustesScreen extends StatelessWidget {
@@ -30,8 +31,8 @@ class AjustesScreen extends StatelessWidget {
                 width: 44,
                 height: 44,
                 decoration:
-                    BoxDecoration(color: NailsyColors.rosaOscuro, borderRadius: BorderRadius.circular(14)),
-                child: Icon(icono, color: NailsyColors.rosa),
+                    BoxDecoration(color: context.acentoOscuro, borderRadius: BorderRadius.circular(14)),
+                child: Icon(icono, color: context.acento),
               ),
               title: Text(titulo, style: const TextStyle(fontWeight: FontWeight.w700)),
               subtitle: Text(sub, style: const TextStyle(color: NailsyColors.textoSecundario)),
@@ -46,17 +47,17 @@ class AjustesScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
         children: [
-          opcion(Icons.storefront_outlined, 'Mi perfil público', 'Lo que ven las clientas en el buscador',
+          opcion(Icons.storefront_outlined, 'Mi perfil público', 'Lo que ven ${context.sector.lasClientes} en el buscador',
               () => PerfilPublicoScreen(repo: repo)),
-          opcion(Icons.schedule_outlined, 'Horario de trabajo', 'Los huecos que pueden reservar las clientas',
+          opcion(Icons.schedule_outlined, 'Horario de trabajo', 'Los huecos que pueden reservar ${context.sector.lasClientes}',
               () => HorarioScreen(repo: repo)),
-          opcion(Icons.sell_outlined, 'Tarifario', 'Servicios, precios, duraciones y Nail Art',
+          opcion(Icons.sell_outlined, 'Tarifario', context.sector.cobroPorUna ? 'Servicios, precios, duraciones y Nail Art' : 'Servicios, precios, duraciones y extras',
               () => TarifarioScreen(repo: repo)),
           const SizedBox(height: 12),
           const ListTile(
             leading: Icon(Icons.info_outline, color: NailsyColors.textoSecundario),
             title: Text('GlamGo Pro'),
-            subtitle: Text('Versión 0.5.1'),
+            subtitle: Text('Versión 0.6'),
           ),
           if (!modoDemo)
             ListTile(

@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 
 import '../models/catalogo.dart';
 import '../models/publico.dart';
+import '../sectores.dart';
 import '../theme.dart';
 import '../widgets/comunes.dart';
 import 'acceso_clienta.dart';
@@ -187,7 +188,7 @@ class _ReservarScreenState extends State<ReservarScreen> {
                           onPressed: (_cantidades[a.id] ?? 0) < 10
                               ? () => _cambiarCantidad(a, (_cantidades[a.id] ?? 0) + 1)
                               : null,
-                          icon: const Icon(Icons.add_circle_outline, color: NailsyColors.rosa),
+                          icon: Icon(Icons.add_circle_outline, color: context.acento),
                         ),
                       ],
                     ],
@@ -216,17 +217,17 @@ class _ReservarScreenState extends State<ReservarScreen> {
                   child: Container(
                     width: 58,
                     decoration: BoxDecoration(
-                      color: sel ? NailsyColors.rosa : NailsyColors.superficie,
+                      color: sel ? context.acento : NailsyColors.superficie,
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(DateFormat('EEE', 'es').format(d).toUpperCase().replaceAll('.', ''),
-                            style: TextStyle(fontSize: 12, color: sel ? NailsyColors.sobreRosa : NailsyColors.textoSecundario)),
-                        Text('${d.day}', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: sel ? NailsyColors.sobreRosa : null)),
+                            style: TextStyle(fontSize: 12, color: sel ? context.sobreAcento : NailsyColors.textoSecundario)),
+                        Text('${d.day}', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: sel ? context.sobreAcento : null)),
                         Text(DateFormat('MMM', 'es').format(d).replaceAll('.', ''),
-                            style: TextStyle(fontSize: 11, color: sel ? NailsyColors.sobreRosa : NailsyColors.textoSecundario)),
+                            style: TextStyle(fontSize: 11, color: sel ? context.sobreAcento : NailsyColors.textoSecundario)),
                       ],
                     ),
                   ),
@@ -265,7 +266,7 @@ class _ReservarScreenState extends State<ReservarScreen> {
               ],
             ),
 
-          const TituloSeccion('Nota para la manicurista'),
+          TituloSeccion('Nota para ${context.sector.elProfesional}'),
           TextField(
             controller: _notas,
             maxLines: 2,

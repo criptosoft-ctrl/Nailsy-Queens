@@ -5,6 +5,7 @@ import '../data/agenda_repo.dart';
 import '../models/publico.dart';
 import '../theme.dart';
 import '../widgets/comunes.dart';
+import '../sectores.dart';
 
 /// Galería de trabajos: lo primero que ven las clientas en el buscador.
 class PortafolioScreen extends StatefulWidget {
@@ -100,7 +101,7 @@ class _PortafolioScreenState extends State<PortafolioScreen> {
           children: [
             ListTile(
               leading: Icon(f.publica ? Icons.visibility_off_outlined : Icons.visibility_outlined),
-              title: Text(f.publica ? 'Ocultar a las clientas' : 'Mostrar a las clientas'),
+              title: Text(f.publica ? 'Ocultar en tu perfil público' : 'Mostrar en tu perfil público'),
               onTap: () => Navigator.pop(ctx, 'visibilidad'),
             ),
             ListTile(
@@ -134,7 +135,7 @@ class _PortafolioScreenState extends State<PortafolioScreen> {
         tooltip: 'Añadir fotos',
         onPressed: _subiendo > 0 ? null : _elegirOrigen,
         child: _subiendo > 0
-            ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.5, color: NailsyColors.sobreRosa))
+            ? SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.5, color: context.sobreAcento))
             : const Icon(Icons.add_a_photo_outlined),
       ),
       body: _cargando
@@ -145,7 +146,7 @@ class _PortafolioScreenState extends State<PortafolioScreen> {
                   ? ListView(children: [
                       EstadoVacio(
                         icono: Icons.photo_library_outlined,
-                        texto: 'Sube fotos de tus mejores trabajos.\nEs lo primero que verán las clientas.',
+                        texto: 'Sube fotos de tus mejores trabajos.\nEs lo primero que verán ${context.sector.lasClientes}.',
                         accion: FilledButton.icon(
                           onPressed: _elegirOrigen,
                           icon: const Icon(Icons.add_a_photo_outlined),

@@ -274,7 +274,7 @@ class _TiraSemana extends StatelessWidget {
                     margin: const EdgeInsets.symmetric(horizontal: 3),
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     decoration: BoxDecoration(
-                      color: sel ? NailsyColors.rosa : Colors.transparent,
+                      color: sel ? context.acento : Colors.transparent,
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Column(
@@ -283,13 +283,13 @@ class _TiraSemana extends StatelessWidget {
                             style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,
-                                color: sel ? NailsyColors.sobreRosa : NailsyColors.textoSecundario)),
+                                color: sel ? context.sobreAcento : NailsyColors.textoSecundario)),
                         const SizedBox(height: 4),
                         Text('${d.day}',
                             style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.w700,
-                                color: sel ? NailsyColors.sobreRosa : (esHoy ? NailsyColors.rosa : NailsyColors.texto))),
+                                color: sel ? context.sobreAcento : (esHoy ? context.acento : NailsyColors.texto))),
                       ],
                     ),
                   ),
@@ -401,10 +401,10 @@ class _FilaCita extends StatelessWidget {
           child: Opacity(
             opacity: apagada ? 0.55 : 1,
             child: Material(
-              color: enCurso ? NailsyColors.rosaOscuro : NailsyColors.superficie,
+              color: enCurso ? context.acentoOscuro : NailsyColors.superficie,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
-                side: BorderSide(color: enCurso ? NailsyColors.rosa : NailsyColors.borde, width: enCurso ? 1.5 : 1),
+                side: BorderSide(color: enCurso ? context.acento : NailsyColors.borde, width: enCurso ? 1.5 : 1),
               ),
               clipBehavior: Clip.antiAlias,
               child: InkWell(
@@ -440,8 +440,8 @@ class _FilaCita extends StatelessWidget {
                             if (enCurso)
                               Pildora(
                                   texto: textoEnCurso(cita, ahora),
-                                  color: NailsyColors.rosaSuave,
-                                  fondo: NailsyColors.rosa.withValues(alpha: 0.16)),
+                                  color: context.acentoSuave,
+                                  fondo: context.acento.withValues(alpha: 0.16)),
                             if (estado != null) estado,
                             if (cita.alergias.isNotEmpty)
                               Pildora(

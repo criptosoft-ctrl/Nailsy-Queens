@@ -72,7 +72,7 @@ abstract class AgendaRepo {
   Future<List<Clienta>> clientas();
   Future<Clienta> guardarClienta(Clienta c);
   Future<bool> tieneConsentimiento(String clientaId);
-  Future<void> registrarConsentimiento(String clientaId, String metodo);
+  Future<void> registrarConsentimiento(String clientaId, String metodo, {String version = versionConsentimiento});
   Future<FichaUna?> ficha(String clientaId);
   Future<void> guardarFicha(FichaUna f);
 
@@ -333,11 +333,12 @@ class SupabaseAgendaRepo implements AgendaRepo {
   }
 
   @override
-  Future<void> registrarConsentimiento(String clientaId, String metodo) async {
+  Future<void> registrarConsentimiento(String clientaId, String metodo,
+      {String version = versionConsentimiento}) async {
     await _db.from('consentimientos').insert({
       'clienta_id': clientaId,
       'tipo': 'datos_salud',
-      'version_texto': versionConsentimiento,
+      'version_texto': version,
       'metodo': metodo,
     });
   }
@@ -664,7 +665,8 @@ class DemoAgendaRepo implements AgendaRepo {
   Future<bool> tieneConsentimiento(String clientaId) async => _consentimientos.contains(clientaId);
 
   @override
-  Future<void> registrarConsentimiento(String clientaId, String metodo) async => _consentimientos.add(clientaId);
+  Future<void> registrarConsentimiento(String clientaId, String metodo, {String version = versionConsentimiento}) async =>
+      _consentimientos.add(clientaId);
 
   @override
   Future<FichaUna?> ficha(String clientaId) async => _fichas[clientaId];

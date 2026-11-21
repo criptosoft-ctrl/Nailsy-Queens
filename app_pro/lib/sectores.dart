@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import 'models/catalogo.dart';
+import 'models/clienta.dart';
+import 'models/publico.dart';
 import 'theme.dart';
 
 /// Marca general de la plataforma.
@@ -15,10 +18,20 @@ class Sector {
     required this.descripcion,
     required this.icono,
     required this.profesional,
+    required this.elProfesional,
     required this.activo,
     required this.color,
     required this.sobreColor,
     required this.colorSuave,
+    required this.clientes,
+    required this.cliente,
+    required this.laCliente,
+    required this.lasClientes,
+    required this.nuevoCliente,
+    required this.estilos,
+    required this.categorias,
+    required this.ficha,
+    this.cobroPorUna = false,
   });
 
   final String id;
@@ -34,6 +47,9 @@ class Sector {
   /// Cómo se llama a la profesional ("manicurista", "barbero"…).
   final String profesional;
 
+  /// Con artículo: "la manicurista", "el barbero"…
+  final String elProfesional;
+
   /// Si ya se puede reservar en esta sección.
   final bool activo;
 
@@ -41,6 +57,25 @@ class Sector {
   final Color color;
   final Color sobreColor;
   final Color colorSuave;
+
+  /// Vocabulario: "Clientas"/"Clientes", "clienta"/"cliente", "la clienta"/"el cliente"…
+  final String clientes;
+  final String cliente;
+  final String laCliente;
+  final String lasClientes;
+  final String nuevoCliente;
+
+  /// Estilos para filtrar en el buscador y marcar como especialidad.
+  final Map<String, String> estilos;
+
+  /// Categorías de servicio del tarifario.
+  final Map<String, String> categorias;
+
+  /// Qué guarda la ficha técnica del cliente.
+  final FichaSector ficha;
+
+  /// Si los añadidos se pueden cobrar por uña.
+  final bool cobroPorUna;
 
   ThemeData get tema => nailsyTheme(acento: color, sobreAcento: sobreColor, acentoSuave: colorSuave);
 }
@@ -53,10 +88,20 @@ const sectores = [
     descripcion: 'Manicura, gel, acrílico y nail art',
     icono: Icons.back_hand_outlined,
     profesional: 'manicurista',
+    elProfesional: 'la manicurista',
     activo: true,
     color: NailsyColors.rosa,
     sobreColor: NailsyColors.sobreRosa,
     colorSuave: NailsyColors.rosaSuave,
+    clientes: 'Clientas',
+    cliente: 'clienta',
+    laCliente: 'la clienta',
+    lasClientes: 'las clientas',
+    nuevoCliente: 'Nueva clienta',
+    estilos: estilosBuscables,
+    categorias: categorias,
+    ficha: fichaUnas,
+    cobroPorUna: true,
   ),
   Sector(
     id: 'barberia',
@@ -65,10 +110,19 @@ const sectores = [
     descripcion: 'Cortes, degradados y barba',
     icono: Icons.content_cut,
     profesional: 'barbero',
-    activo: false,
+    elProfesional: 'el barbero',
+    activo: true,
     color: NailsyColors.azulBarberia,
     sobreColor: NailsyColors.sobreAzulBarberia,
     colorSuave: Color(0xFFA9C4F7),
+    clientes: 'Clientes',
+    cliente: 'cliente',
+    laCliente: 'el cliente',
+    lasClientes: 'los clientes',
+    nuevoCliente: 'Nuevo cliente',
+    estilos: estilosBarberia,
+    categorias: categoriasBarberia,
+    ficha: fichaBarberia,
   ),
   Sector(
     id: 'peluqueria',
@@ -77,10 +131,19 @@ const sectores = [
     descripcion: 'Corte, color y peinados',
     icono: Icons.face_retouching_natural,
     profesional: 'peluquera',
+    elProfesional: 'la peluquera',
     activo: false,
     color: NailsyColors.violetaPeluqueria,
     sobreColor: NailsyColors.sobreVioletaPeluqueria,
     colorSuave: Color(0xFFD0BDF9),
+    clientes: 'Clientas',
+    cliente: 'clienta',
+    laCliente: 'la clienta',
+    lasClientes: 'las clientas',
+    nuevoCliente: 'Nueva clienta',
+    estilos: {},
+    categorias: {'otro': 'Otro'},
+    ficha: fichaBarberia,
   ),
   Sector(
     id: 'estetica',
@@ -89,11 +152,37 @@ const sectores = [
     descripcion: 'Cejas, pestañas, depilación y faciales',
     icono: Icons.spa_outlined,
     profesional: 'esteticista',
+    elProfesional: 'la esteticista',
     activo: false,
     color: NailsyColors.salviaEstetica,
     sobreColor: NailsyColors.sobreSalviaEstetica,
     colorSuave: Color(0xFFA8E3CF),
+    clientes: 'Clientas',
+    cliente: 'clienta',
+    laCliente: 'la clienta',
+    lasClientes: 'las clientas',
+    nuevoCliente: 'Nueva clienta',
+    estilos: {},
+    categorias: {'otro': 'Otro'},
+    ficha: fichaUnas,
   ),
 ];
 
 Sector sectorPorId(String? id) => sectores.firstWhere((s) => s.id == id, orElse: () => sectores.first);
+
+/// Sector de la profesional que usa GlamGo Pro (o de la sección abierta en la app de clientes).
+class SectorScope extends InheritedWidget {
+  const SectorScope({super.key, required this.sector, required super.child});
+
+  final Sector sector;
+
+  static Sector of(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<SectorScope>()?.sector ?? sectores.first;
+
+  @override
+  bool updateShouldNotify(SectorScope oldWidget) => oldWidget.sector.id != sector.id;
+}
+
+extension SectorDelContexto on BuildContext {
+  Sector get sector => SectorScope.of(this);
+}

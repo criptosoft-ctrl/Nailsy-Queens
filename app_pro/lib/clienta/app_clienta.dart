@@ -77,7 +77,9 @@ class _ClientaShellState extends State<ClientaShell> {
       builder: (_) => Theme(
         // Cada sección lleva su color (rosa en uñas, azul en barbería…) en todas sus pantallas.
         data: sector.tema,
-        child: NavigatorPopHandler(
+        child: SectorScope(
+          sector: sector,
+          child: NavigatorPopHandler(
           onPopWithResult: (_) => interno.currentState?.maybePop(),
           child: Navigator(
             key: interno,
@@ -94,6 +96,7 @@ class _ClientaShellState extends State<ClientaShell> {
               ),
             ),
           ),
+        ),
         ),
       ),
     ));

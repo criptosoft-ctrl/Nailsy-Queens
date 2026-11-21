@@ -39,7 +39,7 @@ class _CuentaScreenState extends State<CuentaScreen> {
                 child: Icon(Icons.person, color: NailsyColors.oro),
               ),
               title: Text(repo.nombreUsuaria ?? '', style: const TextStyle(fontWeight: FontWeight.w700)),
-              subtitle: const Text('Cuenta de clienta'),
+              subtitle: const Text('Cuenta de GlamGo'),
             ),
             const Divider(),
             ListTile(
@@ -66,7 +66,7 @@ class _CuentaScreenState extends State<CuentaScreen> {
                     textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
                 const SizedBox(height: 4),
                 const Text(
-                  'Gestiona tu agenda, tus clientas y aparece en el buscador con GlamGo Pro.',
+                  'Gestiona tu agenda, tus clientes y aparece en el buscador con GlamGo Pro.',
                   textAlign: TextAlign.center,
                   style: TextStyle(color: NailsyColors.textoSecundario, fontSize: 13),
                 ),

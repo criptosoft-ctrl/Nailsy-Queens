@@ -6,6 +6,7 @@ import '../models/publico.dart';
 import '../theme.dart';
 import '../ubicacion.dart';
 import '../widgets/comunes.dart';
+import '../sectores.dart';
 
 /// Lo que ven las clientas en el buscador.
 class PerfilPublicoScreen extends StatefulWidget {
@@ -147,7 +148,7 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
     try {
       final u = await ubicacionActual();
       _perfil = _construir().copyWith(lat: u.lat, lng: u.lng);
-      if (mounted) aviso(context, 'Ubicación guardada. Las clientas cercanas te verán primero.');
+      if (mounted) aviso(context, 'Ubicación guardada. ${_mayus(context.sector.lasClientes)} cercanos te verán primero.'.replaceFirst('clientas cercanos', 'clientas cercanas'));
     } catch (e) {
       if (mounted) aviso(context, e is ErrorNailsy ? e.mensaje : 'No se pudo obtener la ubicación.');
     } finally {
@@ -178,13 +179,13 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
                     value: _publico,
                     onChanged: (v) => setState(() => _publico = v),
                     title: const Text('Aparecer en el buscador', style: TextStyle(fontWeight: FontWeight.w700)),
-                    subtitle: const Text('Las clientas podrán encontrarte y reservar en tus huecos libres'),
+                    subtitle: Text('${_mayus(context.sector.lasClientes)} podrán encontrarte y reservar en tus huecos libres'),
                   ),
                   if (_pendientes.isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.only(top: 4),
                       child: Text(
-                        'Para que las clientas puedan reservar, completa: ${_pendientes.join(', ')}.',
+                        'Para que ${context.sector.lasClientes} puedan reservar, completa: ${_pendientes.join(', ')}.',
                         style: const TextStyle(color: NailsyColors.ambar, fontSize: 13),
                       ),
                     ),
@@ -243,7 +244,7 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
             TextFormField(
               controller: _telefono,
               keyboardType: TextInputType.phone,
-              decoration: const InputDecoration(labelText: 'Teléfono (no se muestra a las clientas)'),
+              decoration: InputDecoration(labelText: 'Teléfono (no se muestra a ${context.sector.lasClientes})'),
             ),
             // ---- Especialidades ----
             const TituloSeccion('Especialidades'),
@@ -251,7 +252,7 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
               spacing: 8,
               runSpacing: 8,
               children: [
-                for (final e in estilosBuscables.entries)
+                for (final e in context.sector.estilos.entries)
                   FilterChip(
                     label: Text(e.value),
                     selected: _especialidades.contains(e.key),
@@ -282,9 +283,9 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
               label: Text(tieneUbicacion ? 'Ubicación guardada · actualizar' : 'Usar mi ubicación actual (desde el local)'),
             ),
             const SizedBox(height: 4),
-            const Text(
-              'Sirve para que te encuentren las clientas que buscan "cerca de mí". Hazlo estando en tu local.',
-              style: TextStyle(color: NailsyColors.textoSecundario, fontSize: 12),
+            Text(
+              'Sirve para que te encuentren ${context.sector.lasClientes} que buscan "cerca de mí". Hazlo estando en tu local.',
+              style: const TextStyle(color: NailsyColors.textoSecundario, fontSize: 12),
             ),
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
@@ -310,3 +311,6 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
     );
   }
 }
+
+
+String _mayus(String t) => t.isEmpty ? t : t[0].toUpperCase() + t.substring(1);

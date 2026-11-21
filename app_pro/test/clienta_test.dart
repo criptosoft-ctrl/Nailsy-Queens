@@ -37,11 +37,11 @@ void main() {
     expect(find.text('Nailsy Queens'), findsOneWidget);
     expect(find.text('Barbershop'), findsOneWidget);
     expect(find.text('Peluquería'), findsOneWidget);
-    expect(find.text('Próximamente'), findsNWidgets(3));
+    expect(find.text('Próximamente'), findsNWidgets(2));
 
-    await tester.tap(find.text('Barbershop'));
+    await tester.tap(find.text('Peluquería'));
     await tester.pump();
-    expect(find.text('Barbershop llega muy pronto a GlamGo.'), findsOneWidget);
+    expect(find.text('Peluquería llega muy pronto a GlamGo.'), findsOneWidget);
     await tester.pumpAndSettle(const Duration(seconds: 5));
 
     await _abrirNails(tester);
@@ -49,6 +49,23 @@ void main() {
     await tester.tap(find.byTooltip('Volver a GlamGo'));
     await tester.pumpAndSettle();
     expect(find.text('Barbershop'), findsOneWidget);
+  });
+
+  testWidgets('Barbershop muestra solo barberos, con sus filtros y vocabulario', (tester) async {
+    _movil(tester);
+    await tester.pumpWidget(ClientaApp(repo: DemoClientaRepo()));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Barbershop'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Leo Barber'), findsOneWidget);
+    expect(find.text('Eudy Nails'), findsNothing);
+    expect(find.text('Degradado'), findsWidgets);
+    expect(find.text('Gel'), findsNothing);
+
+    await tester.tap(find.text('Leo Barber'));
+    await tester.pumpAndSettle();
+    expect(find.text('Corte degradado'), findsOneWidget);
   });
 
   testWidgets('El buscador muestra manicuristas y filtra por estilo', (tester) async {

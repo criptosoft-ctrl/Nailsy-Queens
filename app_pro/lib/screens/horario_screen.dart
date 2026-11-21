@@ -4,6 +4,7 @@ import '../data/agenda_repo.dart';
 import '../models/publico.dart';
 import '../theme.dart';
 import '../widgets/comunes.dart';
+import '../sectores.dart';
 
 /// Horario de trabajo semanal: de aquí salen los huecos que pueden reservar las clientas.
 class HorarioScreen extends StatefulWidget {
@@ -138,17 +139,17 @@ class _HorarioScreenState extends State<HorarioScreen> {
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: NailsyColors.ambar),
                     ),
-                    child: const Text(
+                    child: Text(
                       'Aún no has guardado tu horario. Este es un horario de ejemplo: ajústalo y pulsa "Guardar horario" '
-                      'para que las clientas puedan reservar.',
-                      style: TextStyle(color: NailsyColors.ambar, fontWeight: FontWeight.w600),
+                      'para que ${context.sector.lasClientes} puedan reservar.',
+                      style: const TextStyle(color: NailsyColors.ambar, fontWeight: FontWeight.w600),
                     ),
                   ),
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 8),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
                   child: Text(
-                    'Las clientas solo pueden reservar dentro de este horario y en los huecos que no tengas ocupados.',
-                    style: TextStyle(color: NailsyColors.textoSecundario),
+                    'Solo se puede reservar dentro de este horario y en los huecos que no tengas ocupados.',
+                    style: const TextStyle(color: NailsyColors.textoSecundario),
                   ),
                 ),
                 for (var i = 0; i < 7; i++)

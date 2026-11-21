@@ -98,9 +98,9 @@ class _PerfilManicuristaScreenState extends State<PerfilManicuristaScreen> {
                     onTap: urlPerfil == null ? null : () => _verImagen([p.foto!], 0),
                     child: Container(
                       padding: const EdgeInsets.all(3),
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        gradient: LinearGradient(colors: [NailsyColors.rosa, NailsyColors.rosaSuave]),
+                        gradient: LinearGradient(colors: [context.acento, context.acentoSuave]),
                       ),
                       child: ClipOval(
                         child: SizedBox(
@@ -120,7 +120,7 @@ class _PerfilManicuristaScreenState extends State<PerfilManicuristaScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.place_outlined, size: 16, color: NailsyColors.rosaSuave),
+                      Icon(Icons.place_outlined, size: 16, color: context.acentoSuave),
                       const SizedBox(width: 4),
                       Flexible(
                         child: Text([p.direccion, p.ciudad].whereType<String>().join(', '),
@@ -132,7 +132,7 @@ class _PerfilManicuristaScreenState extends State<PerfilManicuristaScreen> {
                 if (p.instagram != null) ...[
                   const SizedBox(height: 2),
                   Text('@${p.instagram}',
-                      textAlign: TextAlign.center, style: const TextStyle(color: NailsyColors.rosaSuave)),
+                      textAlign: TextAlign.center, style: TextStyle(color: context.acentoSuave)),
                 ],
                 if (p.especialidades.isNotEmpty) ...[
                   const SizedBox(height: 10),
@@ -145,11 +145,11 @@ class _PerfilManicuristaScreenState extends State<PerfilManicuristaScreen> {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                           decoration: BoxDecoration(
-                            color: NailsyColors.rosa.withValues(alpha: 0.15),
+                            color: context.acento.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Text(estilosBuscables[e] ?? e,
-                              style: const TextStyle(color: NailsyColors.rosaSuave, fontSize: 12)),
+                          child: Text(etiquetaEstilo(e),
+                              style: TextStyle(color: context.acentoSuave, fontSize: 12)),
                         ),
                     ],
                   ),

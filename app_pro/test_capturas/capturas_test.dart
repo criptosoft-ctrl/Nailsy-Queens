@@ -8,6 +8,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:nailsy_pro/clienta/app_clienta.dart';
+import 'package:nailsy_pro/main.dart';
 import 'package:nailsy_pro/clienta/clienta_repo.dart';
 import 'package:nailsy_pro/clienta/reservar_screen.dart';
 import 'package:nailsy_pro/data/agenda_repo.dart';
@@ -136,6 +137,28 @@ void main() {
     await tester.tap(find.text('Perfil').last);
     await tester.pumpAndSettle();
     await _foto('c06_cuenta');
+
+    // Barbershop
+    await tester.pumpWidget(ClientaApp(repo: DemoClientaRepo(), key: UniqueKey()));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Barbershop'));
+    await tester.pumpAndSettle();
+    await _foto('c07_barbershop');
+    await tester.tap(find.text('Leo Barber'));
+    await tester.pumpAndSettle();
+    await _foto('c08_perfil_barbero');
+  });
+
+  testWidgets('Capturas · GlamGo Pro de un barbero', (tester) async {
+    _movil(tester);
+    final h = DateTime.now();
+    await tester.pumpWidget(
+        NailsyProApp(demo: true, sector: 'barberia', ahora: () => DateTime(h.year, h.month, h.day, 9, 45)));
+    await tester.pumpAndSettle();
+    await _foto('b01_agenda_barbero');
+    await tester.tap(find.text('Marta Gómez'));
+    await tester.pumpAndSettle();
+    await _foto('b02_ficha_cita_barbero');
   });
 
   testWidgets('Capturas · Nailsy Pro', (tester) async {

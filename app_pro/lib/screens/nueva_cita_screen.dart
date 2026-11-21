@@ -7,6 +7,7 @@ import '../models/clienta.dart';
 import '../theme.dart';
 import '../widgets/comunes.dart';
 import 'clientas_screen.dart';
+import '../sectores.dart';
 
 /// Crear una cita: clienta → servicio → añadidos → día y hora.
 /// La duración y el precio se calculan solos (el precio se puede retocar).
@@ -119,7 +120,7 @@ class _NuevaCitaScreenState extends State<NuevaCitaScreen> {
 
   Future<void> _guardar() async {
     final faltan = [
-      if (_clienta == null) 'la clienta',
+      if (_clienta == null) context.sector.laCliente,
       if (_servicio == null) 'el servicio',
       if (_hora == null) 'la hora',
     ];
@@ -167,15 +168,15 @@ class _NuevaCitaScreenState extends State<NuevaCitaScreen> {
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 140),
               children: [
                 // ---- Clienta ----
-                const TituloSeccion('Clienta'),
+                TituloSeccion(context.sector.cliente),
                 Tarjeta(
                   onTap: _elegirClienta,
                   child: Row(
                     children: [
-                      const Icon(Icons.person_outline, color: NailsyColors.rosaSuave),
+                      Icon(Icons.person_outline, color: context.acentoSuave),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: Text(_clienta?.nombre ?? 'Elegir clienta',
+                        child: Text(_clienta?.nombre ?? 'Elegir ${context.sector.cliente}',
                             style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
@@ -238,7 +239,7 @@ class _NuevaCitaScreenState extends State<NuevaCitaScreen> {
                         onTap: _elegirFecha,
                         child: Row(
                           children: [
-                            const Icon(Icons.event_outlined, color: NailsyColors.rosaSuave),
+                            Icon(Icons.event_outlined, color: context.acentoSuave),
                             const SizedBox(width: 10),
                             Expanded(
                               child: Text(DateFormat('EEE d MMM', 'es').format(_fecha),
@@ -254,7 +255,7 @@ class _NuevaCitaScreenState extends State<NuevaCitaScreen> {
                         onTap: _elegirHora,
                         child: Row(
                           children: [
-                            const Icon(Icons.schedule, color: NailsyColors.rosaSuave),
+                            Icon(Icons.schedule, color: context.acentoSuave),
                             const SizedBox(width: 10),
                             Text(
                               _hora == null
@@ -356,10 +357,10 @@ class _Opcion extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: seleccionada ? NailsyColors.rosa.withValues(alpha: 0.15) : NailsyColors.superficie,
+      color: seleccionada ? context.acento.withValues(alpha: 0.15) : NailsyColors.superficie,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
-        side: BorderSide(color: seleccionada ? NailsyColors.rosa : Colors.transparent, width: 1.5),
+        side: BorderSide(color: seleccionada ? context.acento : Colors.transparent, width: 1.5),
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -369,7 +370,7 @@ class _Opcion extends StatelessWidget {
           child: Row(
             children: [
               Icon(seleccionada ? Icons.radio_button_checked : Icons.radio_button_off,
-                  color: seleccionada ? NailsyColors.rosa : NailsyColors.gris),
+                  color: seleccionada ? context.acento : NailsyColors.gris),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -433,7 +434,7 @@ class _FilaAnadido extends StatelessWidget {
                 IconButton(
                   tooltip: 'Más uñas',
                   onPressed: cantidad < 20 ? () => onCambio(cantidad + 1) : null,
-                  icon: const Icon(Icons.add_circle_outline, color: NailsyColors.rosa),
+                  icon: Icon(Icons.add_circle_outline, color: context.acento),
                 ),
               ],
             ),
@@ -466,13 +467,13 @@ class _SelectorClientaState extends State<_SelectorClienta> {
           children: [
             TextField(
               autofocus: true,
-              decoration: const InputDecoration(hintText: 'Buscar clienta', prefixIcon: Icon(Icons.search)),
+              decoration: InputDecoration(hintText: 'Buscar ${context.sector.cliente}', prefixIcon: const Icon(Icons.search)),
               onChanged: (v) => setState(() => _q = v),
             ),
             const SizedBox(height: 8),
             ListTile(
-              leading: const Icon(Icons.person_add_alt_1, color: NailsyColors.rosa),
-              title: const Text('Nueva clienta', style: TextStyle(color: NailsyColors.rosa, fontWeight: FontWeight.w700)),
+              leading: Icon(Icons.person_add_alt_1, color: context.acento),
+              title: Text(context.sector.nuevoCliente, style: TextStyle(color: context.acento, fontWeight: FontWeight.w700)),
               onTap: () => Navigator.pop(context, const Clienta(nombre: '')),
             ),
             const Divider(height: 1),

@@ -60,7 +60,7 @@ class _MisCitasScreenState extends State<MisCitasScreen> {
         backgroundColor: NailsyColors.superficie,
         title: const Text('¿Cancelar la cita?'),
         content: Text(c.cancelacionGratis
-            ? 'Se liberará el hueco para otra clienta.'
+            ? 'Se liberará el hueco para otra persona.'
             : 'Faltan menos de ${c.horasCancelacion} h. Avisa también a ${c.manicurista} si puedes.'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('No')),
@@ -105,7 +105,7 @@ class _MisCitasScreenState extends State<MisCitasScreen> {
                           accion: FilledButton.icon(
                             onPressed: widget.alBuscar,
                             icon: const Icon(Icons.search),
-                            label: const Text('Buscar manicurista'),
+                            label: const Text('Buscar en GlamGo'),
                           ),
                         ),
                       for (final c in proximas) _TarjetaCita(cita: c, onCancelar: () => _cancelar(c)),

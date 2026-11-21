@@ -52,7 +52,7 @@ Never _relanzar(Object e) {
     const conocidos = [
       'Ese horario ya no está disponible',
       'Ese servicio ya no está disponible',
-      'Esta manicurista no acepta reservas ahora mismo',
+      'Este perfil no acepta reservas ahora mismo',
       'Inicia sesión para reservar',
       'No se puede cancelar esta cita',
     ];
@@ -272,7 +272,27 @@ class DemoClientaRepo implements ClientaRepo {
       ],
       diasLaborables: [2, 3, 4, 5],
     ),
+    PerfilPublico(
+      id: 'b1',
+      nombre: 'Leo Barber',
+      ciudad: 'Las Palmas de Gran Canaria',
+      direccion: 'Calle Triana 45',
+      bio: 'Degradados, barba con toalla caliente y diseños. Sin prisas.',
+      especialidades: ['degradado', 'barba', 'disenos'],
+      servicios: [
+        Servicio(id: 'sb1', nombre: 'Corte degradado', categoria: 'degradado', duracionMin: 30, precio: 15),
+        Servicio(id: 'sb2', nombre: 'Corte + barba', categoria: 'barba', duracionMin: 45, precio: 22),
+      ],
+      anadidos: [
+        Anadido(id: 'ab1', nombre: 'Diseño / líneas', duracionMin: 10, precio: 4),
+        Anadido(id: 'ab2', nombre: 'Cejas', duracionMin: 5, precio: 3),
+      ],
+      diasLaborables: [1, 2, 3, 4, 5, 6],
+    ),
   ];
+
+  /// Sector de cada perfil de ejemplo.
+  static const _sectorDe = {'m1': 'nails', 'm2': 'nails', 'b1': 'barberia'};
 
   @override
   Future<List<ResumenManicurista>> buscar({
@@ -289,7 +309,8 @@ class DemoClientaRepo implements ClientaRepo {
     final manana10 = DateTime(ahora.year, ahora.month, ahora.day + 1, 10);
     final lista = [
       for (final p in _perfiles)
-        if ((q.isEmpty || p.nombre.toLowerCase().contains(q) || (p.ciudad ?? '').toLowerCase().contains(q)) &&
+        if (_sectorDe[p.id] == sector &&
+            (q.isEmpty || p.nombre.toLowerCase().contains(q) || (p.ciudad ?? '').toLowerCase().contains(q)) &&
             (estilo == null ||
                 estilo.isEmpty ||
                 p.especialidades.contains(estilo) ||
@@ -301,8 +322,8 @@ class DemoClientaRepo implements ClientaRepo {
             bio: p.bio,
             especialidades: p.especialidades,
             precioDesde: p.precioDesde,
-            distanciaKm: lat == null ? null : (p.id == 'm1' ? 1.2 : 9.8),
-            proximoHueco: p.id == 'm1' ? hoy14 : manana10,
+            distanciaKm: lat == null ? null : (p.id == 'm2' ? 9.8 : 1.2),
+            proximoHueco: p.id == 'm2' ? manana10 : hoy14,
           ),
     ];
     return soloHoy ? lista.where((m) => m.proximoHueco!.day == ahora.day).toList() : lista;

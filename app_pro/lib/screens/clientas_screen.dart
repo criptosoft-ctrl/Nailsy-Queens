@@ -5,6 +5,7 @@ import '../models/clienta.dart';
 import '../theme.dart';
 import '../widgets/comunes.dart';
 import 'clienta_detalle_screen.dart';
+import '../sectores.dart';
 
 class ClientasScreen extends StatefulWidget {
   const ClientasScreen({super.key, required this.repo});
@@ -67,10 +68,10 @@ class _ClientasScreenState extends State<ClientasScreen> {
             .toList();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Clientas', style: TextStyle(fontWeight: FontWeight.w700))),
+      appBar: AppBar(title: Text(context.sector.clientes, style: const TextStyle(fontWeight: FontWeight.w700))),
       floatingActionButton: FloatingActionButton(
         heroTag: 'fab-clientas',
-        tooltip: 'Nueva clienta',
+        tooltip: context.sector.nuevoCliente,
         onPressed: _nueva,
         child: const Icon(Icons.person_add_alt_1),
       ),
@@ -92,15 +93,15 @@ class _ClientasScreenState extends State<ClientasScreen> {
                   if (_todas.isEmpty)
                     EstadoVacio(
                       icono: Icons.people_outline,
-                      texto: 'Todavía no tienes clientas.\nAñade la primera para crear su ficha.',
+                      texto: 'Todavía no tienes ${context.sector.lasClientes.split(' ').last}.\nAñade ${context.sector.cliente == 'cliente' ? 'el primero' : 'la primera'} para crear su ficha.',
                       accion: FilledButton.icon(
                         onPressed: _nueva,
                         icon: const Icon(Icons.person_add_alt_1),
-                        label: const Text('Añadir clienta'),
+                        label: Text('Añadir ${context.sector.cliente}'),
                       ),
                     )
                   else if (lista.isEmpty)
-                    const EstadoVacio(icono: Icons.search_off, texto: 'Ninguna clienta coincide con la búsqueda')
+                    EstadoVacio(icono: Icons.search_off, texto: 'Nadie coincide con la búsqueda')
                   else
                     for (final c in lista)
                       Padding(
@@ -111,8 +112,8 @@ class _ClientasScreenState extends State<ClientasScreen> {
                           child: Row(
                             children: [
                               CircleAvatar(
-                                backgroundColor: NailsyColors.rosa.withValues(alpha: 0.2),
-                                foregroundColor: NailsyColors.rosaSuave,
+                                backgroundColor: context.acento.withValues(alpha: 0.2),
+                                foregroundColor: context.acentoSuave,
                                 child: Text(c.iniciales, style: const TextStyle(fontWeight: FontWeight.w700)),
                               ),
                               const SizedBox(width: 12),
@@ -211,7 +212,7 @@ class _FormClientaState extends State<_FormClienta> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(widget.inicial == null ? 'Nueva clienta' : 'Editar clienta',
+              Text(widget.inicial == null ? context.sector.nuevoCliente : 'Editar ${context.sector.cliente}',
                   style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
               const SizedBox(height: 16),
               TextFormField(

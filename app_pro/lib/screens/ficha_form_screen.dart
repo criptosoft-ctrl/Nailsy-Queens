@@ -4,6 +4,7 @@ import '../data/agenda_repo.dart';
 import '../models/clienta.dart';
 import '../theme.dart';
 import '../widgets/comunes.dart';
+import '../sectores.dart';
 
 /// Edición de la ficha técnica de la uña. Devuelve la ficha guardada.
 class FichaFormScreen extends StatefulWidget {
@@ -67,7 +68,8 @@ class _FichaFormScreenState extends State<FichaFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final otrasAlergias = _alergias.where((a) => !alergiasComunes.containsKey(a)).toList();
+    final ficha = context.sector.ficha;
+    final otrasAlergias = _alergias.where((a) => !ficha.alergias.containsKey(a)).toList();
     return Scaffold(
       appBar: AppBar(title: Text('Ficha · ${widget.clientaNombre}')),
       body: ListView(
@@ -78,7 +80,7 @@ class _FichaFormScreenState extends State<FichaFormScreen> {
             spacing: 8,
             runSpacing: 8,
             children: [
-              for (final e in alergiasComunes.entries)
+              for (final e in ficha.alergias.entries)
                 FilterChip(
                   label: Text(e.value),
                   selected: _alergias.contains(e.key),
@@ -108,12 +110,12 @@ class _FichaFormScreenState extends State<FichaFormScreen> {
               IconButton(onPressed: _anadirOtraAlergia, icon: const Icon(Icons.add_circle_outline)),
             ],
           ),
-          const TituloSeccion('Diagnóstico de la uña'),
+          TituloSeccion(ficha.tituloDiagnosticos),
           Wrap(
             spacing: 8,
             runSpacing: 8,
             children: [
-              for (final e in diagnosticosComunes.entries)
+              for (final e in ficha.diagnosticos.entries)
                 FilterChip(
                   label: Text(e.value),
                   selected: _diagnosticos.contains(e.key),
@@ -121,12 +123,12 @@ class _FichaFormScreenState extends State<FichaFormScreen> {
                 ),
             ],
           ),
-          const TituloSeccion('Forma preferida'),
+          TituloSeccion(ficha.tituloForma),
           Wrap(
             spacing: 8,
             runSpacing: 8,
             children: [
-              for (final f in formasUna)
+              for (final f in ficha.formas)
                 ChoiceChip(
                   label: Text(f),
                   selected: _forma == f,
@@ -134,12 +136,12 @@ class _FichaFormScreenState extends State<FichaFormScreen> {
                 ),
             ],
           ),
-          const TituloSeccion('Largo preferido'),
+          TituloSeccion(ficha.tituloLargo),
           Wrap(
             spacing: 8,
             runSpacing: 8,
             children: [
-              for (final l in largosUna)
+              for (final l in ficha.largos)
                 ChoiceChip(
                   label: Text(l),
                   selected: _largo == l,
@@ -147,11 +149,11 @@ class _FichaFormScreenState extends State<FichaFormScreen> {
                 ),
             ],
           ),
-          const TituloSeccion('Tonos favoritos'),
+          TituloSeccion(ficha.tituloTonos),
           TextField(
             controller: _tonos,
             textCapitalization: TextCapitalization.sentences,
-            decoration: const InputDecoration(hintText: 'Separados por comas: Nude rosado, Rojo cereza…'),
+            decoration: InputDecoration(hintText: ficha.pistaTonos),
           ),
           const TituloSeccion('Observaciones'),
           TextField(

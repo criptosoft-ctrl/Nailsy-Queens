@@ -13,6 +13,18 @@ const estilosBuscables = <String, String>{
   'nail_art': 'Nail Art',
 };
 
+/// Estilos de barbería para filtrar y para las especialidades del perfil.
+const estilosBarberia = <String, String>{
+  'degradado': 'Degradado',
+  'clasico': 'Clásico',
+  'barba': 'Barba',
+  'disenos': 'Diseños',
+  'ninos': 'Niños',
+};
+
+/// Nombre legible de un estilo de cualquier sector.
+String etiquetaEstilo(String e) => estilosBuscables[e] ?? estilosBarberia[e] ?? e;
+
 const zonasHorarias = <String, String>{
   'Atlantic/Canary': 'Canarias',
   'Europe/Madrid': 'Península y Baleares',

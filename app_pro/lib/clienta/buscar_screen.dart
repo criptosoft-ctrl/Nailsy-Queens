@@ -39,15 +39,6 @@ class _BuscarScreenState extends State<BuscarScreen> {
   bool _cargando = true;
   bool _localizando = false;
 
-  static const _estilos = {
-    'rusa': 'Rusa',
-    'gel': 'Gel',
-    'acrilico': 'Acrílico',
-    'semipermanente': 'Semipermanente',
-    'nail_art': 'Nail Art',
-    'pedicura': 'Pedicura',
-  };
-
   Sector get _sector => sectorPorId(widget.sector);
   Color get _acento => Theme.of(context).colorScheme.primary;
   Color get _sobreAcento => Theme.of(context).colorScheme.onPrimary;
@@ -211,8 +202,7 @@ class _BuscarScreenState extends State<BuscarScreen> {
                             ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))
                             : null,
                       ),
-                      if (widget.sector == 'nails')
-                      for (final e in _estilos.entries)
+                      for (final e in _sector.estilos.entries)
                         _chip(e.value, _estilo == e.key, () {
                           setState(() => _estilo = _estilo == e.key ? null : e.key);
                           _buscar();
@@ -230,7 +220,7 @@ class _BuscarScreenState extends State<BuscarScreen> {
                     icono: Icons.search_off,
                     texto: _soloHoy
                         ? 'Nadie tiene huecos libres hoy con esos filtros.\nQuita "Hoy" para ver los próximos días.'
-                        : 'No hemos encontrado manicuristas con esos filtros.\nPrueba con otra zona o estilo.',
+                        : 'No hemos encontrado ${_sector.profesional}s con esos filtros.\nPrueba con otra zona o estilo.',
                   ),
                 )
               else
@@ -330,7 +320,7 @@ class _BloqueManicurista extends StatelessWidget {
                                   color: NailsyColors.superficieAlta,
                                   borderRadius: BorderRadius.circular(14),
                                 ),
-                                child: Text(estilosBuscables[e] ?? e,
+                                child: Text(etiquetaEstilo(e),
                                     style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
                               ),
                           ],

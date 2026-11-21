@@ -6,6 +6,7 @@ import 'agenda_screen.dart';
 import 'clientas_screen.dart';
 import 'estadisticas_screen.dart';
 import 'portafolio_screen.dart';
+import '../sectores.dart';
 
 /// Pantalla principal con la barra inferior: Agenda · Clientas · Portafolio · Ajustes.
 class HomeShell extends StatefulWidget {
@@ -67,11 +68,11 @@ class _HomeShellState extends State<HomeShell> {
           if (i == 0 && _tab != 0) _visitasAgenda++;
           _tab = i;
         }),
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.calendar_month_outlined), label: 'Agenda'),
-          NavigationDestination(icon: Icon(Icons.people_outline), label: 'Clientas'),
-          NavigationDestination(icon: Icon(Icons.photo_outlined), label: 'Portafolio'),
-          NavigationDestination(icon: Icon(Icons.bar_chart_rounded), label: 'Estadísticas'),
+        destinations: [
+          const NavigationDestination(icon: Icon(Icons.calendar_month_outlined), label: 'Agenda'),
+          NavigationDestination(icon: const Icon(Icons.people_outline), label: context.sector.clientes),
+          const NavigationDestination(icon: Icon(Icons.photo_outlined), label: 'Portafolio'),
+          const NavigationDestination(icon: Icon(Icons.bar_chart_rounded), label: 'Estadísticas'),
         ],
       ),
     );

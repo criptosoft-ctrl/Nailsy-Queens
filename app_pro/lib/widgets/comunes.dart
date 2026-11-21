@@ -341,6 +341,9 @@ String? consejoAlergia(List<String> alergias) {
     if (a.contains('latex')) 'Usa guantes de nitrilo, nunca de látex.',
     if (a.contains('quitaesmalte')) 'Retira con limado o un removedor sin acetona.',
     if (a.contains('niquel')) 'Usa herramientas de acero quirúrgico o titanio y evita decoraciones metálicas.',
+    if (a.contains('ppd')) 'Nada de tintes con PPD: usa uno sin PPD y haz la prueba de alergia 48 h antes.',
+    if (a.contains('fragancias')) 'Usa after-shave, bálsamo y productos sin perfume.',
+    if (a.contains('alcohol')) 'Evita lociones con alcohol; usa aloe o un bálsamo calmante.',
   ];
   return consejos.isEmpty ? null : consejos.join(' ');
 }
