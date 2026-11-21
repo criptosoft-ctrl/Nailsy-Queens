@@ -62,7 +62,7 @@ class _CuentaScreenState extends State<CuentaScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Text('¿Eres manicurista?',
+                const Text('¿Eres profesional de la belleza?',
                     textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
                 const SizedBox(height: 4),
                 const Text(
