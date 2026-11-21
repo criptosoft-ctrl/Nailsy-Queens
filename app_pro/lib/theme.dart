@@ -100,14 +100,21 @@ ThemeData nailsyTheme() {
         textStyle: etiquetaBoton.copyWith(fontSize: 15, fontWeight: FontWeight.w600),
       ),
     ),
-    chipTheme: const ChipThemeData(
+    chipTheme: ChipThemeData(
       backgroundColor: NailsyColors.superficie,
       selectedColor: NailsyColors.rosa,
-      side: BorderSide(color: NailsyColors.borde),
-      shape: StadiumBorder(),
-      labelStyle: TextStyle(fontFamily: fuenteNailsy, fontWeight: FontWeight.w600),
+      side: const BorderSide(color: NailsyColors.borde),
+      shape: const StadiumBorder(),
+      // Texto claro sobre el chip oscuro y oscuro sobre el rosa al seleccionarlo.
+      labelStyle: TextStyle(
+        fontFamily: fuenteNailsy,
+        fontWeight: FontWeight.w600,
+        color: WidgetStateColor.resolveWith(
+          (s) => s.contains(WidgetState.selected) ? NailsyColors.sobreRosa : NailsyColors.texto,
+        ),
+      ),
       secondaryLabelStyle:
-          TextStyle(fontFamily: fuenteNailsy, fontWeight: FontWeight.w700, color: NailsyColors.sobreRosa),
+          const TextStyle(fontFamily: fuenteNailsy, fontWeight: FontWeight.w700, color: NailsyColors.sobreRosa),
       checkmarkColor: NailsyColors.sobreRosa,
     ),
     navigationBarTheme: NavigationBarThemeData(
