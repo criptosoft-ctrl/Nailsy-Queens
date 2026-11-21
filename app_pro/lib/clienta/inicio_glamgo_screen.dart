@@ -123,7 +123,11 @@ class _TarjetaSector extends StatelessWidget {
                 if (activo)
                   Row(
                     children: [
-                      Text('Reservar', style: TextStyle(fontWeight: FontWeight.w800, color: textoFuerte, fontSize: 15)),
+                      Flexible(
+                        child: Text('Reservar',
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(fontWeight: FontWeight.w800, color: textoFuerte, fontSize: 15)),
+                      ),
                       const SizedBox(width: 4),
                       Icon(Icons.arrow_forward, color: textoFuerte, size: 18),
                     ],
