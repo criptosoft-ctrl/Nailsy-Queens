@@ -112,8 +112,8 @@ class _HorarioScreenState extends State<HorarioScreen> {
   Widget _boton(String texto, VoidCallback onTap) => OutlinedButton(
         onPressed: onTap,
         style: OutlinedButton.styleFrom(
-          minimumSize: const Size(72, 40),
-          padding: const EdgeInsets.symmetric(horizontal: 10),
+          minimumSize: const Size(64, 40),
+          padding: const EdgeInsets.symmetric(horizontal: 8),
           side: const BorderSide(color: NailsyColors.borde),
         ),
         child: Text(texto, style: const TextStyle(fontWeight: FontWeight.w600)),
@@ -175,10 +175,15 @@ class _HorarioScreenState extends State<HorarioScreen> {
                                 _boton(t(_dias[i].inicio), () => _elegir(_dias[i].inicio, (m) => _dias[i].inicio = m)),
                                 const Padding(padding: EdgeInsets.symmetric(horizontal: 8), child: Text('a')),
                                 _boton(t(_dias[i].fin), () => _elegir(_dias[i].fin, (m) => _dias[i].fin = m)),
-                                const Spacer(),
-                                TextButton(
-                                  onPressed: () => setState(() => _dias[i].pausa = !_dias[i].pausa),
-                                  child: Text(_dias[i].pausa ? 'Quitar pausa' : '+ Pausa'),
+                                Expanded(
+                                  child: Align(
+                                    alignment: Alignment.centerRight,
+                                    child: TextButton(
+                                      onPressed: () => setState(() => _dias[i].pausa = !_dias[i].pausa),
+                                      child: Text(_dias[i].pausa ? 'Quitar pausa' : '+ Pausa',
+                                          maxLines: 1, overflow: TextOverflow.ellipsis),
+                                    ),
+                                  ),
                                 ),
                               ],
                             ),
@@ -188,7 +193,7 @@ class _HorarioScreenState extends State<HorarioScreen> {
                                 child: Row(
                                   children: [
                                     const Text('Pausa', style: TextStyle(color: NailsyColors.textoSecundario)),
-                                    const SizedBox(width: 10),
+                                    const SizedBox(width: 8),
                                     _boton(t(_dias[i].pausaIni),
                                         () => _elegir(_dias[i].pausaIni, (m) => _dias[i].pausaIni = m)),
                                     const Padding(padding: EdgeInsets.symmetric(horizontal: 8), child: Text('a')),

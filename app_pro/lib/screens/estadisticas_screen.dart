@@ -163,7 +163,7 @@ class _EstadisticasScreenState extends State<EstadisticasScreen> {
                 children: [
                   _Cifra('Citas hechas', '${r.completadas.length}', Icons.check_circle_outline, NailsyColors.verde),
                   _Cifra('Ticket medio', precio(r.ticketMedio.roundToDouble()), Icons.sell_outlined, NailsyColors.rosa),
-                  _Cifra('Clientas atendidas', '${r.clientas}', Icons.people_outline, NailsyColors.rosaSuave),
+                  _Cifra('Clientas', '${r.clientas}', Icons.people_outline, NailsyColors.rosaSuave),
                   _Cifra('Ausencias', '${r.noShows} · ${(r.tasaAusencias * 100).round()} %', Icons.person_off_outlined,
                       r.noShows == 0 ? NailsyColors.verde : NailsyColors.rojo),
                 ],

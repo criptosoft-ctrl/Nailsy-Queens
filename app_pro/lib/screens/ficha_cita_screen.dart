@@ -236,7 +236,7 @@ class _FichaCitaScreenState extends State<FichaCitaScreen> {
     final consejo = consejoAlergia(_ficha?.alergias ?? c.alergias);
     final estado = enCurso
         ? Pildora(
-            texto: textoEnCurso(c, ahora).replaceFirst(' · quedan', ' ·'),
+            texto: textoEnCurso(c, ahora).replaceFirst('En curso · quedan ', ''),
             color: NailsyColors.rosaSuave,
             fondo: NailsyColors.rosa.withValues(alpha: 0.16),
             icono: Icons.schedule)
@@ -255,7 +255,11 @@ class _FichaCitaScreenState extends State<FichaCitaScreen> {
                       BotonCuadrado(icono: Icons.chevron_left, tooltip: 'Volver', onTap: () => Navigator.pop(context)),
                       const SizedBox(width: 12),
                       const Expanded(
-                          child: Text('Ficha de cita', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700))),
+                        child: Text('Ficha de cita',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(fontSize: 19, fontWeight: FontWeight.w700)),
+                      ),
                       if (estado != null) estado,
                       PopupMenuButton<EstadoCita>(
                         tooltip: 'Más opciones',
