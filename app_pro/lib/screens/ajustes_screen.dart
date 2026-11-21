@@ -55,8 +55,8 @@ class AjustesScreen extends StatelessWidget {
           const SizedBox(height: 12),
           const ListTile(
             leading: Icon(Icons.info_outline, color: NailsyColors.textoSecundario),
-            title: Text('Nailsy Queens PRO'),
-            subtitle: Text('Versión 0.4'),
+            title: Text('GlamGo Pro'),
+            subtitle: Text('Versión 0.5'),
           ),
           if (!modoDemo)
             ListTile(

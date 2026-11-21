@@ -20,13 +20,42 @@ DateTime _proximoLunes() {
   return d.add(Duration(days: (8 - d.weekday) % 7));
 }
 
+/// La app abre en la portada de GlamGo; entra en la sección de uñas.
+Future<void> _abrirNails(WidgetTester tester) async {
+  await tester.tap(find.text('Nailsy Queens'));
+  await tester.pumpAndSettle();
+}
+
 void main() {
   setUpAll(() => initializeDateFormatting('es'));
+
+  testWidgets('La portada de GlamGo muestra los sectores y abre Nailsy Queens', (tester) async {
+    _movil(tester);
+    await tester.pumpWidget(ClientaApp(repo: DemoClientaRepo()));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Nailsy Queens'), findsOneWidget);
+    expect(find.text('Barbershop'), findsOneWidget);
+    expect(find.text('Peluquería'), findsOneWidget);
+    expect(find.text('Próximamente'), findsNWidgets(3));
+
+    await tester.tap(find.text('Barbershop'));
+    await tester.pump();
+    expect(find.text('Barbershop llega muy pronto a GlamGo.'), findsOneWidget);
+    await tester.pumpAndSettle(const Duration(seconds: 5));
+
+    await _abrirNails(tester);
+    expect(find.text('Eudy Nails'), findsOneWidget);
+    await tester.tap(find.byTooltip('Volver a GlamGo'));
+    await tester.pumpAndSettle();
+    expect(find.text('Barbershop'), findsOneWidget);
+  });
 
   testWidgets('El buscador muestra manicuristas y filtra por estilo', (tester) async {
     _movil(tester);
     await tester.pumpWidget(ClientaApp(repo: DemoClientaRepo(), demo: true));
     await tester.pumpAndSettle();
+    await _abrirNails(tester);
 
     expect(find.text('Eudy Nails'), findsOneWidget);
     await tester.scrollUntilVisible(find.text('Acrylic Studio'), 300, scrollable: find.byType(Scrollable).first);
@@ -46,6 +75,7 @@ void main() {
     _movil(tester);
     await tester.pumpWidget(ClientaApp(repo: DemoClientaRepo()));
     await tester.pumpAndSettle();
+    await _abrirNails(tester);
 
     await tester.tap(find.text('Eudy Nails'));
     await tester.pumpAndSettle();

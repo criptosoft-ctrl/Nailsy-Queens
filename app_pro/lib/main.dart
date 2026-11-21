@@ -35,7 +35,7 @@ class NailsyProApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Nailsy Queens Pro',
+      title: 'GlamGo Pro',
       debugShowCheckedModeBanner: false,
       theme: nailsyTheme(),
       locale: const Locale('es', 'ES'),

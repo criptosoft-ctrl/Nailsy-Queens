@@ -25,7 +25,7 @@ const largosUna = ['Corto', 'Medio', 'Largo', 'Extra largo'];
 /// Versión del texto legal que se muestra al pedir el consentimiento.
 const versionConsentimiento = 'v1-2026-11';
 const textoConsentimiento =
-    'Doy mi consentimiento para que mi manicurista guarde en Nailsy Queens información sobre la salud de '
+    'Doy mi consentimiento para que mi manicurista guarde en GlamGo información sobre la salud de '
     'mis uñas (diagnósticos y alergias) con el único fin de prestarme el servicio de forma segura. '
     'Puedo retirar este consentimiento en cualquier momento y pedir que se borren mis datos.';
 

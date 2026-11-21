@@ -103,8 +103,8 @@ jobs:
           } 2>&1 | tail -n 60 | tee ../web.log
           rm -rf build/sitio && cp -r build/web_clienta build/sitio && cp -r build/web_pro build/sitio/pro
           # La app Pro con su propio nombre y descripción
-          sed -i 's|<title>Nailsy Queens</title>|<title>Nailsy Pro</title>|; s|content="Nailsy Queens: encuentra[^"]*"|content="Nailsy Pro: agenda, fichas de la uña y reservas para manicuristas."|; s|og:title" content="Nailsy Queens"|og:title" content="Nailsy Pro"|; s|og:description" content="[^"]*"|og:description" content="Tu agenda de manicura, sin ausencias."|; s|apple-mobile-web-app-title" content="Nailsy Queens"|apple-mobile-web-app-title" content="Nailsy Pro"|' build/sitio/pro/index.html
-          sed -i 's|"name": "Nailsy Queens"|"name": "Nailsy Pro"|; s|"short_name": "Nailsy"|"short_name": "Nailsy Pro"|' build/sitio/pro/manifest.json
+          sed -i 's|<title>GlamGo</title>|<title>GlamGo Pro</title>|; s|content="GlamGo: reserva[^"]*"|content="GlamGo Pro: agenda, fichas de clientas y reservas para profesionales de la belleza."|; s|og:title" content="GlamGo"|og:title" content="GlamGo Pro"|; s|og:description" content="[^"]*"|og:description" content="Tu agenda de belleza, sin ausencias."|; s|apple-mobile-web-app-title" content="GlamGo"|apple-mobile-web-app-title" content="GlamGo Pro"|' build/sitio/pro/index.html
+          sed -i 's|"name": "GlamGo"|"name": "GlamGo Pro"|; s|"short_name": "GlamGo"|"short_name": "GlamGo Pro"|' build/sitio/pro/manifest.json
           printf '/pro/*  /pro/index.html  200\n/*  /index.html  200\n' > build/sitio/_redirects
 
       - name: Publicar web en la rama "web" (la despliega Netlify)

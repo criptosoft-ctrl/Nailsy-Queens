@@ -4,10 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import '../screens/nueva_contrasena_screen.dart';
+import '../sectores.dart';
 import '../theme.dart';
 import 'buscar_screen.dart';
 import 'clienta_repo.dart';
 import 'cuenta_screen.dart';
+import 'inicio_glamgo_screen.dart';
 import 'mis_citas_screen.dart';
 
 class ClientaApp extends StatelessWidget {
@@ -19,7 +21,7 @@ class ClientaApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Nailsy Queens',
+      title: marcaGlamGo,
       debugShowCheckedModeBanner: false,
       theme: nailsyTheme(),
       locale: const Locale('es', 'ES'),
@@ -68,6 +70,20 @@ class _ClientaShellState extends State<ClientaShell> {
     ));
   }
 
+  void _abrirSector(Sector sector) {
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (_) => BuscarScreen(
+        repo: widget.repo,
+        sector: sector.id,
+        alReservar: () {
+          // Tras reservar, volvemos a la portada y abrimos "Mis citas".
+          Navigator.of(context).popUntil((r) => r.isFirst);
+          irAMisCitas();
+        },
+      ),
+    ));
+  }
+
   void irAMisCitas() => setState(() {
         _tab = 1;
         _visitas++;
@@ -76,7 +92,7 @@ class _ClientaShellState extends State<ClientaShell> {
   @override
   Widget build(BuildContext context) {
     final pantallas = [
-      BuscarScreen(repo: widget.repo, alReservar: irAMisCitas),
+      InicioGlamGoScreen(alAbrir: _abrirSector),
       MisCitasScreen(key: ValueKey('citas-$_visitas'), repo: widget.repo, alBuscar: () => setState(() => _tab = 0)),
       CuentaScreen(key: ValueKey('cuenta-$_visitas'), repo: widget.repo),
     ];
@@ -112,7 +128,7 @@ class _ClientaShellState extends State<ClientaShell> {
           _tab = i;
         }),
         destinations: const [
-          NavigationDestination(icon: Icon(Icons.explore_outlined), label: 'Descubrir'),
+          NavigationDestination(icon: Icon(Icons.home_outlined), label: 'Inicio'),
           NavigationDestination(icon: Icon(Icons.calendar_month_outlined), label: 'Mis citas'),
           NavigationDestination(icon: Icon(Icons.person_outline), label: 'Perfil'),
         ],

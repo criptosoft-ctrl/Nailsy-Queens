@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../sectores.dart';
 import '../theme.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -18,6 +19,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _email = TextEditingController();
   final _password = TextEditingController();
   bool _registro = false;
+  String _sector = 'nails';
   bool _cargando = false;
 
   @override
@@ -37,7 +39,7 @@ class _LoginScreenState extends State<LoginScreen> {
         final res = await auth.signUp(
           email: _email.text.trim(),
           password: _password.text,
-          data: {'nombre': _nombre.text.trim()},
+          data: {'nombre': _nombre.text.trim(), 'sector': _sector},
           emailRedirectTo: kIsWeb ? '${Uri.base.origin}/pro/' : null,
         );
         if (res.session == null && (res.user?.identities?.isEmpty ?? false)) {
@@ -113,7 +115,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       children: [
                         Flexible(
                           child: Text(
-                            'Nailsy Queens',
+                            marcaGlamGo,
                             textAlign: TextAlign.center,
                             style: TextStyle(fontSize: 34, fontWeight: FontWeight.w800, color: NailsyColors.rosa),
                           ),
@@ -124,7 +126,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 6),
                     const Text(
-                      'Para manicuristas · Tu agenda, sin ausencias',
+                      'Para profesionales de la belleza · Tu agenda, sin ausencias',
                       textAlign: TextAlign.center,
                       style: TextStyle(color: NailsyColors.textoSecundario),
                     ),
@@ -136,7 +138,22 @@ class _LoginScreenState extends State<LoginScreen> {
                         decoration: const InputDecoration(labelText: 'Tu nombre'),
                         validator: (v) => (v == null || v.trim().isEmpty) ? 'Escribe tu nombre' : null,
                       ),
-                      const SizedBox(height: 14),
+                      const SizedBox(height: 16),
+                      const Text('¿A qué te dedicas?', style: TextStyle(fontWeight: FontWeight.w700)),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          for (final s in sectores)
+                            ChoiceChip(
+                              label: Text(s.activo ? s.nombre : '${s.nombre} · pronto'),
+                              selected: _sector == s.id,
+                              onSelected: s.activo ? (_) => setState(() => _sector = s.id) : null,
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
                     ],
                     TextFormField(
                       controller: _email,
@@ -184,7 +201,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         webOnlyWindowName: '_self',
                       ),
                       icon: const Icon(Icons.search, size: 18, color: NailsyColors.textoSecundario),
-                      label: const Text('¿Eres clienta? Busca manicurista y reserva aquí',
+                      label: const Text('¿Eres clienta? Busca y reserva en GlamGo',
                           style: TextStyle(color: NailsyColors.textoSecundario)),
                     ),
                   ],

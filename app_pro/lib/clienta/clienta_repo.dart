@@ -7,7 +7,8 @@ import '../models/publico.dart';
 /// Lo que necesita la app de clientas. Todo pasa por funciones seguras de la base
 /// de datos: la clienta nunca ve agendas ni datos de otras personas.
 abstract class ClientaRepo {
-  Future<List<ResumenManicurista>> buscar({String? texto, String? estilo, double? lat, double? lng, bool soloHoy = false});
+  Future<List<ResumenManicurista>> buscar(
+      {String? texto, String? estilo, double? lat, double? lng, bool soloHoy = false, String sector = 'nails'});
   Future<PerfilPublico?> perfil(String id);
   Future<List<DateTime>> huecosLibres(String manicuristaId, DateTime dia, int duracionMin);
 
@@ -88,6 +89,7 @@ class SupabaseClientaRepo implements ClientaRepo {
     double? lat,
     double? lng,
     bool soloHoy = false,
+    String sector = 'nails',
   }) async {
     final filas = await _db.rpc('buscar_manicuristas', params: {
       'p_texto': (texto ?? '').trim(),
@@ -95,6 +97,7 @@ class SupabaseClientaRepo implements ClientaRepo {
       'p_lat': lat,
       'p_lng': lng,
       'p_solo_hoy': soloHoy,
+      'p_sector': sector,
     });
     return [for (final f in filas as List) ResumenManicurista.fromMap(Map<String, dynamic>.from(f as Map))];
   }
@@ -278,6 +281,7 @@ class DemoClientaRepo implements ClientaRepo {
     double? lat,
     double? lng,
     bool soloHoy = false,
+    String sector = 'nails',
   }) async {
     final q = (texto ?? '').trim().toLowerCase();
     final ahora = DateTime.now();

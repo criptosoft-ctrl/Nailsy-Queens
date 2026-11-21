@@ -16,7 +16,7 @@ class CuentaScreen extends StatefulWidget {
 }
 
 class _CuentaScreenState extends State<CuentaScreen> {
-  /// En la web, Nailsy Pro está en /pro/ del mismo sitio.
+  /// En la web, GlamGo Pro está en /pro/ del mismo sitio.
   Future<void> _abrirPro() async {
     final url = kIsWeb ? Uri.parse('${Uri.base.origin}/pro/') : Uri.parse('https://nailsy-queens.netlify.app/pro/');
     await launchUrl(url, webOnlyWindowName: '_self');
@@ -66,7 +66,7 @@ class _CuentaScreenState extends State<CuentaScreen> {
                     textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
                 const SizedBox(height: 4),
                 const Text(
-                  'Gestiona tu agenda, tus clientas y aparece en el buscador con Nailsy Pro.',
+                  'Gestiona tu agenda, tus clientas y aparece en el buscador con GlamGo Pro.',
                   textAlign: TextAlign.center,
                   style: TextStyle(color: NailsyColors.textoSecundario, fontSize: 13),
                 ),
@@ -79,7 +79,7 @@ class _CuentaScreenState extends State<CuentaScreen> {
                     minimumSize: const Size.fromHeight(46),
                   ),
                   icon: const Icon(Icons.storefront_outlined),
-                  label: const Text('Entrar en Nailsy Pro'),
+                  label: const Text('Entrar en GlamGo Pro'),
                 ),
               ],
             ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../models/publico.dart';
+import '../sectores.dart';
 import '../theme.dart';
 import '../ubicacion.dart';
 import '../widgets/comunes.dart';
@@ -11,9 +12,12 @@ import 'perfil_manicurista_screen.dart';
 /// Pantalla principal de la clienta ("Descubrir"): buscar manicurista por zona, estilo,
 /// cercanía o disponibilidad hoy.
 class BuscarScreen extends StatefulWidget {
-  const BuscarScreen({super.key, required this.repo, required this.alReservar});
+  const BuscarScreen({super.key, required this.repo, required this.alReservar, this.sector = 'nails'});
 
   final ClientaRepo repo;
+
+  /// Sector de GlamGo que se está buscando (uñas, barbería…).
+  final String sector;
 
   /// Se llama tras una reserva para llevar a "Mis citas".
   final VoidCallback alReservar;
@@ -40,6 +44,10 @@ class _BuscarScreenState extends State<BuscarScreen> {
     'pedicura': 'Pedicura',
   };
 
+  Sector get _sector => sectorPorId(widget.sector);
+
+  static String _mayuscula(String t) => t.isEmpty ? t : t[0].toUpperCase() + t.substring(1);
+
   @override
   void initState() {
     super.initState();
@@ -61,6 +69,7 @@ class _BuscarScreenState extends State<BuscarScreen> {
         lat: _cerca?.lat,
         lng: _cerca?.lng,
         soloHoy: _soloHoy,
+        sector: widget.sector,
       );
       if (!mounted) return;
       setState(() {
@@ -144,14 +153,29 @@ class _BuscarScreenState extends State<BuscarScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Nailsy Queens',
-                          style: TextStyle(fontSize: 30, fontWeight: FontWeight.w800, color: NailsyColors.rosa)),
+                      Row(
+                        children: [
+                          if (Navigator.canPop(context)) ...[
+                            BotonCuadrado(
+                              icono: Icons.arrow_back,
+                              tooltip: 'Volver a GlamGo',
+                              onTap: () => Navigator.maybePop(context),
+                            ),
+                            const SizedBox(width: 14),
+                          ],
+                          Expanded(
+                            child: Text(_sector.marca,
+                                style: const TextStyle(
+                                    fontSize: 30, fontWeight: FontWeight.w800, color: NailsyColors.rosa)),
+                          ),
+                        ],
+                      ),
                       const SizedBox(height: 16),
                       TextField(
                         controller: _texto,
                         textInputAction: TextInputAction.search,
-                        decoration: const InputDecoration(
-                          hintText: 'Manicurista, estilo o zona',
+                        decoration: InputDecoration(
+                          hintText: '${_mayuscula(_sector.profesional)}, estilo o zona',
                           prefixIcon: Icon(Icons.search),
                         ),
                         onSubmitted: (_) {
@@ -182,6 +206,7 @@ class _BuscarScreenState extends State<BuscarScreen> {
                             ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))
                             : null,
                       ),
+                      if (widget.sector == 'nails')
                       for (final e in _estilos.entries)
                         _chip(e.value, _estilo == e.key, () {
                           setState(() => _estilo = _estilo == e.key ? null : e.key);

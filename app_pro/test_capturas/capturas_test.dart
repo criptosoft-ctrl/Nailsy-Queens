@@ -93,6 +93,9 @@ void main() {
     final repo = DemoClientaRepo();
     await tester.pumpWidget(ClientaApp(repo: repo));
     await tester.pumpAndSettle();
+    await _foto('c00_inicio_glamgo');
+    await tester.tap(find.text('Nailsy Queens'));
+    await tester.pumpAndSettle();
     await _foto('c01_buscar');
 
     await tester.tap(find.text('Eudy Nails'));
@@ -119,7 +122,7 @@ void main() {
     await _foto('c04_confirmada');
     await tester.tap(find.text('Ver mis citas'));
     await tester.pumpAndSettle();
-    _nav(tester).pop();
+    _nav(tester).popUntil((r) => r.isFirst);
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Mis citas').last);

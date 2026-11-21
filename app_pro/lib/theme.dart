@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Paleta de Nailsy Queens (tomada del rediseño).
+/// Paleta de GlamGo (tomada del rediseño de Nailsy Queens).
 class NailsyColors {
   static const rosa = Color(0xFFFE4F94);
   static const rosaSuave = Color(0xFFFF9CC4);
