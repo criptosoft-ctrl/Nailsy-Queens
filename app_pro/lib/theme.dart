@@ -2,21 +2,38 @@ import 'package:flutter/material.dart';
 
 /// Paleta de GlamGo (tomada del rediseño de Nailsy Queens).
 class NailsyColors {
-  static const rosa = Color(0xFFFE4F94);
+  // ---- Marca GlamGo ----
+  static const oro = Color(0xFFE8B86D); // oro champán: portada, GlamGo Pro, botones generales
+  static const oroSuave = Color(0xFFF3D6A4);
+  static const sobreOro = Color(0xFF2A1D08); // texto encima del oro
+
+  // ---- Acentos por sección ----
+  static const rosa = Color(0xFFFE4F94); // Uñas · Nailsy Queens
   static const rosaSuave = Color(0xFFFF9CC4);
   static const rosaOscuro = Color(0xFF3A1E2F); // fondo de la cita en curso / chips rosas
   static const sobreRosa = Color(0xFF2A0A1A); // texto encima del rosa (botones)
-  static const fondo = Color(0xFF171219);
-  static const superficie = Color(0xFF211926);
-  static const superficieAlta = Color(0xFF2B2231);
-  static const borde = Color(0xFF3A2F3F);
-  static const texto = Color(0xFFF6F0F7);
-  static const textoSecundario = Color(0xFFB4A7B9);
-  static const verde = Color(0xFF5BE08E);
-  static const ambar = Color(0xFFF5BD70);
-  static const rojo = Color(0xFFFF6B6B);
-  static const rojoFondo = Color(0xFF3B1D24);
-  static const gris = Color(0xFF6E6472);
+  static const azulBarberia = Color(0xFF5B8DEF);
+  static const sobreAzulBarberia = Color(0xFF0B1A33);
+  static const violetaPeluqueria = Color(0xFFA47CF3);
+  static const sobreVioletaPeluqueria = Color(0xFF1E1236);
+  static const salviaEstetica = Color(0xFF5CC8A4);
+  static const sobreSalviaEstetica = Color(0xFF0A2A20);
+
+  // ---- Base neutra (gris carbón) ----
+  static const fondo = Color(0xFF121014);
+  static const superficie = Color(0xFF1E1B22);
+  static const superficieAlta = Color(0xFF28242D);
+  static const borde = Color(0xFF34303A);
+  static const barraNavegacion = Color(0xFF17151A);
+  static const texto = Color(0xFFF6F2EC);
+  static const textoSecundario = Color(0xFFA7A1AB);
+
+  // ---- Estados (iguales en toda la app) ----
+  static const verde = Color(0xFF4ADE80);
+  static const ambar = Color(0xFFF5B544);
+  static const rojo = Color(0xFFF2545B);
+  static const rojoFondo = Color(0xFF3A1A1D);
+  static const gris = Color(0xFF6E6872);
 }
 
 const fuenteNailsy = 'PlusJakartaSans';
@@ -24,14 +41,19 @@ const fuenteNailsy = 'PlusJakartaSans';
 /// Radio de esquinas común (tarjetas, botones, campos).
 const radioNailsy = 18.0;
 
-ThemeData nailsyTheme() {
+/// Tema de la app. [acento] es el color de la sección (oro para GlamGo, rosa para uñas…).
+ThemeData nailsyTheme({
+  Color acento = acento,
+  Color sobreAcento = sobreAcento,
+  Color acentoSuave = acentoSuave,
+}) {
   final scheme = ColorScheme.fromSeed(
-    seedColor: NailsyColors.rosa,
+    seedColor: acento,
     brightness: Brightness.dark,
   ).copyWith(
-    primary: NailsyColors.rosa,
-    onPrimary: NailsyColors.sobreRosa,
-    secondary: NailsyColors.rosaSuave,
+    primary: acento,
+    onPrimary: sobreAcento,
+    secondary: acentoSuave,
     surface: NailsyColors.fondo,
     onSurface: NailsyColors.texto,
     surfaceContainerHighest: NailsyColors.superficieAlta,
@@ -73,13 +95,13 @@ ThemeData nailsyTheme() {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(radioNailsy),
-        borderSide: const BorderSide(color: NailsyColors.rosa, width: 1.5),
+        borderSide: BorderSide(color: acento, width: 1.5),
       ),
     ),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
-        backgroundColor: NailsyColors.rosa,
-        foregroundColor: NailsyColors.sobreRosa,
+        backgroundColor: acento,
+        foregroundColor: sobreAcento,
         disabledBackgroundColor: NailsyColors.superficieAlta,
         minimumSize: const Size.fromHeight(54),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radioNailsy)),
@@ -96,50 +118,50 @@ ThemeData nailsyTheme() {
     ),
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
-        foregroundColor: NailsyColors.rosa,
+        foregroundColor: acento,
         textStyle: etiquetaBoton.copyWith(fontSize: 15, fontWeight: FontWeight.w600),
       ),
     ),
     chipTheme: ChipThemeData(
       backgroundColor: NailsyColors.superficie,
-      selectedColor: NailsyColors.rosa,
+      selectedColor: acento,
       side: const BorderSide(color: NailsyColors.borde),
       shape: const StadiumBorder(),
-      // Texto claro sobre el chip oscuro y oscuro sobre el rosa al seleccionarlo.
+      // Texto claro sobre el chip oscuro y oscuro sobre el acento al seleccionarlo.
       labelStyle: TextStyle(
         fontFamily: fuenteNailsy,
         fontWeight: FontWeight.w600,
         color: WidgetStateColor.resolveWith(
-          (s) => s.contains(WidgetState.selected) ? NailsyColors.sobreRosa : NailsyColors.texto,
+          (s) => s.contains(WidgetState.selected) ? sobreAcento : NailsyColors.texto,
         ),
       ),
       secondaryLabelStyle:
-          const TextStyle(fontFamily: fuenteNailsy, fontWeight: FontWeight.w700, color: NailsyColors.sobreRosa),
-      checkmarkColor: NailsyColors.sobreRosa,
+          TextStyle(fontFamily: fuenteNailsy, fontWeight: FontWeight.w700, color: sobreAcento),
+      checkmarkColor: sobreAcento,
     ),
     navigationBarTheme: NavigationBarThemeData(
-      backgroundColor: const Color(0xFF1C141F),
+      backgroundColor: NailsyColors.barraNavegacion,
       indicatorColor: Colors.transparent,
       surfaceTintColor: Colors.transparent,
       iconTheme: WidgetStateProperty.resolveWith(
-        (s) => IconThemeData(color: s.contains(WidgetState.selected) ? NailsyColors.rosa : NailsyColors.textoSecundario),
+        (s) => IconThemeData(color: s.contains(WidgetState.selected) ? acento : NailsyColors.textoSecundario),
       ),
       labelTextStyle: WidgetStateProperty.resolveWith(
         (s) => TextStyle(
           fontFamily: fuenteNailsy,
           fontSize: 12,
           fontWeight: s.contains(WidgetState.selected) ? FontWeight.w700 : FontWeight.w500,
-          color: s.contains(WidgetState.selected) ? NailsyColors.rosa : NailsyColors.textoSecundario,
+          color: s.contains(WidgetState.selected) ? acento : NailsyColors.textoSecundario,
         ),
       ),
     ),
-    floatingActionButtonTheme: const FloatingActionButtonThemeData(
-      backgroundColor: NailsyColors.rosa,
-      foregroundColor: NailsyColors.sobreRosa,
+    floatingActionButtonTheme: FloatingActionButtonThemeData(
+      backgroundColor: acento,
+      foregroundColor: sobreAcento,
     ),
     switchTheme: SwitchThemeData(
       trackColor: WidgetStateProperty.resolveWith(
-          (s) => s.contains(WidgetState.selected) ? NailsyColors.rosa : NailsyColors.superficieAlta),
+          (s) => s.contains(WidgetState.selected) ? acento : NailsyColors.superficieAlta),
     ),
     snackBarTheme: const SnackBarThemeData(
       backgroundColor: NailsyColors.superficieAlta,
@@ -147,3 +169,7 @@ ThemeData nailsyTheme() {
     ),
   );
 }
+
+/// Tema general de GlamGo (portada, cuenta, acceso de profesionales).
+ThemeData temaGlamGo() =>
+    nailsyTheme(acento: NailsyColors.oro, sobreAcento: NailsyColors.sobreOro, acentoSuave: NailsyColors.oroSuave);

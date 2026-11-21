@@ -104,7 +104,7 @@ class _FormAccesoState extends State<FormAcceso> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.mark_email_unread_outlined, size: 56, color: NailsyColors.rosa),
+            Icon(Icons.mark_email_unread_outlined, size: 56, color: Theme.of(context).colorScheme.primary),
             const SizedBox(height: 12),
             const Text('Revisa tu email', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
@@ -188,7 +188,7 @@ class _FormAccesoState extends State<FormAcceso> {
               TextButton(
                 onPressed: _cargando ? null : () => setState(() => _registro = !_registro),
                 child: Text(_registro ? '¿Ya tienes cuenta? Entra' : '¿No tienes cuenta? Créala',
-                    style: const TextStyle(color: NailsyColors.rosaSuave)),
+                    style: TextStyle(color: Theme.of(context).colorScheme.secondary)),
               ),
             ],
           ),

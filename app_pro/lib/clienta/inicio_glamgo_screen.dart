@@ -58,7 +58,7 @@ class _Logo extends StatelessWidget {
     return const Text.rich(
       TextSpan(children: [
         TextSpan(text: 'Glam', style: TextStyle(color: NailsyColors.texto)),
-        TextSpan(text: 'Go', style: TextStyle(color: NailsyColors.rosa)),
+        TextSpan(text: 'Go', style: TextStyle(color: NailsyColors.oro)),
       ]),
       style: TextStyle(fontSize: 38, fontWeight: FontWeight.w800, letterSpacing: -0.5),
     );
@@ -77,11 +77,11 @@ class _TarjetaPrincipal extends StatelessWidget {
       borderRadius: BorderRadius.circular(radioNailsy + 4),
       clipBehavior: Clip.antiAlias,
       child: Ink(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [NailsyColors.rosa, Color(0xFFB8336F)],
+            colors: [sector.color, Color.lerp(sector.color, Colors.black, 0.28)!],
           ),
         ),
         child: InkWell(
@@ -97,28 +97,28 @@ class _TarjetaPrincipal extends StatelessWidget {
                       width: 52,
                       height: 52,
                       decoration: BoxDecoration(
-                        color: NailsyColors.sobreRosa.withValues(alpha: 0.18),
+                        color: sector.sobreColor.withValues(alpha: 0.18),
                         borderRadius: BorderRadius.circular(16),
                       ),
-                      child: Icon(sector.icono, color: NailsyColors.sobreRosa, size: 28),
+                      child: Icon(sector.icono, color: sector.sobreColor, size: 28),
                     ),
                     const Spacer(),
-                    Pildora(texto: sector.nombre, color: NailsyColors.sobreRosa, fondo: Colors.white24),
+                    Pildora(texto: sector.nombre, color: sector.sobreColor, fondo: Colors.white24),
                   ],
                 ),
                 const SizedBox(height: 26),
                 Text(sector.marca,
-                    style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: NailsyColors.sobreRosa)),
+                    style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: sector.sobreColor)),
                 const SizedBox(height: 4),
                 Text(sector.descripcion,
-                    style: TextStyle(fontSize: 15, color: NailsyColors.sobreRosa.withValues(alpha: 0.8))),
+                    style: TextStyle(fontSize: 15, color: sector.sobreColor.withValues(alpha: 0.8))),
                 const SizedBox(height: 18),
-                const Row(
+                Row(
                   children: [
                     Text('Reservar',
-                        style: TextStyle(fontWeight: FontWeight.w800, color: NailsyColors.sobreRosa, fontSize: 16)),
-                    SizedBox(width: 6),
-                    Icon(Icons.arrow_forward, color: NailsyColors.sobreRosa, size: 20),
+                        style: TextStyle(fontWeight: FontWeight.w800, color: sector.sobreColor, fontSize: 16)),
+                    const SizedBox(width: 6),
+                    Icon(Icons.arrow_forward, color: sector.sobreColor, size: 20),
                   ],
                 ),
               ],
@@ -152,10 +152,10 @@ class _TarjetaProxima extends StatelessWidget {
                 width: 46,
                 height: 46,
                 decoration: BoxDecoration(
-                  color: NailsyColors.superficieAlta,
+                  color: sector.color.withValues(alpha: 0.14),
                   borderRadius: BorderRadius.circular(14),
                 ),
-                child: Icon(sector.icono, color: NailsyColors.textoSecundario),
+                child: Icon(sector.icono, color: sector.color),
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -172,7 +172,7 @@ class _TarjetaProxima extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              const Pildora(texto: 'Próximamente', color: NailsyColors.ambar),
+              const Pildora(texto: 'Próximamente', color: NailsyColors.textoSecundario),
             ],
           ),
         ),

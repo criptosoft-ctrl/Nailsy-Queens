@@ -56,7 +56,7 @@ class AjustesScreen extends StatelessWidget {
           const ListTile(
             leading: Icon(Icons.info_outline, color: NailsyColors.textoSecundario),
             title: Text('GlamGo Pro'),
-            subtitle: Text('Versión 0.5'),
+            subtitle: Text('Versión 0.5.1'),
           ),
           if (!modoDemo)
             ListTile(

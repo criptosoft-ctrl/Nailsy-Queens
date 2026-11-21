@@ -57,7 +57,7 @@ class _NuevaContrasenaScreenState extends State<NuevaContrasenaScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const Icon(Icons.lock_reset, size: 56, color: NailsyColors.rosa),
+                    Icon(Icons.lock_reset, size: 56, color: Theme.of(context).colorScheme.primary),
                     const SizedBox(height: 12),
                     const Text('Elige tu nueva contraseña',
                         textAlign: TextAlign.center, style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),

@@ -80,7 +80,7 @@ class _PuertaSesionState extends State<_PuertaSesion> {
   @override
   Widget build(BuildContext context) {
     final sesion = _auth.currentSession;
-    if (sesion == null) return const LoginScreen();
+    if (sesion == null) return Theme(data: temaGlamGo(), child: const LoginScreen());
     if (_recuperando) {
       return NuevaContrasenaScreen(
         guardar: (nueva) => _auth.updateUser(UserAttributes(password: nueva)),

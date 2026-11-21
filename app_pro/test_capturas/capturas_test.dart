@@ -104,7 +104,8 @@ void main() {
 
     final perfil = (await repo.perfil('m1'))!;
     final rusa = perfil.servicios.first;
-    _nav(tester).push(MaterialPageRoute<bool>(
+    // La sección de uñas tiene su propio navegador (el último en el árbol).
+    tester.state<NavigatorState>(find.byType(Navigator).last).push(MaterialPageRoute<bool>(
       builder: (_) => ReservarScreen(repo: repo, perfil: perfil, servicio: rusa, desde: _proximoLunes()),
     ));
     await tester.pumpAndSettle();
@@ -141,7 +142,7 @@ void main() {
     _movil(tester);
     final h = DateTime.now();
     DateTime reloj() => DateTime(h.year, h.month, h.day, 9, 45);
-    await tester.pumpWidget(_app(const LoginScreen()));
+    await tester.pumpWidget(_app(Theme(data: temaGlamGo(), child: const LoginScreen())));
     await tester.pumpAndSettle();
     await _foto('p01_login');
 

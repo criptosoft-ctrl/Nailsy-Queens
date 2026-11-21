@@ -36,7 +36,7 @@ class _CuentaScreenState extends State<CuentaScreen> {
             ListTile(
               leading: const CircleAvatar(
                 backgroundColor: NailsyColors.superficie,
-                child: Icon(Icons.person, color: NailsyColors.rosa),
+                child: Icon(Icons.person, color: NailsyColors.oro),
               ),
               title: Text(repo.nombreUsuaria ?? '', style: const TextStyle(fontWeight: FontWeight.w700)),
               subtitle: const Text('Cuenta de clienta'),
@@ -57,7 +57,7 @@ class _CuentaScreenState extends State<CuentaScreen> {
             decoration: BoxDecoration(
               color: NailsyColors.superficie,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: NailsyColors.rosa.withValues(alpha: 0.4)),
+              border: Border.all(color: NailsyColors.oro.withValues(alpha: 0.4)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -74,8 +74,8 @@ class _CuentaScreenState extends State<CuentaScreen> {
                 OutlinedButton.icon(
                   onPressed: _abrirPro,
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: NailsyColors.rosa,
-                    side: const BorderSide(color: NailsyColors.rosa),
+                    foregroundColor: NailsyColors.oro,
+                    side: const BorderSide(color: NailsyColors.oro),
                     minimumSize: const Size.fromHeight(46),
                   ),
                   icon: const Icon(Icons.storefront_outlined),

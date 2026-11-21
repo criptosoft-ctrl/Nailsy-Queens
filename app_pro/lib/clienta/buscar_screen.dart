@@ -12,12 +12,16 @@ import 'perfil_manicurista_screen.dart';
 /// Pantalla principal de la clienta ("Descubrir"): buscar manicurista por zona, estilo,
 /// cercanía o disponibilidad hoy.
 class BuscarScreen extends StatefulWidget {
-  const BuscarScreen({super.key, required this.repo, required this.alReservar, this.sector = 'nails'});
+  const BuscarScreen(
+      {super.key, required this.repo, required this.alReservar, this.sector = 'nails', this.alVolver});
 
   final ClientaRepo repo;
 
   /// Sector de GlamGo que se está buscando (uñas, barbería…).
   final String sector;
+
+  /// Vuelve a la portada de GlamGo (si es null no se muestra la flecha).
+  final VoidCallback? alVolver;
 
   /// Se llama tras una reserva para llevar a "Mis citas".
   final VoidCallback alReservar;
@@ -45,6 +49,8 @@ class _BuscarScreenState extends State<BuscarScreen> {
   };
 
   Sector get _sector => sectorPorId(widget.sector);
+  Color get _acento => Theme.of(context).colorScheme.primary;
+  Color get _sobreAcento => Theme.of(context).colorScheme.onPrimary;
 
   static String _mayuscula(String t) => t.isEmpty ? t : t[0].toUpperCase() + t.substring(1);
 
@@ -117,8 +123,8 @@ class _BuscarScreenState extends State<BuscarScreen> {
     return Padding(
       padding: const EdgeInsets.only(right: 8),
       child: Material(
-        color: sel ? NailsyColors.rosa : Colors.transparent,
-        shape: StadiumBorder(side: BorderSide(color: sel ? NailsyColors.rosa : NailsyColors.borde)),
+        color: sel ? _acento : Colors.transparent,
+        shape: StadiumBorder(side: BorderSide(color: sel ? _acento : NailsyColors.borde)),
         child: InkWell(
           customBorder: const StadiumBorder(),
           onTap: onTap,
@@ -130,7 +136,7 @@ class _BuscarScreenState extends State<BuscarScreen> {
                 if (icono != null) ...[icono, const SizedBox(width: 6)],
                 Text(texto,
                     style: TextStyle(
-                        fontWeight: FontWeight.w700, color: sel ? NailsyColors.sobreRosa : NailsyColors.texto)),
+                        fontWeight: FontWeight.w700, color: sel ? _sobreAcento : NailsyColors.texto)),
               ],
             ),
           ),
@@ -155,18 +161,17 @@ class _BuscarScreenState extends State<BuscarScreen> {
                     children: [
                       Row(
                         children: [
-                          if (Navigator.canPop(context)) ...[
+                          if (widget.alVolver != null) ...[
                             BotonCuadrado(
                               icono: Icons.arrow_back,
                               tooltip: 'Volver a GlamGo',
-                              onTap: () => Navigator.maybePop(context),
+                              onTap: widget.alVolver!,
                             ),
                             const SizedBox(width: 14),
                           ],
                           Expanded(
                             child: Text(_sector.marca,
-                                style: const TextStyle(
-                                    fontSize: 30, fontWeight: FontWeight.w800, color: NailsyColors.rosa)),
+                                style: TextStyle(fontSize: 30, fontWeight: FontWeight.w800, color: _acento)),
                           ),
                         ],
                       ),

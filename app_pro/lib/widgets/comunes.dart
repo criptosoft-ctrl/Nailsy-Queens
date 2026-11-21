@@ -158,15 +158,18 @@ class FotoRemota extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final fondo = Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF3A1F33), Color(0xFF241C27)],
+          colors: [
+            Color.alphaBlend(Theme.of(context).colorScheme.primary.withValues(alpha: 0.18), NailsyColors.superficie),
+            NailsyColors.superficie,
+          ],
         ),
       ),
       alignment: Alignment.center,
-      child: Icon(icono, color: NailsyColors.rosa.withValues(alpha: 0.6), size: 32),
+      child: Icon(icono, color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.6), size: 32),
     );
     if (url == null) return fondo;
     return Image.network(
@@ -244,14 +247,17 @@ class AvatarIniciales extends StatelessWidget {
       alignment: Alignment.center,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(tam * 0.3),
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF4A2340), Color(0xFF2E1B2E)],
+          colors: [
+            Color.alphaBlend(Theme.of(context).colorScheme.primary.withValues(alpha: 0.30), NailsyColors.superficie),
+            Color.alphaBlend(Theme.of(context).colorScheme.primary.withValues(alpha: 0.12), NailsyColors.superficie),
+          ],
         ),
       ),
       child: Text(inicialesDe(nombre),
-          style: TextStyle(color: NailsyColors.rosaSuave, fontWeight: FontWeight.w800, fontSize: tam * 0.36)),
+          style: TextStyle(color: Theme.of(context).colorScheme.secondary, fontWeight: FontWeight.w800, fontSize: tam * 0.36)),
     );
   }
 }
@@ -300,7 +306,7 @@ class BotonCuadrado extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final boton = Material(
-      color: relleno ? NailsyColors.rosa : NailsyColors.superficie,
+      color: relleno ? Theme.of(context).colorScheme.primary : NailsyColors.superficie,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: relleno ? BorderSide.none : const BorderSide(color: NailsyColors.borde),
@@ -311,7 +317,7 @@ class BotonCuadrado extends StatelessWidget {
         child: SizedBox(
           width: 52,
           height: 52,
-          child: Icon(icono, color: relleno ? NailsyColors.sobreRosa : NailsyColors.texto, size: relleno ? 28 : 24),
+          child: Icon(icono, color: relleno ? Theme.of(context).colorScheme.onPrimary : NailsyColors.texto, size: relleno ? 28 : 24),
         ),
       ),
     );

@@ -117,7 +117,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           child: Text(
                             marcaGlamGo,
                             textAlign: TextAlign.center,
-                            style: TextStyle(fontSize: 34, fontWeight: FontWeight.w800, color: NailsyColors.rosa),
+                            style: TextStyle(fontSize: 34, fontWeight: FontWeight.w800, color: NailsyColors.oro),
                           ),
                         ),
                         SizedBox(width: 8),
@@ -189,7 +189,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       onPressed: _cargando ? null : () => setState(() => _registro = !_registro),
                       child: Text(
                         _registro ? '¿Ya tienes cuenta? Entra' : '¿Eres nueva? Crea tu cuenta',
-                        style: const TextStyle(color: NailsyColors.rosaSuave),
+                        style: const TextStyle(color: NailsyColors.oroSuave),
                       ),
                     ),
                     const SizedBox(height: 28),
@@ -223,9 +223,9 @@ class _InsigniaPro extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
-      decoration: BoxDecoration(color: NailsyColors.rosa, borderRadius: BorderRadius.circular(8)),
+      decoration: BoxDecoration(color: NailsyColors.oro, borderRadius: BorderRadius.circular(8)),
       child: const Text('PRO',
-          style: TextStyle(color: NailsyColors.sobreRosa, fontWeight: FontWeight.w900, fontSize: 16, letterSpacing: 1.5)),
+          style: TextStyle(color: NailsyColors.sobreOro, fontWeight: FontWeight.w900, fontSize: 16, letterSpacing: 1.5)),
     );
   }
 }

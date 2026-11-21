@@ -23,7 +23,7 @@ class ClientaApp extends StatelessWidget {
     return MaterialApp(
       title: marcaGlamGo,
       debugShowCheckedModeBanner: false,
-      theme: nailsyTheme(),
+      theme: temaGlamGo(),
       locale: const Locale('es', 'ES'),
       supportedLocales: const [Locale('es', 'ES'), Locale('es', 'CO'), Locale('en')],
       localizationsDelegates: GlobalMaterialLocalizations.delegates,
@@ -71,15 +71,30 @@ class _ClientaShellState extends State<ClientaShell> {
   }
 
   void _abrirSector(Sector sector) {
-    Navigator.of(context).push(MaterialPageRoute(
-      builder: (_) => BuscarScreen(
-        repo: widget.repo,
-        sector: sector.id,
-        alReservar: () {
-          // Tras reservar, volvemos a la portada y abrimos "Mis citas".
-          Navigator.of(context).popUntil((r) => r.isFirst);
-          irAMisCitas();
-        },
+    final raiz = Navigator.of(context);
+    final interno = GlobalKey<NavigatorState>();
+    raiz.push(MaterialPageRoute(
+      builder: (_) => Theme(
+        // Cada sección lleva su color (rosa en uñas, azul en barbería…) en todas sus pantallas.
+        data: sector.tema,
+        child: NavigatorPopHandler(
+          onPopWithResult: (_) => interno.currentState?.maybePop(),
+          child: Navigator(
+            key: interno,
+            onGenerateRoute: (_) => MaterialPageRoute(
+              builder: (_) => BuscarScreen(
+                repo: widget.repo,
+                sector: sector.id,
+                alVolver: () => raiz.pop(),
+                alReservar: () {
+                  // Tras reservar, volvemos a la portada y abrimos "Mis citas".
+                  raiz.popUntil((r) => r.isFirst);
+                  irAMisCitas();
+                },
+              ),
+            ),
+          ),
+        ),
       ),
     ));
   }

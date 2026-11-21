@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'theme.dart';
+
 /// Marca general de la plataforma.
 const marcaGlamGo = 'GlamGo';
 const marcaGlamGoPro = 'GlamGo Pro';
@@ -14,6 +16,9 @@ class Sector {
     required this.icono,
     required this.profesional,
     required this.activo,
+    required this.color,
+    required this.sobreColor,
+    required this.colorSuave,
   });
 
   final String id;
@@ -31,6 +36,13 @@ class Sector {
 
   /// Si ya se puede reservar en esta sección.
   final bool activo;
+
+  /// Color de acento de la sección, el texto que va encima y su versión clara.
+  final Color color;
+  final Color sobreColor;
+  final Color colorSuave;
+
+  ThemeData get tema => nailsyTheme(acento: color, sobreAcento: sobreColor, acentoSuave: colorSuave);
 }
 
 const sectores = [
@@ -42,6 +54,9 @@ const sectores = [
     icono: Icons.back_hand_outlined,
     profesional: 'manicurista',
     activo: true,
+    color: NailsyColors.rosa,
+    sobreColor: NailsyColors.sobreRosa,
+    colorSuave: NailsyColors.rosaSuave,
   ),
   Sector(
     id: 'barberia',
@@ -51,6 +66,9 @@ const sectores = [
     icono: Icons.content_cut,
     profesional: 'barbero',
     activo: false,
+    color: NailsyColors.azulBarberia,
+    sobreColor: NailsyColors.sobreAzulBarberia,
+    colorSuave: Color(0xFFA9C4F7),
   ),
   Sector(
     id: 'peluqueria',
@@ -60,6 +78,9 @@ const sectores = [
     icono: Icons.face_retouching_natural,
     profesional: 'peluquera',
     activo: false,
+    color: NailsyColors.violetaPeluqueria,
+    sobreColor: NailsyColors.sobreVioletaPeluqueria,
+    colorSuave: Color(0xFFD0BDF9),
   ),
   Sector(
     id: 'estetica',
@@ -69,6 +90,9 @@ const sectores = [
     icono: Icons.spa_outlined,
     profesional: 'esteticista',
     activo: false,
+    color: NailsyColors.salviaEstetica,
+    sobreColor: NailsyColors.sobreSalviaEstetica,
+    colorSuave: Color(0xFFA8E3CF),
   ),
 ];
 
