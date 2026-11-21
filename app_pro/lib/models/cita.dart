@@ -48,6 +48,7 @@ class Cita {
     required this.estado,
     this.estadoPago = EstadoPago.sinPago,
     this.alergias = const [],
+    this.notas,
   });
 
   final String id;
@@ -62,10 +63,18 @@ class Cita {
 
   /// Alergias de la clienta (de su ficha), para avisar en la agenda.
   final List<String> alergias;
+  final String? notas;
 
   bool get activa => estado != EstadoCita.cancelada && estado != EstadoCita.noShow;
 
-  Cita copyWith({EstadoCita? estado}) => Cita(
+  Duration get duracion => fin.difference(inicio);
+
+  /// La cita está ocurriendo ahora mismo (o se ha marcado como empezada).
+  bool enCursoAhora(DateTime ahora) =>
+      estado == EstadoCita.enCurso ||
+      (activa && estado != EstadoCita.completada && !ahora.isBefore(inicio) && ahora.isBefore(fin));
+
+  Cita copyWith({EstadoCita? estado, EstadoPago? estadoPago, String? notas}) => Cita(
         id: id,
         clientaId: clientaId,
         clientaNombre: clientaNombre,
@@ -74,8 +83,9 @@ class Cita {
         fin: fin,
         precio: precio,
         estado: estado ?? this.estado,
-        estadoPago: estadoPago,
+        estadoPago: estadoPago ?? this.estadoPago,
         alergias: alergias,
+        notas: notas ?? this.notas,
       );
 
   /// Construye una cita a partir de una fila de Supabase:
@@ -99,6 +109,7 @@ class Cita {
       precio: (m['precio_total'] as num).toDouble(),
       estado: estadoCitaDesdeDb(m['estado'] as String),
       estadoPago: estadoPagoDesdeDb(m['estado_pago'] as String?),
+      notas: m['notas'] as String?,
     );
   }
 }

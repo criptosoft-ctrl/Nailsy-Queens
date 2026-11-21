@@ -208,7 +208,7 @@ class _InsigniaPro extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
       decoration: BoxDecoration(color: NailsyColors.rosa, borderRadius: BorderRadius.circular(8)),
       child: const Text('PRO',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 16, letterSpacing: 1.5)),
+          style: TextStyle(color: NailsyColors.sobreRosa, fontWeight: FontWeight.w900, fontSize: 16, letterSpacing: 1.5)),
     );
   }
 }

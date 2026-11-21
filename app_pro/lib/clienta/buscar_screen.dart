@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../models/publico.dart';
 import '../theme.dart';
@@ -7,7 +8,8 @@ import '../widgets/comunes.dart';
 import 'clienta_repo.dart';
 import 'perfil_manicurista_screen.dart';
 
-/// Pantalla principal de la clienta: buscar manicurista por zona, estilo o cercanía.
+/// Pantalla principal de la clienta ("Descubrir"): buscar manicurista por zona, estilo,
+/// cercanía o disponibilidad hoy.
 class BuscarScreen extends StatefulWidget {
   const BuscarScreen({super.key, required this.repo, required this.alReservar});
 
@@ -23,10 +25,20 @@ class BuscarScreen extends StatefulWidget {
 class _BuscarScreenState extends State<BuscarScreen> {
   final _texto = TextEditingController();
   String? _estilo;
+  bool _soloHoy = false;
   ({double lat, double lng})? _cerca;
   List<ResumenManicurista> _resultados = [];
   bool _cargando = true;
   bool _localizando = false;
+
+  static const _estilos = {
+    'rusa': 'Rusa',
+    'gel': 'Gel',
+    'acrilico': 'Acrílico',
+    'semipermanente': 'Semipermanente',
+    'nail_art': 'Nail Art',
+    'pedicura': 'Pedicura',
+  };
 
   @override
   void initState() {
@@ -43,7 +55,13 @@ class _BuscarScreenState extends State<BuscarScreen> {
   Future<void> _buscar() async {
     setState(() => _cargando = true);
     try {
-      final r = await widget.repo.buscar(texto: _texto.text, estilo: _estilo, lat: _cerca?.lat, lng: _cerca?.lng);
+      final r = await widget.repo.buscar(
+        texto: _texto.text,
+        estilo: _estilo,
+        lat: _cerca?.lat,
+        lng: _cerca?.lng,
+        soloHoy: _soloHoy,
+      );
       if (!mounted) return;
       setState(() {
         _resultados = r;
@@ -86,6 +104,32 @@ class _BuscarScreenState extends State<BuscarScreen> {
     if (reservado == true) widget.alReservar();
   }
 
+  Widget _chip(String texto, bool sel, VoidCallback onTap, {Widget? icono}) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: Material(
+        color: sel ? NailsyColors.rosa : Colors.transparent,
+        shape: StadiumBorder(side: BorderSide(color: sel ? NailsyColors.rosa : NailsyColors.borde)),
+        child: InkWell(
+          customBorder: const StadiumBorder(),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (icono != null) ...[icono, const SizedBox(width: 6)],
+                Text(texto,
+                    style: TextStyle(
+                        fontWeight: FontWeight.w700, color: sel ? NailsyColors.sobreRosa : NailsyColors.texto)),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -96,97 +140,76 @@ class _BuscarScreenState extends State<BuscarScreen> {
             slivers: [
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                  padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text('Nailsy Queens',
-                          style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: NailsyColors.rosa)),
-                      const Text('Encuentra tu manicurista y reserva al momento',
-                          style: TextStyle(color: NailsyColors.textoSecundario)),
+                          style: TextStyle(fontSize: 30, fontWeight: FontWeight.w800, color: NailsyColors.rosa)),
                       const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: TextField(
-                              controller: _texto,
-                              textInputAction: TextInputAction.search,
-                              decoration: const InputDecoration(
-                                hintText: 'Ciudad, zona o nombre',
-                                prefixIcon: Icon(Icons.search),
-                              ),
-                              onSubmitted: (_) {
-                                setState(() => _cerca = null);
-                                _buscar();
-                              },
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          IconButton.filledTonal(
-                            tooltip: 'Cerca de mí',
-                            isSelected: _cerca != null,
-                            onPressed: _localizando ? null : _cercaDeMi,
-                            icon: _localizando
-                                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                                : const Icon(Icons.my_location),
-                          ),
-                        ],
-                      ),
-                      if (_cerca != null)
-                        const Padding(
-                          padding: EdgeInsets.only(top: 8),
-                          child: Text('Ordenadas por cercanía a ti',
-                              style: TextStyle(color: NailsyColors.rosaSuave, fontSize: 13)),
+                      TextField(
+                        controller: _texto,
+                        textInputAction: TextInputAction.search,
+                        decoration: const InputDecoration(
+                          hintText: 'Manicurista, estilo o zona',
+                          prefixIcon: Icon(Icons.search),
                         ),
-                      const SizedBox(height: 12),
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: [
-                            ChoiceChip(
-                              label: const Text('Todos'),
-                              selected: _estilo == null,
-                              onSelected: (_) {
-                                setState(() => _estilo = null);
-                                _buscar();
-                              },
-                            ),
-                            for (final e in estilosBuscables.entries)
-                              Padding(
-                                padding: const EdgeInsets.only(left: 8),
-                                child: ChoiceChip(
-                                  label: Text(e.value),
-                                  selected: _estilo == e.key,
-                                  onSelected: (v) {
-                                    setState(() => _estilo = v ? e.key : null);
-                                    _buscar();
-                                  },
-                                ),
-                              ),
-                          ],
-                        ),
+                        onSubmitted: (_) {
+                          setState(() => _cerca = null);
+                          _buscar();
+                        },
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 14),
                     ],
                   ),
                 ),
               ),
+              SliverToBoxAdapter(
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    children: [
+                      _chip('Hoy', _soloHoy, () {
+                        setState(() => _soloHoy = !_soloHoy);
+                        _buscar();
+                      }),
+                      _chip(
+                        'Cerca de mí',
+                        _cerca != null,
+                        _localizando ? () {} : _cercaDeMi,
+                        icono: _localizando
+                            ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))
+                            : null,
+                      ),
+                      for (final e in _estilos.entries)
+                        _chip(e.value, _estilo == e.key, () {
+                          setState(() => _estilo = _estilo == e.key ? null : e.key);
+                          _buscar();
+                        }),
+                    ],
+                  ),
+                ),
+              ),
+              const SliverToBoxAdapter(child: SizedBox(height: 18)),
               if (_cargando)
                 const SliverFillRemaining(hasScrollBody: false, child: Center(child: CircularProgressIndicator()))
               else if (_resultados.isEmpty)
-                const SliverToBoxAdapter(
+                SliverToBoxAdapter(
                   child: EstadoVacio(
                     icono: Icons.search_off,
-                    texto: 'No hemos encontrado manicuristas con esos filtros.\nPrueba con otra zona o estilo.',
+                    texto: _soloHoy
+                        ? 'Nadie tiene huecos libres hoy con esos filtros.\nQuita "Hoy" para ver los próximos días.'
+                        : 'No hemos encontrado manicuristas con esos filtros.\nPrueba con otra zona o estilo.',
                   ),
                 )
               else
                 SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
                   sliver: SliverList.separated(
                     itemCount: _resultados.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 16),
-                    itemBuilder: (_, i) => _TarjetaManicurista(
+                    separatorBuilder: (_, __) => const SizedBox(height: 26),
+                    itemBuilder: (_, i) => _BloqueManicurista(
                       m: _resultados[i],
                       repo: widget.repo,
                       onTap: () => _abrir(_resultados[i]),
@@ -201,8 +224,18 @@ class _BuscarScreenState extends State<BuscarScreen> {
   }
 }
 
-class _TarjetaManicurista extends StatelessWidget {
-  const _TarjetaManicurista({required this.m, required this.repo, required this.onTap});
+/// "Libre hoy a las 14:00", "Libre mañana a las 10:00", "Libre lun 24 a las 9:30"…
+String textoProximoHueco(DateTime h, DateTime ahora) {
+  final hoy = DateTime(ahora.year, ahora.month, ahora.day);
+  final d = DateTime(h.year, h.month, h.day);
+  final hora = DateFormat('HH:mm').format(h);
+  if (d == hoy) return 'Libre hoy a las $hora';
+  if (d == hoy.add(const Duration(days: 1))) return 'Libre mañana a las $hora';
+  return 'Libre el ${DateFormat('EEE d', 'es').format(h).replaceAll('.', '')} a las $hora';
+}
+
+class _BloqueManicurista extends StatelessWidget {
+  const _BloqueManicurista({required this.m, required this.repo, required this.onTap});
 
   final ResumenManicurista m;
   final ClientaRepo repo;
@@ -210,100 +243,140 @@ class _TarjetaManicurista extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final fotos = m.fotos.isEmpty ? <String?>[null] : m.fotos;
+    final otras = m.fotos.length > 1 ? m.fotos.sublist(1) : const <String>[];
     final datos = [
       if (m.ciudad != null) m.ciudad!,
       if (m.distanciaKm != null)
         m.distanciaKm! < 1 ? 'a ${(m.distanciaKm! * 1000).round()} m' : 'a ${m.distanciaKm!.toStringAsFixed(1)} km',
     ].join(' · ');
-    return Material(
-      color: NailsyColors.superficie,
-      borderRadius: BorderRadius.circular(18),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Carrusel de trabajos
-            AspectRatio(
-              aspectRatio: 16 / 10,
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  PageView(
-                    children: [for (final f in fotos) FotoRemota(url: repo.urlFoto(f))],
-                  ),
-                  if (fotos.length > 1)
-                    Positioned(
-                      right: 10,
-                      bottom: 10,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                        decoration: BoxDecoration(color: Colors.black54, borderRadius: BorderRadius.circular(12)),
-                        child: Text('${fotos.length} fotos ›',
-                            style: const TextStyle(color: Colors.white, fontSize: 12)),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ClipOval(
-                    child: SizedBox(
-                      width: 44,
-                      height: 44,
-                      child: FotoRemota(url: repo.urlFoto(m.foto), icono: Icons.person_outline),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(m.nombre, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
-                        if (datos.isNotEmpty)
-                          Text(datos, style: const TextStyle(color: NailsyColors.textoSecundario, fontSize: 13)),
-                        if (m.especialidades.isNotEmpty) ...[
-                          const SizedBox(height: 6),
-                          Wrap(
-                            spacing: 6,
-                            runSpacing: 4,
-                            children: [
-                              for (final e in m.especialidades.take(3))
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                  decoration: BoxDecoration(
-                                    color: NailsyColors.rosa.withValues(alpha: 0.15),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: Text(estilosBuscables[e] ?? e,
-                                      style: const TextStyle(color: NailsyColors.rosaSuave, fontSize: 12)),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Material(
+          color: NailsyColors.superficie,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+            side: const BorderSide(color: NailsyColors.borde),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: onTap,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AspectRatio(
+                  aspectRatio: 16 / 9,
+                  child: FotoRemota(url: repo.urlFoto(m.fotos.isNotEmpty ? m.fotos.first : m.foto)),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(18, 16, 18, 18),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(m.nombre, style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w800)),
+                      if (datos.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            const Icon(Icons.place_outlined, size: 16, color: NailsyColors.textoSecundario),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(datos,
+                                  style: const TextStyle(color: NailsyColors.textoSecundario, fontSize: 14)),
+                            ),
+                          ],
+                        ),
+                      ],
+                      if (m.especialidades.isNotEmpty) ...[
+                        const SizedBox(height: 12),
+                        Wrap(
+                          spacing: 6,
+                          runSpacing: 6,
+                          children: [
+                            for (final e in m.especialidades.take(3))
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: NailsyColors.superficieAlta,
+                                  borderRadius: BorderRadius.circular(14),
                                 ),
-                            ],
+                                child: Text(estilosBuscables[e] ?? e,
+                                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                              ),
+                          ],
+                        ),
+                      ],
+                      const SizedBox(height: 14),
+                      const Divider(height: 1),
+                      const SizedBox(height: 14),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  m.proximoHueco == null
+                                      ? 'Sin huecos en los próximos días'
+                                      : textoProximoHueco(m.proximoHueco!, DateTime.now()),
+                                  style: TextStyle(
+                                    color: m.proximoHueco == null ? NailsyColors.textoSecundario : NailsyColors.verde,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                if (m.precioDesde != null) ...[
+                                  const SizedBox(height: 2),
+                                  Text.rich(TextSpan(children: [
+                                    const TextSpan(
+                                        text: 'Desde  ', style: TextStyle(color: NailsyColors.textoSecundario)),
+                                    TextSpan(
+                                        text: precio(m.precioDesde!),
+                                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+                                  ])),
+                                ],
+                              ],
+                            ),
+                          ),
+                          FilledButton(
+                            style: FilledButton.styleFrom(
+                              minimumSize: const Size(0, 52),
+                              padding: const EdgeInsets.symmetric(horizontal: 22),
+                            ),
+                            onPressed: onTap,
+                            child: const Text('Reservar'),
                           ),
                         ],
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                  if (m.precioDesde != null)
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        const Text('desde', style: TextStyle(color: NailsyColors.textoSecundario, fontSize: 12)),
-                        Text(precio(m.precioDesde!), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
-                      ],
-                    ),
-                ],
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (otras.isNotEmpty) ...[
+          const SizedBox(height: 16),
+          Text('Más trabajos de ${m.nombre.split(' ').first}',
+              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
+          const SizedBox(height: 10),
+          SizedBox(
+            height: 92,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: otras.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 8),
+              itemBuilder: (_, i) => GestureDetector(
+                onTap: onTap,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(14),
+                  child: SizedBox(width: 92, child: FotoRemota(url: repo.urlFoto(otras[i]))),
+                ),
               ),
             ),
-          ],
-        ),
-      ),
+          ),
+        ],
+      ],
     );
   }
 }

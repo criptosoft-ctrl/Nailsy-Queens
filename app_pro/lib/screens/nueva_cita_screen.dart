@@ -12,10 +12,12 @@ import 'clientas_screen.dart';
 /// La duración y el precio se calculan solos (el precio se puede retocar).
 /// Devuelve `true` si se ha guardado.
 class NuevaCitaScreen extends StatefulWidget {
-  const NuevaCitaScreen({super.key, required this.repo, required this.dia});
+  const NuevaCitaScreen({super.key, required this.repo, required this.dia, this.horaInicial, this.clientaInicial});
 
   final AgendaRepo repo;
   final DateTime dia;
+  final TimeOfDay? horaInicial;
+  final Clienta? clientaInicial;
 
   @override
   State<NuevaCitaScreen> createState() => _NuevaCitaScreenState();
@@ -28,11 +30,11 @@ class _NuevaCitaScreenState extends State<NuevaCitaScreen> {
   bool _cargando = true;
   bool _guardando = false;
 
-  Clienta? _clienta;
+  late Clienta? _clienta = widget.clientaInicial;
   Servicio? _servicio;
   final Map<String, int> _cantidades = {};
   late DateTime _fecha = widget.dia;
-  TimeOfDay? _hora;
+  late TimeOfDay? _hora = widget.horaInicial;
   final _precioManual = TextEditingController();
   bool _precioEditado = false;
   final _notas = TextEditingController();

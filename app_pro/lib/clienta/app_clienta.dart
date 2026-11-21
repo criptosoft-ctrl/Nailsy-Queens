@@ -112,9 +112,9 @@ class _ClientaShellState extends State<ClientaShell> {
           _tab = i;
         }),
         destinations: const [
-          NavigationDestination(icon: Icon(Icons.search), label: 'Buscar'),
-          NavigationDestination(icon: Icon(Icons.event_note_outlined), label: 'Mis citas'),
-          NavigationDestination(icon: Icon(Icons.person_outline), label: 'Cuenta'),
+          NavigationDestination(icon: Icon(Icons.explore_outlined), label: 'Descubrir'),
+          NavigationDestination(icon: Icon(Icons.calendar_month_outlined), label: 'Mis citas'),
+          NavigationDestination(icon: Icon(Icons.person_outline), label: 'Perfil'),
         ],
       ),
     );

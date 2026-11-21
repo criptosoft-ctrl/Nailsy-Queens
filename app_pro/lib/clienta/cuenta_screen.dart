@@ -26,7 +26,7 @@ class _CuentaScreenState extends State<CuentaScreen> {
   Widget build(BuildContext context) {
     final repo = widget.repo;
     return Scaffold(
-      appBar: AppBar(title: const Text('Cuenta', style: TextStyle(fontWeight: FontWeight.w700))),
+      appBar: AppBar(title: const Text('Perfil', style: TextStyle(fontWeight: FontWeight.w700))),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [

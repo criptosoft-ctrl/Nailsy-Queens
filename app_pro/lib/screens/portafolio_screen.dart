@@ -134,7 +134,7 @@ class _PortafolioScreenState extends State<PortafolioScreen> {
         tooltip: 'Añadir fotos',
         onPressed: _subiendo > 0 ? null : _elegirOrigen,
         child: _subiendo > 0
-            ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white))
+            ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.5, color: NailsyColors.sobreRosa))
             : const Icon(Icons.add_a_photo_outlined),
       ),
       body: _cargando

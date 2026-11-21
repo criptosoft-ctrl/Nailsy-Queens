@@ -220,3 +220,189 @@ Future<TimeOfDay?> elegirHoraRueda(BuildContext context, {TimeOfDay? inicial, St
     ),
   );
 }
+
+/// Iniciales de un nombre ("Marta Gómez" → "MG").
+String inicialesDe(String nombre) {
+  final p = nombre.trim().split(RegExp(r'\s+')).where((x) => x.isNotEmpty).toList();
+  if (p.isEmpty) return '?';
+  if (p.length == 1) return p.first[0].toUpperCase();
+  return (p[0][0] + p[1][0]).toUpperCase();
+}
+
+/// Cuadrado redondeado con las iniciales (como en el diseño).
+class AvatarIniciales extends StatelessWidget {
+  const AvatarIniciales({super.key, required this.nombre, this.tam = 56});
+
+  final String nombre;
+  final double tam;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: tam,
+      height: tam,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(tam * 0.3),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF4A2340), Color(0xFF2E1B2E)],
+        ),
+      ),
+      child: Text(inicialesDe(nombre),
+          style: TextStyle(color: NailsyColors.rosaSuave, fontWeight: FontWeight.w800, fontSize: tam * 0.36)),
+    );
+  }
+}
+
+/// Etiqueta redondeada de color (estado, alergia, pago…).
+class Pildora extends StatelessWidget {
+  const Pildora({super.key, required this.texto, required this.color, this.icono, this.fondo});
+
+  final String texto;
+  final Color color;
+  final IconData? icono;
+  final Color? fondo;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: fondo ?? color.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icono != null) ...[Icon(icono, size: 14, color: color), const SizedBox(width: 5)],
+          Flexible(
+            child: Text(texto,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(color: color, fontSize: 12.5, fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Botón cuadrado de icono (cabeceras).
+class BotonCuadrado extends StatelessWidget {
+  const BotonCuadrado({super.key, required this.icono, required this.onTap, this.relleno = false, this.tooltip});
+
+  final IconData icono;
+  final VoidCallback onTap;
+  final bool relleno;
+  final String? tooltip;
+
+  @override
+  Widget build(BuildContext context) {
+    final boton = Material(
+      color: relleno ? NailsyColors.rosa : NailsyColors.superficie,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: relleno ? BorderSide.none : const BorderSide(color: NailsyColors.borde),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: onTap,
+        child: SizedBox(
+          width: 52,
+          height: 52,
+          child: Icon(icono, color: relleno ? NailsyColors.sobreRosa : NailsyColors.texto, size: relleno ? 28 : 24),
+        ),
+      ),
+    );
+    return tooltip == null ? boton : Tooltip(message: tooltip!, child: boton);
+  }
+}
+
+/// Texto de duración corto: 90 → "1 h 30 min", 60 → "1 h".
+String duracionCorta(Duration d) {
+  final h = d.inMinutes ~/ 60, m = d.inMinutes % 60;
+  if (h == 0) return '$m min';
+  return m == 0 ? '$h h' : '$h h $m min';
+}
+
+/// Consejo práctico para trabajar con una clienta alérgica.
+String? consejoAlergia(List<String> alergias) {
+  final a = alergias.map((e) => e.toLowerCase()).toSet();
+  final consejos = <String>[
+    if (a.contains('acrilatos') || a.contains('hema'))
+      'El gel de nivelación y muchos geles llevan acrilatos. Usa un producto sin HEMA o confírmalo con la clienta antes de empezar.',
+    if (a.contains('latex')) 'Usa guantes de nitrilo, nunca de látex.',
+    if (a.contains('quitaesmalte')) 'Retira con limado o un removedor sin acetona.',
+    if (a.contains('niquel')) 'Usa herramientas de acero quirúrgico o titanio y evita decoraciones metálicas.',
+  ];
+  return consejos.isEmpty ? null : consejos.join(' ');
+}
+
+/// Línea horizontal discontinua.
+class LineaDiscontinua extends StatelessWidget {
+  const LineaDiscontinua({super.key, this.color = NailsyColors.borde});
+
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(size: const Size(double.infinity, 1), painter: _PintorLinea(color));
+  }
+}
+
+class _PintorLinea extends CustomPainter {
+  _PintorLinea(this.color);
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final p = Paint()
+      ..color = color
+      ..strokeWidth = 1.2;
+    for (double x = 0; x < size.width; x += 8) {
+      canvas.drawLine(Offset(x, 0), Offset((x + 4).clamp(0, size.width), 0), p);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_PintorLinea old) => old.color != color;
+}
+
+/// Contenedor con borde redondeado discontinuo (huecos libres, "añadir foto").
+class BordeDiscontinuo extends StatelessWidget {
+  const BordeDiscontinuo({super.key, required this.child, this.radio = 18, this.color = NailsyColors.borde});
+
+  final Widget child;
+  final double radio;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(painter: _PintorBorde(radio, color), child: child);
+  }
+}
+
+class _PintorBorde extends CustomPainter {
+  _PintorBorde(this.radio, this.color);
+  final double radio;
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rr = RRect.fromRectAndRadius(Offset.zero & size, Radius.circular(radio));
+    final camino = Path()..addRRect(rr.deflate(0.75));
+    final p = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5;
+    for (final m in camino.computeMetrics()) {
+      for (double d = 0; d < m.length; d += 11) {
+        canvas.drawPath(m.extractPath(d, (d + 6).clamp(0, m.length)), p);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(_PintorBorde old) => old.radio != radio || old.color != color;
+}

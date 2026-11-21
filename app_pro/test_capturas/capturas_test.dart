@@ -49,6 +49,11 @@ Future<void> _cargarFuentes() async {
     await carga(fam, roboto);
   }
   await carga('MaterialIcons', ['MaterialIcons-Regular.otf']);
+  final pjs = FontLoader('PlusJakartaSans');
+  for (final w in ['Regular', 'Medium', 'SemiBold', 'Bold', 'ExtraBold']) {
+    pjs.addFont(rootBundle.load('assets/fonts/PlusJakartaSans-$w.ttf'));
+  }
+  await pjs.load();
 }
 
 void _movil(WidgetTester tester) {
@@ -124,24 +129,31 @@ void main() {
     // Cuenta sin sesión (formulario de alta)
     await tester.pumpWidget(ClientaApp(repo: DemoClientaRepo(conSesion: false), key: UniqueKey()));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Cuenta').last);
+    await tester.tap(find.text('Perfil').last);
     await tester.pumpAndSettle();
     await _foto('c06_cuenta');
   });
 
   testWidgets('Capturas · Nailsy Pro', (tester) async {
     _movil(tester);
+    final h = DateTime.now();
+    DateTime reloj() => DateTime(h.year, h.month, h.day, 9, 45);
     await tester.pumpWidget(_app(const LoginScreen()));
     await tester.pumpAndSettle();
     await _foto('p01_login');
 
-    await tester.pumpWidget(_app(HomeShell(repo: DemoAgendaRepo(), key: UniqueKey())));
+    await tester.pumpWidget(_app(HomeShell(repo: DemoAgendaRepo(), key: UniqueKey(), ahora: reloj)));
     await tester.pumpAndSettle();
     await _foto('p02_agenda');
-
-    await tester.tap(find.text('Lucía Pérez'));
+    await tester.drag(find.byType(ListView).first, const Offset(0, -500));
     await tester.pumpAndSettle();
-    await _foto('p03_cita');
+    await _foto('p02b_agenda_abajo');
+    await tester.drag(find.byType(ListView).first, const Offset(0, 500));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Marta Gómez'));
+    await tester.pumpAndSettle();
+    await _foto('p03_ficha_cita');
     _nav(tester).pop();
     await tester.pumpAndSettle();
 
@@ -149,22 +161,9 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Elegir clienta'));
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(ListTile, 'Lucía Pérez').last);
+    await tester.tap(find.widgetWithText(ListTile, 'Marta Gómez').last);
     await tester.pumpAndSettle();
     await tester.tap(find.text('Manicura rusa + gel'));
-    await tester.pumpAndSettle();
-    final mas = find.byTooltip('Más uñas').first;
-    await tester.ensureVisible(mas);
-    await tester.tap(mas);
-    await tester.pumpAndSettle();
-    await tester.tap(mas);
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Hora'));
-    await tester.pumpAndSettle();
-    await _foto('p05_rueda');
-    await tester.tap(find.text('Aceptar'));
-    await tester.pumpAndSettle();
-    await tester.drag(find.byType(ListView).first, const Offset(0, 1000));
     await tester.pumpAndSettle();
     await _foto('p04_nueva_cita');
     _nav(tester).pop();
@@ -173,9 +172,9 @@ void main() {
     await tester.tap(find.text('Clientas').last);
     await tester.pumpAndSettle();
     await _foto('p06_clientas');
-    await tester.tap(find.descendant(of: find.byType(ClientasScreen), matching: find.text('Lucía Pérez')));
+    await tester.tap(find.descendant(of: find.byType(ClientasScreen), matching: find.text('Marta Gómez')));
     await tester.pumpAndSettle();
-    await _foto('p07_ficha');
+    await _foto('p07_ficha_clienta');
     _nav(tester).pop();
     await tester.pumpAndSettle();
 
@@ -183,22 +182,27 @@ void main() {
     await tester.pumpAndSettle();
     await _foto('p08_portafolio');
 
-    await tester.tap(find.text('Tarifario').last);
+    await tester.tap(find.text('Estadísticas').last);
     await tester.pumpAndSettle();
-    await _foto('p09_tarifario');
+    await _foto('p09_estadisticas');
 
-    await tester.tap(find.text('Ajustes').last);
+    await tester.tap(find.text('Agenda').last);
     await tester.pumpAndSettle();
-    await _foto('p10_ajustes');
-
-    await tester.tap(find.text('Horario de trabajo'));
+    await tester.tap(find.byTooltip('Mi cuenta'));
     await tester.pumpAndSettle();
-    await _foto('p11_horario');
+    await _foto('p10_mi_cuenta');
+    await tester.tap(find.text('Tarifario'));
+    await tester.pumpAndSettle();
+    await _foto('p11_tarifario');
     _nav(tester).pop();
     await tester.pumpAndSettle();
-
+    await tester.tap(find.text('Horario de trabajo'));
+    await tester.pumpAndSettle();
+    await _foto('p12_horario');
+    _nav(tester).pop();
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Mi perfil público'));
     await tester.pumpAndSettle();
-    await _foto('p12_perfil_publico');
+    await _foto('p13_perfil_publico');
   });
 }

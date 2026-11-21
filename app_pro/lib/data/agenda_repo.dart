@@ -53,6 +53,12 @@ abstract class AgendaRepo {
   Future<void> cambiarEstado(String citaId, EstadoCita estado);
   Future<void> crearCita(NuevaCita cita);
   Future<List<Cita>> historialClienta(String clientaId);
+  Future<List<Cita>> citasEntre(DateTime desde, DateTime hasta);
+
+  /// Marca la cita como completada y cobrada.
+  Future<void> finalizarCita(String citaId);
+  Future<void> guardarNotasCita(String citaId, String? notas);
+  Future<List<FotoPortafolio>> fotosClienta(String clientaId);
 
   // Tarifario
   Future<List<Servicio>> servicios();
@@ -78,7 +84,15 @@ abstract class AgendaRepo {
   Future<List<FotoPortafolio>> fotos();
 
   /// Sube una foto y devuelve su ruta en Storage. Si [alPortafolio] la añade a la galería.
-  Future<String> subirFoto(Uint8List bytes, {required String extension, String? mime, bool alPortafolio = true});
+  Future<String> subirFoto(
+    Uint8List bytes, {
+    required String extension,
+    String? mime,
+    bool alPortafolio = true,
+    bool publica = true,
+    String? citaId,
+    String? clientaId,
+  });
   Future<void> cambiarVisibilidadFoto(String id, bool publica);
   Future<void> borrarFoto(FotoPortafolio f);
 
@@ -99,7 +113,7 @@ DateTime _inicioDia(DateTime d) => DateTime(d.year, d.month, d.day);
   return (ext, 'image/jpeg');
 }
 
-const _selectCita = 'id, clienta_id, inicio, fin, precio_total, estado, estado_pago, '
+const _selectCita = 'id, clienta_id, inicio, fin, precio_total, estado, estado_pago, notas, '
     'clientas(nombre, fichas_una(alergias)), servicios(nombre)';
 
 class SupabaseAgendaRepo implements AgendaRepo {
@@ -203,6 +217,38 @@ class SupabaseAgendaRepo implements AgendaRepo {
       }
       rethrow;
     }
+  }
+
+  @override
+  Future<List<Cita>> citasEntre(DateTime desde, DateTime hasta) async {
+    final filas = await _db
+        .from('citas')
+        .select(_selectCita)
+        .gte('inicio', desde.toUtc().toIso8601String())
+        .lt('inicio', hasta.toUtc().toIso8601String())
+        .order('inicio');
+    return filas.map(Cita.fromMap).toList();
+  }
+
+  @override
+  Future<void> finalizarCita(String citaId) async {
+    await _db.from('citas').update({'estado': 'completada', 'estado_pago': 'pagado'}).eq('id', citaId);
+  }
+
+  @override
+  Future<void> guardarNotasCita(String citaId, String? notas) async {
+    final n = notas?.trim();
+    await _db.from('citas').update({'notas': (n == null || n.isEmpty) ? null : n}).eq('id', citaId);
+  }
+
+  @override
+  Future<List<FotoPortafolio>> fotosClienta(String clientaId) async {
+    final filas = await _db
+        .from('fotos')
+        .select('id, storage_path, publica, creado_en, cita_id')
+        .eq('clienta_id', clientaId)
+        .order('creado_en', ascending: false);
+    return filas.map(FotoPortafolio.fromMap).toList();
   }
 
   @override
@@ -347,13 +393,21 @@ class SupabaseAgendaRepo implements AgendaRepo {
   Future<List<FotoPortafolio>> fotos() async {
     final filas = await _db
         .from('fotos')
-        .select('id, storage_path, publica')
+        .select('id, storage_path, publica, creado_en, cita_id')
         .order('creado_en', ascending: false);
     return filas.map(FotoPortafolio.fromMap).toList();
   }
 
   @override
-  Future<String> subirFoto(Uint8List bytes, {required String extension, String? mime, bool alPortafolio = true}) async {
+  Future<String> subirFoto(
+    Uint8List bytes, {
+    required String extension,
+    String? mime,
+    bool alPortafolio = true,
+    bool publica = true,
+    String? citaId,
+    String? clientaId,
+  }) async {
     await _asegurarPerfil();
     final (ext, tipo) = _tipoImagen(extension, mime);
     final ruta = '$_uid/${DateTime.now().millisecondsSinceEpoch}.$ext';
@@ -363,7 +417,13 @@ class SupabaseAgendaRepo implements AgendaRepo {
           fileOptions: FileOptions(contentType: tipo, upsert: false),
         );
     if (alPortafolio) {
-      await _db.from('fotos').insert({'manicurista_id': _uid, 'storage_path': ruta, 'publica': true});
+      await _db.from('fotos').insert({
+        'manicurista_id': _uid,
+        'storage_path': ruta,
+        'publica': publica,
+        'cita_id': citaId,
+        'clienta_id': clientaId,
+      });
     }
     return ruta;
   }
@@ -415,47 +475,47 @@ class DemoAgendaRepo implements AgendaRepo {
       Anadido(id: 'a3', nombre: 'Retirada de material', duracionMin: 15, precio: 5),
     ]);
     _clientas.addAll(const [
-      Clienta(id: 'c1', nombre: 'Marta Gómez', telefono: '600 111 222'),
-      Clienta(id: 'c2', nombre: 'Lucía Pérez', telefono: '600 333 444', alergias: ['acrilatos']),
-      Clienta(id: 'c3', nombre: 'Carla Sanz'),
+      Clienta(id: 'c1', nombre: 'Marta Gómez', telefono: '600 111 222', alergias: ['acrilatos']),
+      Clienta(id: 'c2', nombre: 'Lucía Pérez', telefono: '600 333 444'),
+      Clienta(id: 'c3', nombre: 'Carla Sanz', telefono: '600 555 666'),
     ]);
-    _consentimientos.add('c2');
-    _fichas['c2'] = const FichaUna(
-      clientaId: 'c2',
-      diagnosticos: ['quebradiza'],
+    _consentimientos.add('c1');
+    _fichas['c1'] = const FichaUna(
+      clientaId: 'c1',
+      diagnosticos: ['quebradiza', 'grasa', 'cuticula_seca'],
       alergias: ['acrilatos'],
       formaDeseada: 'Almendrada',
       largoDeseado: 'Medio',
-      tonosFavoritos: ['Nude rosado', 'Rojo cereza'],
+      tonosFavoritos: ['Nude 12', 'Rojo cereza'],
+      observaciones: 'Prefiere acabado brillo. Sensible en cutículas.',
     );
     _citas.addAll([
       Cita(
         id: 'demo-1',
         clientaId: 'c1',
         clientaNombre: 'Marta Gómez',
-        servicioNombre: 'Manicura rusa + gel',
+        servicioNombre: 'Manicura rusa + nivelación gel',
         inicio: _h(9),
         fin: _h(10, 30),
         precio: 35,
-        estado: EstadoCita.completada,
-        estadoPago: EstadoPago.pagado,
+        estado: EstadoCita.enCurso,
+        alergias: const ['acrilatos'],
       ),
       Cita(
         id: 'demo-2',
         clientaId: 'c2',
         clientaNombre: 'Lucía Pérez',
-        servicioNombre: 'Nuevas acrílicas',
+        servicioNombre: 'Uñas acrílicas nuevas',
         inicio: _h(11),
         fin: _h(13),
         precio: 50,
         estado: EstadoCita.confirmada,
-        alergias: const ['acrilatos'],
       ),
       Cita(
         id: 'demo-3',
         clientaId: 'c3',
         clientaNombre: 'Carla Sanz',
-        servicioNombre: 'Semipermanente + Nail Art',
+        servicioNombre: 'Semipermanente + nail art',
         inicio: _h(15),
         fin: _h(16, 30),
         precio: 28,
@@ -463,6 +523,33 @@ class DemoAgendaRepo implements AgendaRepo {
         estadoPago: EstadoPago.pagado,
       ),
     ]);
+    // Citas pasadas (historial y estadísticas)
+    const pasadas = [
+      (-37, 'c1', 'Marta Gómez', 'Gel con nail art', 40.0, 10),
+      (-9, 'c1', 'Marta Gómez', 'Manicura rusa + gel', 35.0, 10),
+      (-3, 'c2', 'Lucía Pérez', 'Relleno acrílico', 38.0, 12),
+      (-6, 'c3', 'Carla Sanz', 'Semipermanente', 20.0, 17),
+      (-13, 'c2', 'Lucía Pérez', 'Uñas acrílicas nuevas', 50.0, 11),
+      (-16, 'c3', 'Carla Sanz', 'Semipermanente + nail art', 28.0, 16),
+      (-20, 'c2', 'Lucía Pérez', 'Manicura rusa + gel', 35.0, 9),
+      (-24, 'c3', 'Carla Sanz', 'Semipermanente', 20.0, 18),
+    ];
+    var n = 50;
+    for (final (dias, cid, nombre, servicio, precio, hora) in pasadas) {
+      final ini = _hoy.add(Duration(days: dias, hours: hora));
+      _citas.add(Cita(
+        id: 'demo-${n++}',
+        clientaId: cid,
+        clientaNombre: nombre,
+        servicioNombre: servicio,
+        inicio: ini,
+        fin: ini.add(const Duration(minutes: 90)),
+        precio: precio,
+        estado: dias == -24 ? EstadoCita.noShow : EstadoCita.completada,
+        estadoPago: dias == -24 ? EstadoPago.sinPago : EstadoPago.pagado,
+        alergias: cid == 'c1' ? const ['acrilatos'] : const [],
+      ));
+    }
   }
 
   @override
@@ -600,7 +687,7 @@ class DemoAgendaRepo implements AgendaRepo {
     especialidades: ['rusa', 'gel', 'nail_art'],
   );
   List<FranjaHorario> _horario = [
-    for (var d = 1; d <= 5; d++) FranjaHorario(dia: d, inicioMin: 9 * 60, finMin: 18 * 60),
+    for (var d = 1; d <= 7; d++) FranjaHorario(dia: d, inicioMin: 9 * 60, finMin: 18 * 60),
   ];
   final List<FotoPortafolio> _fotos = [];
 
@@ -619,17 +706,52 @@ class DemoAgendaRepo implements AgendaRepo {
   @override
   Future<List<FotoPortafolio>> fotos() async => List.of(_fotos);
 
+  final Map<String, String> _clientaDeFoto = {};
+
   @override
-  Future<String> subirFoto(Uint8List bytes, {required String extension, String? mime, bool alPortafolio = true}) async {
+  Future<String> subirFoto(
+    Uint8List bytes, {
+    required String extension,
+    String? mime,
+    bool alPortafolio = true,
+    bool publica = true,
+    String? citaId,
+    String? clientaId,
+  }) async {
     final ruta = 'demo/${_contador++}.${_tipoImagen(extension, mime).$1}';
-    if (alPortafolio) _fotos.insert(0, FotoPortafolio(id: _nuevoId('f'), ruta: ruta, publica: true));
+    if (alPortafolio) {
+      final f = FotoPortafolio(id: _nuevoId('f'), ruta: ruta, publica: publica, fecha: DateTime.now(), citaId: citaId);
+      _fotos.insert(0, f);
+      if (clientaId != null) _clientaDeFoto[f.id] = clientaId;
+    }
     return ruta;
+  }
+
+  @override
+  Future<List<FotoPortafolio>> fotosClienta(String clientaId) async =>
+      _fotos.where((f) => _clientaDeFoto[f.id] == clientaId).toList();
+
+  @override
+  Future<List<Cita>> citasEntre(DateTime desde, DateTime hasta) async =>
+      _citas.where((c) => !c.inicio.isBefore(desde) && c.inicio.isBefore(hasta)).toList()
+        ..sort((a, b) => a.inicio.compareTo(b.inicio));
+
+  @override
+  Future<void> finalizarCita(String citaId) async {
+    final i = _citas.indexWhere((c) => c.id == citaId);
+    if (i >= 0) _citas[i] = _citas[i].copyWith(estado: EstadoCita.completada, estadoPago: EstadoPago.pagado);
+  }
+
+  @override
+  Future<void> guardarNotasCita(String citaId, String? notas) async {
+    final i = _citas.indexWhere((c) => c.id == citaId);
+    if (i >= 0) _citas[i] = _citas[i].copyWith(notas: notas ?? '');
   }
 
   @override
   Future<void> cambiarVisibilidadFoto(String id, bool publica) async {
     final i = _fotos.indexWhere((f) => f.id == id);
-    if (i >= 0) _fotos[i] = FotoPortafolio(id: id, ruta: _fotos[i].ruta, publica: publica);
+    if (i >= 0) _fotos[i] = _fotos[i].conPublica(publica);
   }
 
   @override

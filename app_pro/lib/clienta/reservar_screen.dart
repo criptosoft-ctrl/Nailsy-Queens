@@ -223,10 +223,10 @@ class _ReservarScreenState extends State<ReservarScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(DateFormat('EEE', 'es').format(d).toUpperCase().replaceAll('.', ''),
-                            style: TextStyle(fontSize: 12, color: sel ? Colors.white : NailsyColors.textoSecundario)),
-                        Text('${d.day}', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+                            style: TextStyle(fontSize: 12, color: sel ? NailsyColors.sobreRosa : NailsyColors.textoSecundario)),
+                        Text('${d.day}', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: sel ? NailsyColors.sobreRosa : null)),
                         Text(DateFormat('MMM', 'es').format(d).replaceAll('.', ''),
-                            style: TextStyle(fontSize: 11, color: sel ? Colors.white : NailsyColors.textoSecundario)),
+                            style: TextStyle(fontSize: 11, color: sel ? NailsyColors.sobreRosa : NailsyColors.textoSecundario)),
                       ],
                     ),
                   ),

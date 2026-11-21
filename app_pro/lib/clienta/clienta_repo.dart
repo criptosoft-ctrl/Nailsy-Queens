@@ -7,7 +7,7 @@ import '../models/publico.dart';
 /// Lo que necesita la app de clientas. Todo pasa por funciones seguras de la base
 /// de datos: la clienta nunca ve agendas ni datos de otras personas.
 abstract class ClientaRepo {
-  Future<List<ResumenManicurista>> buscar({String? texto, String? estilo, double? lat, double? lng});
+  Future<List<ResumenManicurista>> buscar({String? texto, String? estilo, double? lat, double? lng, bool soloHoy = false});
   Future<PerfilPublico?> perfil(String id);
   Future<List<DateTime>> huecosLibres(String manicuristaId, DateTime dia, int duracionMin);
 
@@ -82,12 +82,19 @@ class SupabaseClientaRepo implements ClientaRepo {
   final String? urlRetorno;
 
   @override
-  Future<List<ResumenManicurista>> buscar({String? texto, String? estilo, double? lat, double? lng}) async {
+  Future<List<ResumenManicurista>> buscar({
+    String? texto,
+    String? estilo,
+    double? lat,
+    double? lng,
+    bool soloHoy = false,
+  }) async {
     final filas = await _db.rpc('buscar_manicuristas', params: {
       'p_texto': (texto ?? '').trim(),
       'p_estilo': estilo ?? '',
       'p_lat': lat,
       'p_lng': lng,
+      'p_solo_hoy': soloHoy,
     });
     return [for (final f in filas as List) ResumenManicurista.fromMap(Map<String, dynamic>.from(f as Map))];
   }
@@ -265,9 +272,18 @@ class DemoClientaRepo implements ClientaRepo {
   ];
 
   @override
-  Future<List<ResumenManicurista>> buscar({String? texto, String? estilo, double? lat, double? lng}) async {
+  Future<List<ResumenManicurista>> buscar({
+    String? texto,
+    String? estilo,
+    double? lat,
+    double? lng,
+    bool soloHoy = false,
+  }) async {
     final q = (texto ?? '').trim().toLowerCase();
-    return [
+    final ahora = DateTime.now();
+    final hoy14 = DateTime(ahora.year, ahora.month, ahora.day, 14);
+    final manana10 = DateTime(ahora.year, ahora.month, ahora.day + 1, 10);
+    final lista = [
       for (final p in _perfiles)
         if ((q.isEmpty || p.nombre.toLowerCase().contains(q) || (p.ciudad ?? '').toLowerCase().contains(q)) &&
             (estilo == null ||
@@ -282,8 +298,10 @@ class DemoClientaRepo implements ClientaRepo {
             especialidades: p.especialidades,
             precioDesde: p.precioDesde,
             distanciaKm: lat == null ? null : (p.id == 'm1' ? 1.2 : 9.8),
+            proximoHueco: p.id == 'm1' ? hoy14 : manana10,
           ),
     ];
+    return soloHoy ? lista.where((m) => m.proximoHueco!.day == ahora.day).toList() : lista;
   }
 
   @override

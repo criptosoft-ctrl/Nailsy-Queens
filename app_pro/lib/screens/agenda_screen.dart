@@ -4,19 +4,25 @@ import 'package:intl/intl.dart';
 import '../data/agenda_repo.dart';
 import '../models/cita.dart';
 import '../models/clienta.dart';
+import '../models/huecos.dart';
+import '../models/publico.dart';
 import '../theme.dart';
 import '../widgets/comunes.dart';
-import 'clienta_detalle_screen.dart';
+import 'ajustes_screen.dart';
+import 'ficha_cita_screen.dart';
 import 'nueva_cita_screen.dart';
 
 final _hora = DateFormat('HH:mm');
-final _euros = NumberFormat.currency(locale: 'es_ES', symbol: '€', decimalDigits: 0);
 
 class AgendaScreen extends StatefulWidget {
-  const AgendaScreen({super.key, required this.repo, this.diaInicial});
+  const AgendaScreen({super.key, required this.repo, this.diaInicial, this.modoDemo = false, this.ahora});
 
   final AgendaRepo repo;
   final DateTime? diaInicial;
+  final bool modoDemo;
+
+  /// Hora "actual" (para pruebas); por defecto, la del reloj.
+  final DateTime Function()? ahora;
 
   @override
   State<AgendaScreen> createState() => _AgendaScreenState();
@@ -27,13 +33,16 @@ class _AgendaScreenState extends State<AgendaScreen> {
   String _nombre = '';
   List<Cita> _citas = [];
   List<Bloqueo> _bloqueos = [];
+  List<FranjaHorario> _horario = [];
   bool _cargando = true;
   String? _error;
+
+  DateTime get _ahora => (widget.ahora ?? DateTime.now)();
 
   @override
   void initState() {
     super.initState();
-    final d = widget.diaInicial ?? DateTime.now();
+    final d = widget.diaInicial ?? _ahora;
     _dia = DateTime(d.year, d.month, d.day);
     _cargarNombre();
     _cargar(inicial: true);
@@ -43,9 +52,7 @@ class _AgendaScreenState extends State<AgendaScreen> {
     try {
       final n = await widget.repo.nombreManicurista();
       if (mounted) setState(() => _nombre = n);
-    } catch (_) {
-      // El saludo es opcional: si falla, se muestra "Hola".
-    }
+    } catch (_) {}
   }
 
   Future<void> _cargar({bool inicial = false}) async {
@@ -58,10 +65,12 @@ class _AgendaScreenState extends State<AgendaScreen> {
     try {
       final citas = await widget.repo.citasDelDia(_dia);
       final bloqueos = await widget.repo.bloqueosDelDia(_dia);
+      final horario = await widget.repo.horario();
       if (!mounted) return;
       setState(() {
         _citas = citas;
         _bloqueos = bloqueos;
+        _horario = horario;
         _cargando = false;
       });
     } catch (e) {
@@ -73,19 +82,8 @@ class _AgendaScreenState extends State<AgendaScreen> {
     }
   }
 
-  Future<void> _nuevaCita() async {
-    final creada = await Navigator.push<bool>(
-      context,
-      MaterialPageRoute(builder: (_) => NuevaCitaScreen(repo: widget.repo, dia: _dia)),
-    );
-    if (creada == true) {
-      await _cargar();
-      if (mounted) aviso(context, 'Cita guardada');
-    }
-  }
-
-  void _moverDia(int dias) {
-    setState(() => _dia = _dia.add(Duration(days: dias)));
+  void _irA(DateTime d) {
+    setState(() => _dia = DateTime(d.year, d.month, d.day));
     _cargar();
   }
 
@@ -97,213 +95,205 @@ class _AgendaScreenState extends State<AgendaScreen> {
       lastDate: DateTime(2100),
       locale: const Locale('es', 'ES'),
     );
-    if (elegido != null) {
-      setState(() => _dia = elegido);
-      _cargar();
+    if (elegido != null) _irA(elegido);
+  }
+
+  Future<void> _nuevaCita({TimeOfDay? hora}) async {
+    final creada = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(builder: (_) => NuevaCitaScreen(repo: widget.repo, dia: _dia, horaInicial: hora)),
+    );
+    if (creada == true) {
+      await _cargar();
+      if (mounted) aviso(context, 'Cita guardada');
     }
   }
 
-  Future<void> _accionesCita(Cita cita) async {
-    final nuevo = await showModalBottomSheet<Object>(
-      context: context,
-      backgroundColor: NailsyColors.superficie,
-      showDragHandle: true,
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              title: Text(cita.clientaNombre, style: const TextStyle(fontWeight: FontWeight.w700)),
-              subtitle: Text('${cita.servicioNombre} · ${_euros.format(cita.precio)}'),
-            ),
-            if (cita.alergias.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                child: AvisoAlergia(alergias: cita.alergias.map(etiquetaAlergia).toList()),
-              ),
-            const Divider(height: 1),
-            if (cita.clientaId != null)
-              ListTile(
-                leading: const Icon(Icons.badge_outlined, color: NailsyColors.rosaSuave),
-                title: const Text('Ver ficha de la clienta'),
-                onTap: () => Navigator.pop(ctx, 'ficha'),
-              ),
-            for (final e in [EstadoCita.enCurso, EstadoCita.completada, EstadoCita.noShow, EstadoCita.cancelada])
-              if (e != cita.estado)
-                ListTile(
-                  leading: Icon(_iconoEstado(e), color: _colorEstado(e)),
-                  title: Text(_textoAccion(e)),
-                  onTap: () => Navigator.pop(ctx, e),
-                ),
-          ],
-        ),
-      ),
+  Future<void> _abrirCita(Cita cita) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => FichaCitaScreen(repo: widget.repo, cita: cita, ahora: widget.ahora)),
     );
-    if (nuevo == null || !mounted) return;
-    if (nuevo == 'ficha') {
-      await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => ClientaDetalleScreen(
-            repo: widget.repo,
-            clienta: Clienta(id: cita.clientaId, nombre: cita.clientaNombre, alergias: cita.alergias),
-          ),
-        ),
-      );
-      await _cargar();
-      return;
-    }
-    if (nuevo is! EstadoCita) return;
-    try {
-      await widget.repo.cambiarEstado(cita.id, nuevo);
-      await _cargar();
-    } catch (_) {
-      if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('No se pudo actualizar la cita.')));
-      }
-    }
+    await _cargar();
+  }
+
+  void _abrirAjustes() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => AjustesScreen(repo: widget.repo, modoDemo: widget.modoDemo)),
+    ).then((_) => _cargar());
   }
 
   @override
   Widget build(BuildContext context) {
-    final hoy = DateTime.now();
-    final esHoy = _dia.year == hoy.year && _dia.month == hoy.month && _dia.day == hoy.day;
-    final resumen = ResumenDia.de(_citas);
-    final fecha = DateFormat("EEEE d 'de' MMMM", 'es').format(_dia);
-    final titulo = esHoy ? 'Hoy, $fecha' : '${fecha[0].toUpperCase()}${fecha.substring(1)}';
+    final ahora = _ahora;
+    final hoy = DateTime(ahora.year, ahora.month, ahora.day);
+    final esHoy = _dia == hoy;
+    final activas = _citas.where((c) => c.activa).toList();
+    final previsto = activas.fold<double>(0, (s, c) => s + c.precio);
+    var huecos = huecosDelDia(_dia, _horario, _citas, _bloqueos);
+    if (esHoy) huecos = huecos.where((h) => h.fin.isAfter(ahora)).toList();
+    final libre = huecos.fold<Duration>(Duration.zero, (s, h) => s + h.duracion);
+    final fecha = DateFormat("EEEE, d 'de' MMMM", 'es').format(_dia);
 
     return Scaffold(
-      appBar: AppBar(
-        titleSpacing: 20,
-        title: Text(
-          _nombre.isEmpty ? 'Hola' : 'Hola, $_nombre',
-          style: const TextStyle(fontWeight: FontWeight.w700),
-        ),
-        actions: [
-          IconButton(
-            tooltip: 'Elegir día',
-            icon: const Icon(Icons.calendar_month_outlined),
-            onPressed: _elegirDia,
-          ),
-          const SizedBox(width: 8),
-        ],
-      ),
-      body: RefreshIndicator(
-        onRefresh: _cargar,
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 4, 20, 100),
-          children: [
-            _TarjetaResumen(resumen: resumen, esHoy: esHoy),
-            const SizedBox(height: 18),
-            Row(
-              children: [
-                IconButton(
-                  tooltip: 'Día anterior',
-                  onPressed: () => _moverDia(-1),
-                  icon: const Icon(Icons.chevron_left),
+      body: SafeArea(
+        child: RefreshIndicator(
+          onRefresh: _cargar,
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 40),
+            children: [
+              // ---- Cabecera ----
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('${fecha[0].toUpperCase()}${fecha.substring(1)}',
+                            style: const TextStyle(color: NailsyColors.textoSecundario, fontSize: 14)),
+                        const SizedBox(height: 2),
+                        Text(_nombre.isEmpty ? 'Hola' : 'Hola, $_nombre',
+                            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800, height: 1.15)),
+                      ],
+                    ),
+                  ),
+                  BotonCuadrado(icono: Icons.person_outline, tooltip: 'Mi cuenta', onTap: _abrirAjustes),
+                  const SizedBox(width: 8),
+                  BotonCuadrado(icono: Icons.calendar_today_outlined, tooltip: 'Elegir día', onTap: _elegirDia),
+                  const SizedBox(width: 8),
+                  BotonCuadrado(icono: Icons.add, tooltip: 'Nueva cita', relleno: true, onTap: _nuevaCita),
+                ],
+              ),
+              const SizedBox(height: 20),
+              _TiraSemana(dia: _dia, hoy: hoy, onElegir: _irA),
+              const SizedBox(height: 18),
+
+              // ---- Resumen ----
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                decoration: BoxDecoration(
+                  color: NailsyColors.superficie,
+                  borderRadius: BorderRadius.circular(22),
+                  border: Border.all(color: NailsyColors.borde),
                 ),
-                Expanded(
-                  child: Text(
-                    titulo,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+                child: IntrinsicHeight(
+                  child: Row(
+                    children: [
+                      Expanded(child: _Dato(etiqueta: esHoy ? 'Previsto hoy' : 'Previsto', valor: precio(previsto))),
+                      const VerticalDivider(color: NailsyColors.borde, width: 1),
+                      Expanded(child: _Dato(etiqueta: 'Citas', valor: '${activas.length}')),
+                      const VerticalDivider(color: NailsyColors.borde, width: 1),
+                      Expanded(
+                          child: _Dato(
+                              etiqueta: 'Hueco libre',
+                              valor: _horario.isEmpty ? '—' : (libre == Duration.zero ? '0' : duracionCorta(libre)))),
+                    ],
                   ),
                 ),
-                IconButton(
-                  tooltip: 'Día siguiente',
-                  onPressed: () => _moverDia(1),
-                  icon: const Icon(Icons.chevron_right),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            if (_cargando)
-              const Padding(
-                padding: EdgeInsets.only(top: 60),
-                child: Center(child: CircularProgressIndicator()),
-              )
-            else if (_error != null)
-              _Vacio(texto: _error!, icono: Icons.wifi_off)
-            else if (_citas.isEmpty && _bloqueos.isEmpty)
-              const _Vacio(texto: 'No hay citas este día', icono: Icons.event_available)
-            else
-              ..._lineaTiempo(),
-          ],
+              ),
+              const SizedBox(height: 26),
+              const Text('Agenda', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+              const SizedBox(height: 14),
+
+              if (_cargando)
+                const Padding(padding: EdgeInsets.only(top: 40), child: Center(child: CircularProgressIndicator()))
+              else if (_error != null)
+                EstadoVacio(icono: Icons.wifi_off, texto: _error!)
+              else if (_citas.isEmpty && _bloqueos.isEmpty && huecos.isEmpty)
+                EstadoVacio(
+                  icono: Icons.event_available,
+                  texto: _horario.isEmpty
+                      ? 'No hay citas este día.\nConfigura tu horario en Mi cuenta → Horario de trabajo.'
+                      : 'No hay citas este día.',
+                )
+              else
+                ..._lineaTiempo(huecos, ahora),
+            ],
+          ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        heroTag: 'fab-agenda',
-        tooltip: 'Nueva cita',
-        onPressed: _nuevaCita,
-        child: const Icon(Icons.add),
       ),
     );
   }
 
-  List<Widget> _lineaTiempo() {
-    final items = <({DateTime inicio, Widget widget})>[
-      for (final c in _citas) (inicio: c.inicio, widget: _FilaCita(cita: c, onTap: () => _accionesCita(c))),
-      for (final b in _bloqueos) (inicio: b.inicio, widget: _FilaBloqueo(bloqueo: b)),
+  List<Widget> _lineaTiempo(List<Hueco> huecos, DateTime ahora) {
+    final items = <({DateTime inicio, Widget w})>[
+      for (final c in _citas)
+        (inicio: c.inicio, w: _FilaCita(cita: c, enCurso: c.enCursoAhora(ahora), ahora: ahora, onTap: () => _abrirCita(c))),
+      for (final b in _bloqueos) (inicio: b.inicio, w: _FilaBloqueo(bloqueo: b)),
+      for (final h in huecos)
+        (
+          inicio: h.inicio,
+          w: _FilaHueco(
+            hueco: h,
+            onCrear: () => _nuevaCita(hora: TimeOfDay(hour: h.inicio.hour, minute: h.inicio.minute)),
+          )
+        ),
     ]..sort((a, b) => a.inicio.compareTo(b.inicio));
-    return [
-      for (final i in items) Padding(padding: const EdgeInsets.only(bottom: 12), child: i.widget),
-    ];
+    return [for (final i in items) Padding(padding: const EdgeInsets.only(bottom: 14), child: i.w)];
   }
 }
 
-IconData _iconoEstado(EstadoCita e) => switch (e) {
-      EstadoCita.enCurso => Icons.play_circle_outline,
-      EstadoCita.completada => Icons.check_circle_outline,
-      EstadoCita.noShow => Icons.person_off_outlined,
-      EstadoCita.cancelada => Icons.cancel_outlined,
-      _ => Icons.schedule,
-    };
+// ---------------------------------------------------------------------------
 
-Color _colorEstado(EstadoCita e) => switch (e) {
-      EstadoCita.completada => NailsyColors.verde,
-      EstadoCita.enCurso => NailsyColors.rosa,
-      EstadoCita.pendiente => NailsyColors.ambar,
-      EstadoCita.noShow || EstadoCita.cancelada => NailsyColors.rojo,
-      EstadoCita.confirmada => NailsyColors.rosaSuave,
-    };
+class _TiraSemana extends StatelessWidget {
+  const _TiraSemana({required this.dia, required this.hoy, required this.onElegir});
 
-String _textoAccion(EstadoCita e) => switch (e) {
-      EstadoCita.enCurso => 'Empezar cita',
-      EstadoCita.completada => 'Marcar como completada',
-      EstadoCita.noShow => 'La clienta no vino',
-      EstadoCita.cancelada => 'Cancelar cita',
-      _ => etiquetaEstado(e),
-    };
+  final DateTime dia;
+  final DateTime hoy;
+  final ValueChanged<DateTime> onElegir;
 
-class _TarjetaResumen extends StatelessWidget {
-  const _TarjetaResumen({required this.resumen, required this.esHoy});
-
-  final ResumenDia resumen;
-  final bool esHoy;
+  static const _letras = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      decoration: BoxDecoration(
-        color: NailsyColors.superficie,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: NailsyColors.rosa.withValues(alpha: 0.55)),
-      ),
-      child: IntrinsicHeight(
-        child: Row(
-          children: [
+    final lunes = dia.subtract(Duration(days: dia.weekday - 1));
+    return GestureDetector(
+      // Deslizar para cambiar de semana
+      onHorizontalDragEnd: (d) {
+        final v = d.primaryVelocity ?? 0;
+        if (v.abs() < 200) return;
+        onElegir(dia.add(Duration(days: v < 0 ? 7 : -7)));
+      },
+      child: Row(
+        children: [
+          for (var i = 0; i < 7; i++)
             Expanded(
-              child: _Dato(
-                etiqueta: esHoy ? 'Ingresos de hoy' : 'Ingresos del día',
-                valor: _euros.format(resumen.ingresos),
-              ),
+              child: Builder(builder: (context) {
+                final d = DateTime(lunes.year, lunes.month, lunes.day + i);
+                final sel = d == dia;
+                final esHoy = d == hoy;
+                return InkWell(
+                  borderRadius: BorderRadius.circular(16),
+                  onTap: () => onElegir(d),
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 3),
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    decoration: BoxDecoration(
+                      color: sel ? NailsyColors.rosa : Colors.transparent,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Column(
+                      children: [
+                        Text(_letras[i],
+                            style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: sel ? NailsyColors.sobreRosa : NailsyColors.textoSecundario)),
+                        const SizedBox(height: 4),
+                        Text('${d.day}',
+                            style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w700,
+                                color: sel ? NailsyColors.sobreRosa : (esHoy ? NailsyColors.rosa : NailsyColors.texto))),
+                      ],
+                    ),
+                  ),
+                );
+              }),
             ),
-            const VerticalDivider(color: NailsyColors.borde, width: 1),
-            Expanded(child: _Dato(etiqueta: 'Citas hechas', valor: '${resumen.hechas}/${resumen.total}')),
-          ],
-        ),
+        ],
       ),
     );
   }
@@ -317,63 +307,107 @@ class _Dato extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(etiqueta, style: const TextStyle(color: NailsyColors.textoSecundario, fontSize: 13)),
-        const SizedBox(height: 4),
-        Text(valor, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w700)),
-      ],
-    );
-  }
-}
-
-class _ColumnaHora extends StatelessWidget {
-  const _ColumnaHora({required this.inicio, required this.fin});
-
-  final DateTime inicio;
-  final DateTime fin;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 52,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(_hora.format(inicio), style: const TextStyle(fontWeight: FontWeight.w600)),
-          Text(_hora.format(fin), style: const TextStyle(color: NailsyColors.textoSecundario, fontSize: 13)),
+          Text(etiqueta, style: const TextStyle(color: NailsyColors.textoSecundario, fontSize: 13)),
+          const SizedBox(height: 4),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(valor, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
+          ),
         ],
       ),
     );
   }
 }
 
+class _ColumnaHora extends StatelessWidget {
+  const _ColumnaHora({required this.inicio, this.fin});
+
+  final DateTime inicio;
+  final DateTime? fin;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 60,
+      child: Padding(
+        padding: const EdgeInsets.only(top: 14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(_hora.format(inicio), style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+            if (fin != null)
+              Text(_hora.format(fin!), style: const TextStyle(color: NailsyColors.textoSecundario, fontSize: 14)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Etiqueta de estado de una cita, con los colores del diseño.
+Pildora? pildoraEstado(Cita c) {
+  switch (c.estado) {
+    case EstadoCita.completada:
+      return c.estadoPago == EstadoPago.pagado
+          ? const Pildora(texto: 'Cobrada', color: NailsyColors.verde)
+          : const Pildora(texto: 'Pago pendiente', color: NailsyColors.ambar);
+    case EstadoCita.confirmada:
+      return c.estadoPago == EstadoPago.pagado
+          ? const Pildora(texto: 'Pagada', color: NailsyColors.verde)
+          : const Pildora(texto: 'Confirmada', color: NailsyColors.verde);
+    case EstadoCita.pendiente:
+      return const Pildora(texto: 'Pendiente', color: NailsyColors.ambar);
+    case EstadoCita.noShow:
+      return const Pildora(texto: 'No vino', color: NailsyColors.rojo);
+    case EstadoCita.cancelada:
+      return const Pildora(texto: 'Cancelada', color: NailsyColors.gris);
+    case EstadoCita.enCurso:
+      return null;
+  }
+}
+
+String textoEnCurso(Cita c, DateTime ahora) {
+  final quedan = c.fin.difference(ahora);
+  if (quedan.isNegative || !ahora.isAfter(c.inicio)) return 'En curso';
+  return 'En curso · quedan ${duracionCorta(Duration(minutes: quedan.inMinutes.clamp(1, 1440)))}';
+}
+
 class _FilaCita extends StatelessWidget {
-  const _FilaCita({required this.cita, required this.onTap});
+  const _FilaCita({required this.cita, required this.enCurso, required this.ahora, required this.onTap});
 
   final Cita cita;
+  final bool enCurso;
+  final DateTime ahora;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final color = _colorEstado(cita.estado);
     final apagada = !cita.activa;
+    final estado = enCurso ? null : pildoraEstado(cita);
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _ColumnaHora(inicio: cita.inicio, fin: cita.fin),
         Expanded(
           child: Opacity(
-            opacity: apagada ? 0.5 : 1,
+            opacity: apagada ? 0.55 : 1,
             child: Material(
-              color: NailsyColors.superficie,
-              borderRadius: BorderRadius.circular(14),
+              color: enCurso ? NailsyColors.rosaOscuro : NailsyColors.superficie,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+                side: BorderSide(color: enCurso ? NailsyColors.rosa : NailsyColors.borde, width: enCurso ? 1.5 : 1),
+              ),
               clipBehavior: Clip.antiAlias,
               child: InkWell(
                 onTap: onTap,
-                child: Container(
-                  decoration: BoxDecoration(border: Border(left: BorderSide(color: color, width: 4))),
-                  padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -383,30 +417,39 @@ class _FilaCita extends StatelessWidget {
                             child: Text(
                               cita.clientaNombre,
                               style: TextStyle(
-                                fontSize: 16,
+                                fontSize: 17,
                                 fontWeight: FontWeight.w700,
                                 decoration: apagada ? TextDecoration.lineThrough : null,
                               ),
                             ),
                           ),
-                          Text(_euros.format(cita.precio),
-                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                          Text(precio(cita.precio), style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
                         ],
                       ),
-                      const SizedBox(height: 2),
-                      Text(cita.servicioNombre, style: const TextStyle(color: NailsyColors.textoSecundario)),
-                      const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 6,
-                        runSpacing: 6,
-                        children: [
-                          _Etiqueta(texto: etiquetaEstado(cita.estado), color: color),
-                          if (cita.estadoPago == EstadoPago.pagado)
-                            const _Etiqueta(texto: 'Pagada', color: NailsyColors.verde),
-                          if (cita.alergias.isNotEmpty)
-                            AvisoAlergia(alergias: cita.alergias.map(etiquetaAlergia).toList(), compacto: true),
-                        ],
-                      ),
+                      const SizedBox(height: 3),
+                      Text(cita.servicioNombre, style: const TextStyle(color: NailsyColors.textoSecundario, fontSize: 14.5)),
+                      if (enCurso || estado != null || cita.alergias.isNotEmpty) ...[
+                        const SizedBox(height: 10),
+                        Wrap(
+                          spacing: 6,
+                          runSpacing: 6,
+                          children: [
+                            if (enCurso)
+                              Pildora(
+                                  texto: textoEnCurso(cita, ahora),
+                                  color: NailsyColors.rosaSuave,
+                                  fondo: NailsyColors.rosa.withValues(alpha: 0.16)),
+                            if (estado != null) estado,
+                            if (cita.alergias.isNotEmpty)
+                              Pildora(
+                                texto: 'Alergia ${cita.alergias.map(etiquetaAlergia).join(', ').toLowerCase()}',
+                                color: NailsyColors.rojo,
+                                fondo: NailsyColors.rojoFondo,
+                                icono: Icons.warning_amber_rounded,
+                              ),
+                          ],
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -427,61 +470,60 @@ class _FilaBloqueo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _ColumnaHora(inicio: bloqueo.inicio, fin: bloqueo.fin),
-        Expanded(
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-            decoration: BoxDecoration(
-              color: NailsyColors.gris.withValues(alpha: 0.35),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Text(bloqueo.motivo ?? 'Bloqueado',
-                style: const TextStyle(color: NailsyColors.textoSecundario, fontSize: 15)),
-          ),
+        SizedBox(
+          width: 60,
+          child: Text(_hora.format(bloqueo.inicio), style: const TextStyle(color: NailsyColors.textoSecundario)),
         ),
+        const Expanded(child: LineaDiscontinua()),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Text(bloqueo.motivo ?? 'Bloqueado', style: const TextStyle(color: NailsyColors.textoSecundario)),
+        ),
+        const Expanded(child: LineaDiscontinua()),
       ],
     );
   }
 }
 
-class _Etiqueta extends StatelessWidget {
-  const _Etiqueta({required this.texto, required this.color});
+class _FilaHueco extends StatelessWidget {
+  const _FilaHueco({required this.hueco, required this.onCrear});
 
-  final String texto;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(texto, style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w600)),
-    );
-  }
-}
-
-class _Vacio extends StatelessWidget {
-  const _Vacio({required this.texto, required this.icono});
-
-  final String texto;
-  final IconData icono;
+  final Hueco hueco;
+  final VoidCallback onCrear;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 60),
-      child: Column(
-        children: [
-          Icon(icono, size: 48, color: NailsyColors.gris),
-          const SizedBox(height: 12),
-          Text(texto, style: const TextStyle(color: NailsyColors.textoSecundario)),
-        ],
-      ),
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _ColumnaHora(inicio: hueco.inicio, fin: hueco.fin),
+        Expanded(
+          child: BordeDiscontinuo(
+            radio: 20,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 10, 10, 10),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text('Hueco libre · ${duracionCorta(hueco.duracion)}',
+                        style: const TextStyle(color: NailsyColors.textoSecundario, fontSize: 15)),
+                  ),
+                  TextButton(
+                    onPressed: onCrear,
+                    style: TextButton.styleFrom(
+                      backgroundColor: NailsyColors.superficieAlta,
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    ),
+                    child: const Text('Crear cita'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

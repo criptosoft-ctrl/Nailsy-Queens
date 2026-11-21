@@ -31,7 +31,7 @@ void main() {
     expect(find.text('Eudy Nails'), findsOneWidget);
     expect(find.text('Acrylic Studio'), findsOneWidget);
 
-    final acrilico = find.widgetWithText(ChoiceChip, 'Acrílico');
+    final acrilico = find.text('Acrílico').first;
     await tester.ensureVisible(acrilico);
     await tester.pumpAndSettle();
     await tester.tap(acrilico);
@@ -131,7 +131,7 @@ void main() {
     _movil(tester);
     await tester.pumpWidget(ClientaApp(repo: DemoClientaRepo(conSesion: false)));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Cuenta').last);
+    await tester.tap(find.text('Perfil').last);
     await tester.pumpAndSettle();
     expect(find.text('¿Olvidaste tu contraseña?'), findsNothing); // en "Crear cuenta" no sale
     await tester.tap(find.text('¿Ya tienes cuenta? Entra'));

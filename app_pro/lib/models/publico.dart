@@ -34,11 +34,15 @@ class ResumenManicurista {
     this.distanciaKm,
     this.precioDesde,
     this.fotos = const [],
+    this.proximoHueco,
   });
 
   final String id;
   final String nombre;
   final String? ciudad;
+
+  /// Primer hueco libre en los próximos 14 días (para el servicio más corto).
+  final DateTime? proximoHueco;
 
   /// Ruta en Storage de la foto de perfil.
   final String? foto;
@@ -60,6 +64,7 @@ class ResumenManicurista {
         distanciaKm: _dbl(m['distancia_km']),
         precioDesde: _dbl(m['precio_desde']),
         fotos: _lista(m['fotos']),
+        proximoHueco: m['proximo_hueco'] == null ? null : DateTime.parse(m['proximo_hueco'] as String).toLocal(),
       );
 }
 
@@ -298,16 +303,22 @@ class FranjaHorario {
 
 /// Foto del portafolio.
 class FotoPortafolio {
-  const FotoPortafolio({required this.id, required this.ruta, required this.publica});
+  const FotoPortafolio({required this.id, required this.ruta, required this.publica, this.fecha, this.citaId});
 
   final String id;
   final String ruta;
   final bool publica;
+  final DateTime? fecha;
+  final String? citaId;
+
+  FotoPortafolio conPublica(bool v) => FotoPortafolio(id: id, ruta: ruta, publica: v, fecha: fecha, citaId: citaId);
 
   factory FotoPortafolio.fromMap(Map<String, dynamic> m) => FotoPortafolio(
         id: m['id'] as String,
         ruta: m['storage_path'] as String,
         publica: (m['publica'] as bool?) ?? false,
+        fecha: m['creado_en'] == null ? null : DateTime.parse(m['creado_en'] as String).toLocal(),
+        citaId: m['cita_id'] as String?,
       );
 }
 
