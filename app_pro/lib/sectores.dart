@@ -74,7 +74,7 @@ const sectores = [
     id: 'peluqueria',
     nombre: 'Peluquería',
     marca: 'Peluquería',
-    descripcion: 'Corte, color, peinados y tratamientos',
+    descripcion: 'Corte, color y peinados',
     icono: Icons.face_retouching_natural,
     profesional: 'peluquera',
     activo: false,
