@@ -43,9 +43,9 @@ const radioNailsy = 18.0;
 
 /// Tema de la app. [acento] es el color de la sección (oro para GlamGo, rosa para uñas…).
 ThemeData nailsyTheme({
-  Color acento = acento,
-  Color sobreAcento = sobreAcento,
-  Color acentoSuave = acentoSuave,
+  Color acento = NailsyColors.rosa,
+  Color sobreAcento = NailsyColors.sobreRosa,
+  Color acentoSuave = NailsyColors.rosaSuave,
 }) {
   final scheme = ColorScheme.fromSeed(
     seedColor: acento,
