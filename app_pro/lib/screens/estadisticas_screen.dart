@@ -256,7 +256,7 @@ class _Barras extends StatelessWidget {
   Widget build(BuildContext context) {
     final maximo = valores.fold<double>(0, (m, v) => v > m ? v : m);
     return SizedBox(
-      height: 120,
+      height: 150,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [

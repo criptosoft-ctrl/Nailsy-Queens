@@ -31,8 +31,10 @@ void main() {
     expect(find.text('Hola, Eudy'), findsOneWidget);
     expect(find.text('Marta Gómez'), findsOneWidget);
     expect(find.text('Lucía Pérez'), findsOneWidget);
+    await tester.scrollUntilVisible(find.text('Carla Sanz'), 300, scrollable: find.byType(Scrollable).first);
     expect(find.text('Carla Sanz'), findsOneWidget);
     expect(find.text('Almuerzo'), findsOneWidget);
+    await tester.scrollUntilVisible(find.text('Hola, Eudy'), -300, scrollable: find.byType(Scrollable).first);
     expect(find.textContaining('113'), findsWidgets); // previsto: 35 + 50 + 28
     expect(find.textContaining('Alergia acrilatos'), findsOneWidget);
     expect(find.textContaining('En curso'), findsOneWidget);
@@ -168,12 +170,12 @@ void main() {
     await tester.tap(find.text('Tarifario'));
     await tester.pumpAndSettle();
     expect(find.text('Manicura rusa + gel'), findsOneWidget);
-    await tester.pageBack();
+    tester.state<NavigatorState>(find.byType(Navigator).first).pop();
     await tester.pumpAndSettle();
     await tester.tap(find.text('Horario de trabajo'));
     await tester.pumpAndSettle();
     expect(find.text('Lunes'), findsOneWidget);
-    await tester.pageBack();
+    tester.state<NavigatorState>(find.byType(Navigator).first).pop();
     await tester.pumpAndSettle();
     await tester.tap(find.text('Mi perfil público'));
     await tester.pumpAndSettle();

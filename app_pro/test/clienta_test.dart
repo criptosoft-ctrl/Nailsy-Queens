@@ -29,7 +29,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Eudy Nails'), findsOneWidget);
+    await tester.scrollUntilVisible(find.text('Acrylic Studio'), 300, scrollable: find.byType(Scrollable).first);
     expect(find.text('Acrylic Studio'), findsOneWidget);
+    await tester.scrollUntilVisible(find.text('Nailsy Queens'), -300, scrollable: find.byType(Scrollable).first);
 
     final acrilico = find.text('Acrílico').first;
     await tester.ensureVisible(acrilico);

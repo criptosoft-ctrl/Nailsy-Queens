@@ -520,7 +520,7 @@ class _RejillaFicha extends StatelessWidget {
       padding: EdgeInsets.zero,
       mainAxisSpacing: 10,
       crossAxisSpacing: 10,
-      childAspectRatio: 2.3,
+      childAspectRatio: 1.95,
       children: [
         for (final (t, v) in datos)
           Container(
