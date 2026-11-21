@@ -19,7 +19,9 @@ void _movil(WidgetTester tester) {
 
 Future<void> _abrirPro(WidgetTester tester) async {
   _movil(tester);
-  await tester.pumpWidget(const NailsyProApp(demo: true));
+  // Reloj fijo a las 9:45: la cita de Marta (9:00–10:30) está en curso y la de Lucía (11:00) aún no.
+  final h = DateTime.now();
+  await tester.pumpWidget(NailsyProApp(demo: true, ahora: () => DateTime(h.year, h.month, h.day, 9, 45)));
   await tester.pumpAndSettle();
 }
 

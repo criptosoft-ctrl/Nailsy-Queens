@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../theme.dart';
 import '../widgets/comunes.dart';
 
 /// Pantalla para elegir contraseña nueva tras pulsar el enlace de recuperación del email.

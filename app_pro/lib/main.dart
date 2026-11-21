@@ -28,9 +28,12 @@ Future<void> main() async {
 }
 
 class NailsyProApp extends StatelessWidget {
-  const NailsyProApp({super.key, required this.demo});
+  const NailsyProApp({super.key, required this.demo, this.ahora});
 
   final bool demo;
+
+  /// Reloj fijo para pruebas (en la app real, la hora del móvil).
+  final DateTime Function()? ahora;
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +44,7 @@ class NailsyProApp extends StatelessWidget {
       locale: const Locale('es', 'ES'),
       supportedLocales: const [Locale('es', 'ES'), Locale('es', 'CO'), Locale('en')],
       localizationsDelegates: GlobalMaterialLocalizations.delegates,
-      home: demo ? HomeShell(repo: DemoAgendaRepo(), modoDemo: true) : const _PuertaSesion(),
+      home: demo ? HomeShell(repo: DemoAgendaRepo(), modoDemo: true, ahora: ahora) : const _PuertaSesion(),
     );
   }
 }
