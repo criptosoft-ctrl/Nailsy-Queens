@@ -114,6 +114,12 @@ class _BuscarScreenState extends State<BuscarScreen> {
   }
 
   /// Quita todos los filtros y vuelve a buscar.
+  /// Tocar una etiqueta de estilo filtra por ese estilo; tocarla otra vez lo quita.
+  void _elegirEstilo(String e) {
+    setState(() => _estilo = _estilo == e ? null : e);
+    _buscar();
+  }
+
   void _restablecer() {
     _texto.clear();
     setState(() {
@@ -259,11 +265,14 @@ class _BuscarScreenState extends State<BuscarScreen> {
                         icono: Icon(Icons.home_outlined,
                             size: 16, color: _domicilio ? _sobreAcento : const Color(0xFFE4E8F2)),
                       ),
-                      for (final e in _sector.estilos.entries)
-                        _chip(tr(e.value), _estilo == e.key, () {
-                          setState(() => _estilo = _estilo == e.key ? null : e.key);
-                          _buscar();
-                        }),
+                      // Los estilos se eligen tocando una etiqueta de la tarjeta; aquí solo se ve el activo.
+                      if (_estilo != null)
+                        _chip(
+                          tr(_sector.estilos[_estilo] ?? etiquetaEstilo(_estilo!)),
+                          true,
+                          () => _elegirEstilo(_estilo!),
+                          icono: Icon(Icons.close, size: 16, color: _sobreAcento),
+                        ),
                     ],
                   ),
                 ),
@@ -300,6 +309,8 @@ class _BuscarScreenState extends State<BuscarScreen> {
                       m: _resultados[i],
                       repo: widget.repo,
                       onTap: () => _abrir(_resultados[i]),
+                      estiloActivo: _estilo,
+                      alElegirEstilo: _elegirEstilo,
                     ),
                   ),
                 ),
@@ -340,11 +351,14 @@ String textoProximoHueco(DateTime h, DateTime ahora) {
 }
 
 class _BloqueManicurista extends StatelessWidget {
-  const _BloqueManicurista({required this.m, required this.repo, required this.onTap});
+  const _BloqueManicurista(
+      {required this.m, required this.repo, required this.onTap, this.estiloActivo, required this.alElegirEstilo});
 
   final ResumenManicurista m;
   final ClientaRepo repo;
   final VoidCallback onTap;
+  final String? estiloActivo;
+  final ValueChanged<String> alElegirEstilo;
 
   @override
   Widget build(BuildContext context) {
@@ -431,39 +445,66 @@ class _BloqueManicurista extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(m.nombre, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
-                      if (m.ciudad != null) ...[
-                        const SizedBox(height: 6),
-                        Row(
-                          children: [
-                            const Icon(Icons.place_outlined, size: 16, color: NailsyColors.textoSecundario),
-                            const SizedBox(width: 4),
-                            Expanded(
-                              child: Text(m.ciudad!,
-                                  style: const TextStyle(color: NailsyColors.textoSecundario, fontSize: 14)),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(m.nombre, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+                                if (m.ciudad != null) ...[
+                                  const SizedBox(height: 6),
+                                  Row(
+                                    children: [
+                                      const Icon(Icons.place_outlined, size: 16, color: NailsyColors.textoSecundario),
+                                      const SizedBox(width: 4),
+                                      Expanded(
+                                        child: Text(m.ciudad!,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(color: NailsyColors.textoSecundario, fontSize: 14)),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                          if (m.especialidades.isNotEmpty) ...[
+                            const SizedBox(width: 10),
+                            // Etiquetas de estilo a la derecha del nombre: al tocarlas se filtra por ese estilo.
+                            Flexible(
+                              child: Wrap(
+                                alignment: WrapAlignment.end,
+                                spacing: 6,
+                                runSpacing: 6,
+                                children: [
+                                  for (final e in m.especialidades.take(3))
+                                    Material(
+                                      color: estiloActivo == e ? acento : acento.withValues(alpha: 0.14),
+                                      borderRadius: BorderRadius.circular(10),
+                                      child: InkWell(
+                                        borderRadius: BorderRadius.circular(10),
+                                        onTap: () => alElegirEstilo(e),
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                          child: Text(tr(etiquetaEstilo(e)),
+                                              style: TextStyle(
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.w700,
+                                                  color: estiloActivo == e
+                                                      ? Theme.of(context).colorScheme.onPrimary
+                                                      : acentoSuave)),
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
                             ),
                           ],
-                        ),
-                      ],
-                      if (m.especialidades.isNotEmpty) ...[
-                        const SizedBox(height: 10),
-                        Wrap(
-                          spacing: 6,
-                          runSpacing: 6,
-                          children: [
-                            for (final e in m.especialidades.take(3))
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                decoration: BoxDecoration(
-                                  color: acento.withValues(alpha: 0.14),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: Text(tr(etiquetaEstilo(e)),
-                                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: acentoSuave)),
-                              ),
-                          ],
-                        ),
-                      ],
+                        ],
+                      ),
                       const SizedBox(height: 14),
                       const Divider(height: 1),
                       const SizedBox(height: 14),

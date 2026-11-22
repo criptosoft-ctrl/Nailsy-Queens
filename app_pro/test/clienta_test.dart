@@ -95,7 +95,7 @@ void main() {
     expect(find.text('Gel'), findsNothing);
 
     // Sin resultados: mensaje y botón para quitar filtros.
-    await tester.tap(find.text('Niños'));
+    await tester.tap(find.text('A domicilio'));
     await tester.pumpAndSettle();
     expect(find.text('No hemos encontrado barberos con esos filtros.'), findsOneWidget);
     await tester.tap(find.text('Restablecer filtros'));
@@ -125,6 +125,12 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Eudy Nails'), findsNothing);
     expect(find.text('Acrylic Studio'), findsOneWidget);
+
+    // Arriba queda el estilo elegido; al tocarlo se quita el filtro.
+    expect(find.text('Acrílico'), findsNWidgets(2));
+    await tester.tap(find.text('Acrílico').first);
+    await tester.pumpAndSettle();
+    expect(find.text('Eudy Nails'), findsOneWidget);
   });
 
   testWidgets('El perfil muestra servicios y botón de reservar', (tester) async {
