@@ -9,6 +9,7 @@ import 'package:nailsy_pro/models/huecos.dart';
 import 'package:nailsy_pro/models/publico.dart';
 import 'package:nailsy_pro/screens/clientas_screen.dart';
 import 'package:nailsy_pro/screens/estadisticas_screen.dart';
+import 'package:nailsy_pro/screens/perfil_publico_screen.dart';
 
 /// Pantalla de móvil alta (400x900) para que quepa todo.
 void _movil(WidgetTester tester) {
@@ -128,10 +129,13 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Mi perfil público'));
     await tester.pumpAndSettle();
-    final lista = find.byType(Scrollable).first;
-    await tester.scrollUntilVisible(find.text('Nueva especialidad'), 300, scrollable: lista);
+    final lista =
+        find.descendant(of: find.byType(PerfilPublicoScreen), matching: find.byType(Scrollable)).first;
+    await tester.scrollUntilVisible(find.widgetWithText(InputChip, 'Manicura rusa'), 200, scrollable: lista);
     await tester.pumpAndSettle();
     expect(find.widgetWithText(InputChip, 'Manicura rusa'), findsOneWidget);
+    await tester.ensureVisible(find.widgetWithText(TextField, 'Nueva especialidad'));
+    await tester.pumpAndSettle();
 
     await tester.enterText(find.widgetWithText(TextField, 'Nueva especialidad'), 'uñas esculpidas');
     await tester.tap(find.byTooltip('Añadir'));
