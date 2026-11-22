@@ -2,7 +2,7 @@
 
 /// Español -> (inglés, alemán).
 const traducciones = <String, (String, String)>{
-  '¿Qué te apetece hoy?': ('What are you in the mood for today?', 'Worauf hast du heute Lust?'),
+  '¿Qué te apetece hoy?': ('What do you fancy today?', 'Worauf hast du heute Lust?'),
   'Reserva belleza cerca de ti, sin llamadas.': ('Book beauty near you, no phone calls.', 'Beauty-Termine in deiner Nähe buchen, ohne Anruf.'),
   'Reservar': ('Book', 'Buchen'),
   'Próximamente': ('Coming soon', 'Demnächst'),
