@@ -471,40 +471,37 @@ class _BloqueManicurista extends StatelessWidget {
                               ],
                             ),
                           ),
-                          if (m.especialidades.isNotEmpty) ...[
-                            const SizedBox(width: 10),
-                            // Etiquetas de estilo a la derecha del nombre: al tocarlas se filtra por ese estilo.
-                            Flexible(
-                              child: Wrap(
-                                alignment: WrapAlignment.end,
-                                spacing: 6,
-                                runSpacing: 6,
-                                children: [
-                                  for (final e in m.especialidades)
-                                    Material(
-                                      color: estiloActivo == e ? acento : acento.withValues(alpha: 0.14),
-                                      borderRadius: BorderRadius.circular(10),
-                                      child: InkWell(
-                                        borderRadius: BorderRadius.circular(10),
-                                        onTap: () => alElegirEstilo(e),
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                          child: Text(tr(etiquetaEstilo(e)),
-                                              style: TextStyle(
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.w700,
-                                                  color: estiloActivo == e
-                                                      ? Theme.of(context).colorScheme.onPrimary
-                                                      : acentoSuave)),
-                                        ),
-                                      ),
-                                    ),
-                                ],
-                              ),
-                            ),
-                          ],
                         ],
                       ),
+                      if (m.especialidades.isNotEmpty) ...[
+                        const SizedBox(height: 12),
+                        // Especialidades una al lado de la otra; al tocarlas se filtra por ese estilo.
+                        Wrap(
+                          spacing: 6,
+                          runSpacing: 6,
+                          children: [
+                            for (final e in m.especialidades)
+                              Material(
+                                color: estiloActivo == e ? acento : acento.withValues(alpha: 0.14),
+                                borderRadius: BorderRadius.circular(10),
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(10),
+                                  onTap: () => alElegirEstilo(e),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                    child: Text(tr(etiquetaEstilo(e)),
+                                        style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w700,
+                                            color: estiloActivo == e
+                                                ? Theme.of(context).colorScheme.onPrimary
+                                                : acentoSuave)),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ],
                       const SizedBox(height: 14),
                       const Divider(height: 1),
                       const SizedBox(height: 14),
