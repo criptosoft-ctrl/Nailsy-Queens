@@ -25,6 +25,7 @@ class Sector {
     required this.sobreColor,
     required this.colorSuave,
     required this.imagen,
+    required this.imagenVacio,
     required this.clientes,
     required this.cliente,
     required this.laCliente,
@@ -66,6 +67,9 @@ class Sector {
   /// Foto decorativa de la tarjeta de la portada.
   final String imagen;
 
+  /// Ilustración de "sin resultados" en el buscador.
+  final String imagenVacio;
+
   /// Vocabulario: "Clientas"/"Clientes", "clienta"/"cliente", "la clienta"/"el cliente"…
   final String clientes;
   final String cliente;
@@ -103,6 +107,7 @@ const sectores = [
     sobreColor: NailsyColors.sobreRosa,
     colorSuave: NailsyColors.rosaSuave,
     imagen: 'assets/portada/unas.jpg',
+    imagenVacio: 'assets/vacio/nails.png',
     clientes: 'Clientas',
     cliente: 'clienta',
     laCliente: 'la clienta',
@@ -127,6 +132,7 @@ const sectores = [
     sobreColor: NailsyColors.sobreAzulBarberia,
     colorSuave: Color(0xFFA9C4F7),
     imagen: 'assets/portada/barberia.jpg',
+    imagenVacio: 'assets/vacio/barberia.png',
     clientes: 'Clientes',
     cliente: 'cliente',
     laCliente: 'el cliente',
@@ -150,6 +156,7 @@ const sectores = [
     sobreColor: NailsyColors.sobreVioletaPeluqueria,
     colorSuave: Color(0xFFD0BDF9),
     imagen: 'assets/portada/peluqueria.jpg',
+    imagenVacio: 'assets/vacio/peluqueria.png',
     clientes: 'Clientas',
     cliente: 'clienta',
     laCliente: 'la clienta',
@@ -173,6 +180,7 @@ const sectores = [
     sobreColor: NailsyColors.sobreSalviaEstetica,
     colorSuave: Color(0xFFA8E3CF),
     imagen: 'assets/portada/estetica.jpg',
+    imagenVacio: 'assets/vacio/estetica.png',
     clientes: 'Clientas',
     cliente: 'clienta',
     laCliente: 'la clienta',

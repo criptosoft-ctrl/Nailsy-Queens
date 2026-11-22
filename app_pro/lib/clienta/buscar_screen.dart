@@ -110,6 +110,17 @@ class _BuscarScreenState extends State<BuscarScreen> {
     if (reservado == true) widget.alReservar();
   }
 
+  /// Quita todos los filtros y vuelve a buscar.
+  void _restablecer() {
+    _texto.clear();
+    setState(() {
+      _soloHoy = false;
+      _estilo = null;
+      _cerca = null;
+    });
+    _buscar();
+  }
+
   Widget _chip(String texto, bool sel, VoidCallback onTap, {Widget? icono}) {
     // Activo: fondo del color de la sección. Resto: oscuro con borde sutil.
     return Material(
@@ -259,11 +270,10 @@ class _BuscarScreenState extends State<BuscarScreen> {
                 const SliverFillRemaining(hasScrollBody: false, child: Center(child: CircularProgressIndicator()))
               else if (_resultados.isEmpty)
                 SliverToBoxAdapter(
-                  child: EstadoVacio(
-                    icono: Icons.search_off,
-                    texto: _soloHoy
-                        ? 'Nadie tiene huecos libres hoy con esos filtros.\nQuita "Hoy" para ver los próximos días.'
-                        : 'No hemos encontrado ${_sector.profesional}s con esos filtros.\nPrueba con otra zona o estilo.',
+                  child: _SinResultados(
+                    sector: _sector,
+                    soloHoy: _soloHoy,
+                    alRestablecer: _restablecer,
                   ),
                 )
               else
@@ -513,6 +523,66 @@ class _BloqueManicurista extends StatelessWidget {
           ),
         ],
       ],
+    );
+  }
+}
+
+
+/// Pantalla de "sin resultados": ilustración dorada de la sección, mensaje y botón para quitar filtros.
+class _SinResultados extends StatelessWidget {
+  const _SinResultados({required this.sector, required this.soloHoy, required this.alRestablecer});
+
+  final Sector sector;
+  final bool soloHoy;
+  final VoidCallback alRestablecer;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 40),
+      child: Column(
+        children: [
+          SizedBox(
+            width: 240,
+            height: 240,
+            child: ShaderMask(
+              // Funde los bordes de la ilustración con el fondo.
+              shaderCallback: (r) => const RadialGradient(
+                colors: [Colors.white, Colors.white, Colors.transparent],
+                stops: [0.0, 0.78, 1.0],
+              ).createShader(r),
+              blendMode: BlendMode.dstIn,
+              child: Image.asset(sector.imagenVacio, fit: BoxFit.contain),
+            ),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'No hemos encontrado ${sector.profesional}s con esos filtros.',
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 24, height: 1.2, fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            soloHoy ? 'Quita «Hoy» para ver los próximos días.' : 'Prueba con otra zona o estilo.',
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 16, color: NailsyColors.textoSecundario),
+          ),
+          const SizedBox(height: 26),
+          OutlinedButton.icon(
+            onPressed: alRestablecer,
+            style: OutlinedButton.styleFrom(
+              foregroundColor: NailsyColors.texto,
+              side: const BorderSide(color: NailsyColors.oro, width: 1.5),
+              minimumSize: const Size(0, 54),
+              padding: const EdgeInsets.symmetric(horizontal: 28),
+              shape: const StadiumBorder(),
+              textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+            ),
+            icon: const Icon(Icons.refresh_rounded, color: NailsyColors.oro),
+            label: const Text('Restablecer filtros'),
+          ),
+        ],
+      ),
     );
   }
 }

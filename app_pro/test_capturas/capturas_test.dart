@@ -153,6 +153,15 @@ void main() {
     await tester.tap(find.text('Barbershop'));
     await tester.pumpAndSettle();
     await _foto('c07_barbershop');
+    await tester.tap(find.text('Niños'));
+    await tester.pumpAndSettle();
+    await tester.runAsync(() async {
+      await precacheImage(const AssetImage('assets/vacio/barberia.png'), tester.element(find.text('Restablecer filtros')));
+    });
+    await tester.pumpAndSettle();
+    await _foto('c09_sin_resultados');
+    await tester.tap(find.text('Restablecer filtros'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Leo Barber'));
     await tester.pumpAndSettle();
     await _foto('c08_perfil_barbero');

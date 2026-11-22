@@ -63,6 +63,14 @@ void main() {
     expect(find.text('Degradado'), findsWidgets);
     expect(find.text('Gel'), findsNothing);
 
+    // Sin resultados: mensaje y botón para quitar filtros.
+    await tester.tap(find.text('Niños'));
+    await tester.pumpAndSettle();
+    expect(find.text('No hemos encontrado barberos con esos filtros.'), findsOneWidget);
+    await tester.tap(find.text('Restablecer filtros'));
+    await tester.pumpAndSettle();
+    expect(find.text('Leo Barber'), findsOneWidget);
+
     await tester.tap(find.text('Leo Barber'));
     await tester.pumpAndSettle();
     expect(find.text('Corte degradado'), findsOneWidget);

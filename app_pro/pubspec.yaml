@@ -1,7 +1,7 @@
 name: nailsy_pro
 description: Nailsy Queens — App Pro para manicuristas (agenda, fichas y cobros).
 publish_to: 'none'
-version: 0.6.2+15
+version: 0.6.3+16
 
 environment:
   sdk: ">=3.4.0 <4.0.0"
@@ -26,6 +26,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/portada/
+    - assets/vacio/
   fonts:
     - family: PlusJakartaSans
       fonts:
