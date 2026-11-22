@@ -601,10 +601,15 @@ class TarjetaDomicilio extends StatelessWidget {
                 fondo: context.acento.withValues(alpha: 0.16),
                 icono: Icons.home_outlined,
               ),
-              const Spacer(),
+              const SizedBox(width: 10),
               if (c.suplemento > 0)
-                Text('Desplazamiento +${precio(c.suplemento)}',
-                    style: const TextStyle(color: NailsyColors.textoSecundario, fontSize: 13)),
+                Expanded(
+                  child: Text('Desplazamiento +${precio(c.suplemento)}',
+                      textAlign: TextAlign.right,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(color: NailsyColors.textoSecundario, fontSize: 13)),
+                ),
             ],
           ),
           const SizedBox(height: 10),

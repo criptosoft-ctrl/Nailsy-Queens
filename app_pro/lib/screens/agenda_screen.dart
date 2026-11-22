@@ -534,16 +534,23 @@ class _FilaViaje extends StatelessWidget {
           child: Text(_hora.format(inicio), style: const TextStyle(color: NailsyColors.textoSecundario)),
         ),
         const Expanded(child: LineaDiscontinua()),
-        Padding(
+        Flexible(
+          flex: 4,
+          child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 10),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(Icons.directions_car_outlined, size: 16, color: context.acentoSuave),
               const SizedBox(width: 6),
-              Text('${ida ? 'Viaje de ida' : 'Vuelta'} · $minutos min',
-                  style: const TextStyle(color: NailsyColors.textoSecundario)),
+              Flexible(
+                child: Text('${ida ? 'Viaje de ida' : 'Vuelta'} · $minutos min',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(color: NailsyColors.textoSecundario)),
+              ),
             ],
+          ),
           ),
         ),
         const Expanded(child: LineaDiscontinua()),

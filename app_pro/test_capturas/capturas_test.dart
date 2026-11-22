@@ -279,7 +279,11 @@ void main() {
     await tester.enterText(find.byType(TextField).first, 'C/ Perojo 22, 3ºB');
     await tester.tap(find.text('Usar mi ubicación para comprobar la zona'));
     await tester.pumpAndSettle();
+    final lista = find.descendant(of: find.byType(ReservarScreen), matching: find.byType(Scrollable)).first;
+    await tester.scrollUntilVisible(find.widgetWithText(ChoiceChip, '10:00'), 300, scrollable: lista);
     await tester.tap(find.widgetWithText(ChoiceChip, '10:00'));
+    await tester.pumpAndSettle();
+    await tester.drag(lista, const Offset(0, 2000));
     await tester.pumpAndSettle();
     await _foto('d02_reservar_domicilio');
 
