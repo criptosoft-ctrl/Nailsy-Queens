@@ -6,6 +6,7 @@ import '../theme.dart';
 import '../widgets/comunes.dart';
 import 'acceso_clienta.dart';
 import 'clienta_repo.dart';
+import '../i18n.dart';
 
 class MisCitasScreen extends StatefulWidget {
   const MisCitasScreen({super.key, required this.repo, required this.alBuscar});
@@ -42,7 +43,7 @@ class _MisCitasScreenState extends State<MisCitasScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _cargando = false);
-      aviso(context, 'No se pudieron cargar tus citas.');
+      aviso(context, tr('No se pudieron cargar tus citas.'));
     }
   }
 
@@ -58,13 +59,13 @@ class _MisCitasScreenState extends State<MisCitasScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: NailsyColors.superficie,
-        title: const Text('¿Cancelar la cita?'),
+        title: Text(tr('¿Cancelar la cita?')),
         content: Text(c.cancelacionGratis
-            ? 'Se liberará el hueco para otra persona.'
-            : 'Faltan menos de ${c.horasCancelacion} h. Avisa también a ${c.manicurista} si puedes.'),
+            ? tr('Se liberará el hueco para otra persona.')
+            : tr('Faltan menos de {h} h. Avisa también a {n} si puedes.', {'h': c.horasCancelacion, 'n': c.manicurista})),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('No')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Sí, cancelar')),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(tr('No'))),
+          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(tr('Sí, cancelar'))),
         ],
       ),
     );
@@ -72,7 +73,7 @@ class _MisCitasScreenState extends State<MisCitasScreen> {
     try {
       await widget.repo.cancelar(c.id);
       await _cargar();
-      if (mounted) aviso(context, 'Cita cancelada');
+      if (mounted) aviso(context, tr('Cita cancelada'));
     } catch (e) {
       if (mounted) aviso(context, mensajeError(e));
     }
@@ -83,34 +84,34 @@ class _MisCitasScreenState extends State<MisCitasScreen> {
     final proximas = _citas.where((c) => c.futura && c.activa).toList()..sort((a, b) => a.inicio.compareTo(b.inicio));
     final pasadas = _citas.where((c) => !(c.futura && c.activa)).toList();
     return Scaffold(
-      appBar: AppBar(title: const Text('Mis citas', style: TextStyle(fontWeight: FontWeight.w700))),
+      appBar: AppBar(title: Text(tr('Mis citas'), style: const TextStyle(fontWeight: FontWeight.w700))),
       body: _cargando
           ? const Center(child: CircularProgressIndicator())
           : !widget.repo.conSesion
               ? EstadoVacio(
                   icono: Icons.lock_outline,
-                  texto: 'Entra en tu cuenta para ver tus citas.',
-                  accion: FilledButton(onPressed: _entrar, child: const Text('Entrar o crear cuenta')),
+                  texto: tr('Entra en tu cuenta para ver tus citas.'),
+                  accion: FilledButton(onPressed: _entrar, child: Text(tr('Entrar o crear cuenta'))),
                 )
               : RefreshIndicator(
                   onRefresh: _cargar,
                   child: ListView(
                     padding: const EdgeInsets.fromLTRB(16, 0, 16, 40),
                     children: [
-                      const TituloSeccion('Próximas'),
+                      TituloSeccion(tr('Próximas')),
                       if (proximas.isEmpty)
                         EstadoVacio(
                           icono: Icons.event_available_outlined,
-                          texto: 'No tienes citas próximas.',
+                          texto: tr('No tienes citas próximas.'),
                           accion: FilledButton.icon(
                             onPressed: widget.alBuscar,
                             icon: const Icon(Icons.search),
-                            label: const Text('Buscar en GlamGo'),
+                            label: Text(tr('Buscar en GlamGo')),
                           ),
                         ),
                       for (final c in proximas) _TarjetaCita(cita: c, onCancelar: () => _cancelar(c)),
                       if (pasadas.isNotEmpty) ...[
-                        const TituloSeccion('Anteriores y canceladas'),
+                        TituloSeccion(tr('Anteriores y canceladas')),
                         for (final c in pasadas) _TarjetaCita(cita: c),
                       ],
                     ],
@@ -130,7 +131,7 @@ class _TarjetaCita extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = cita;
     final apagada = onCancelar == null;
-    final fecha = DateFormat("EEE d 'de' MMMM · HH:mm", 'es').format(c.inicio);
+    final fecha = DateFormat.MMMEd(codigoIdioma).add_Hm().format(c.inicio);
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Opacity(
@@ -154,16 +155,17 @@ class _TarjetaCita extends StatelessWidget {
                 Text([c.direccion, c.ciudad].whereType<String>().join(', '),
                     style: const TextStyle(color: NailsyColors.textoSecundario, fontSize: 13)),
               if (c.estado == 'cancelada')
-                const Padding(
-                  padding: EdgeInsets.only(top: 6),
-                  child: Text('Cancelada', style: TextStyle(color: NailsyColors.rojo, fontWeight: FontWeight.w600)),
+                Padding(
+                  padding: const EdgeInsets.only(top: 6),
+                  child: Text(tr('Cancelada'),
+                      style: const TextStyle(color: NailsyColors.rojo, fontWeight: FontWeight.w600)),
                 ),
               if (onCancelar != null)
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
                     onPressed: onCancelar,
-                    child: const Text('Cancelar cita', style: TextStyle(color: NailsyColors.rojo)),
+                    child: Text(tr('Cancelar cita'), style: const TextStyle(color: NailsyColors.rojo)),
                   ),
                 ),
             ],

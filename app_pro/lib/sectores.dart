@@ -42,7 +42,7 @@ class Sector {
   /// Nombre del servicio ("Uñas", "Barbería"…).
   final String nombre;
 
-  /// Nombre de la sección dentro de GlamGo ("Nailsy Queens"…).
+  /// Nombre de la sección dentro de GlamGo ("Manicura", "Barbería"…).
   final String marca;
   final String descripcion;
 
@@ -96,7 +96,7 @@ const sectores = [
   Sector(
     id: 'nails',
     nombre: 'Uñas',
-    marca: 'Nailsy Queens',
+    marca: 'Manicura',
     descripcion: 'Manicura, gel, acrílico y nail art',
     lema: 'Manicura y nail art cerca de ti',
     icono: Icons.front_hand_outlined,
@@ -121,7 +121,7 @@ const sectores = [
   Sector(
     id: 'barberia',
     nombre: 'Barbería',
-    marca: 'Barbershop',
+    marca: 'Barbería',
     descripcion: 'Cortes, degradados y barba',
     lema: 'Cortes y barba cerca de ti',
     icono: Icons.content_cut,

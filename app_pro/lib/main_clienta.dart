@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'clienta/app_clienta.dart';
 import 'clienta/clienta_repo.dart';
+import 'i18n.dart';
 
 /// App de CLIENTAS (buscar manicurista y reservar).
 /// Se compila con:  flutter build web -t lib/main_clienta.dart
@@ -15,7 +16,8 @@ const modoDemo = supabaseUrl == '' || supabaseAnonKey == '';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await initializeDateFormatting('es');
+  await initializeDateFormatting(); // fechas en español, inglés y alemán
+  await cargarIdioma();
   final ClientaRepo repo;
   if (modoDemo) {
     repo = DemoClientaRepo();

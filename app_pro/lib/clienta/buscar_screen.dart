@@ -8,6 +8,7 @@ import '../ubicacion.dart';
 import '../widgets/comunes.dart';
 import 'clienta_repo.dart';
 import 'perfil_manicurista_screen.dart';
+import '../i18n.dart';
 
 /// Pantalla principal de la clienta ("Descubrir"): buscar manicurista por zona, estilo,
 /// cercanía o disponibilidad hoy.
@@ -76,7 +77,7 @@ class _BuscarScreenState extends State<BuscarScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _cargando = false);
-      aviso(context, 'No se pudo buscar. Revisa tu conexión.');
+      aviso(context, tr('No se pudo buscar. Revisa tu conexión.'));
     }
   }
 
@@ -166,7 +167,7 @@ class _BuscarScreenState extends State<BuscarScreen> {
                           if (widget.alVolver != null) ...[
                             // Flecha atrás discreta: círculo fino.
                             Tooltip(
-                              message: 'Volver a GlamGo',
+                              message: tr('Volver a GlamGo'),
                               child: Material(
                                 color: Colors.transparent,
                                 shape: const CircleBorder(side: BorderSide(color: NailsyColors.borde)),
@@ -187,11 +188,11 @@ class _BuscarScreenState extends State<BuscarScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(_sector.marca,
+                                Text(tr(_sector.marca),
                                     style: TextStyle(
                                         fontSize: 26, height: 1.1, fontWeight: FontWeight.w800, color: _acento)),
                                 const SizedBox(height: 2),
-                                Text(_sector.lema,
+                                Text(tr(_sector.lema),
                                     style: const TextStyle(fontSize: 14, color: NailsyColors.textoSecundario)),
                               ],
                             ),
@@ -203,7 +204,7 @@ class _BuscarScreenState extends State<BuscarScreen> {
                         controller: _texto,
                         textInputAction: TextInputAction.search,
                         decoration: InputDecoration(
-                          hintText: '${_mayuscula(_sector.profesional)}, estilo o zona',
+                          hintText: tr('{p}, estilo o zona', {'p': _mayuscula(tr(_sector.profesional))}),
                           prefixIcon: Icon(Icons.search, color: _acento),
                           filled: true,
                           fillColor: NailsyColors.superficie,
@@ -233,12 +234,12 @@ class _BuscarScreenState extends State<BuscarScreen> {
                     spacing: 8,
                     runSpacing: 8,
                     children: [
-                      _chip('Hoy', _soloHoy, () {
+                      _chip(tr('Hoy'), _soloHoy, () {
                         setState(() => _soloHoy = !_soloHoy);
                         _buscar();
                       }),
                       _chip(
-                        'Cerca de mí',
+                        tr('Cerca de mí'),
                         _cerca != null,
                         _localizando ? () {} : _cercaDeMi,
                         icono: _localizando
@@ -246,7 +247,7 @@ class _BuscarScreenState extends State<BuscarScreen> {
                             : null,
                       ),
                       for (final e in _sector.estilos.entries)
-                        _chip(e.value, _estilo == e.key, () {
+                        _chip(tr(e.value), _estilo == e.key, () {
                           setState(() => _estilo = _estilo == e.key ? null : e.key);
                           _buscar();
                         }),
@@ -259,8 +260,8 @@ class _BuscarScreenState extends State<BuscarScreen> {
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
                     child: Text(
-                      '${_resultados.length} ${_resultados.length == 1 ? _sector.profesional : '${_sector.profesional}s'}'
-                      '${_cerca != null ? ' · por cercanía' : ''}',
+                      '${_resultados.length} ${tr(_resultados.length == 1 ? _sector.profesional : '${_sector.profesional}s')}'
+                      '${_cerca != null ? tr(' · por cercanía') : ''}',
                       style: const TextStyle(fontSize: 13, color: NailsyColors.textoSecundario),
                     ),
                   ),
@@ -302,9 +303,9 @@ String textoDisponible(DateTime h, DateTime ahora) {
   final hoy = DateTime(ahora.year, ahora.month, ahora.day);
   final d = DateTime(h.year, h.month, h.day);
   final hora = DateFormat('HH:mm').format(h);
-  if (d == hoy) return 'Hoy · $hora';
-  if (d == hoy.add(const Duration(days: 1))) return 'Mañana · $hora';
-  final dia = DateFormat('EEE d', 'es').format(h).replaceAll('.', '');
+  if (d == hoy) return tr('Hoy · {h}', {'h': hora});
+  if (d == hoy.add(const Duration(days: 1))) return tr('Mañana · {h}', {'h': hora});
+  final dia = DateFormat('EEE d', codigoIdioma).format(h).replaceAll('.', '');
   return '${dia[0].toUpperCase()}${dia.substring(1)} · $hora';
 }
 
@@ -313,9 +314,10 @@ String textoProximoHueco(DateTime h, DateTime ahora) {
   final hoy = DateTime(ahora.year, ahora.month, ahora.day);
   final d = DateTime(h.year, h.month, h.day);
   final hora = DateFormat('HH:mm').format(h);
-  if (d == hoy) return 'Libre hoy a las $hora';
-  if (d == hoy.add(const Duration(days: 1))) return 'Libre mañana a las $hora';
-  return 'Libre el ${DateFormat('EEE d', 'es').format(h).replaceAll('.', '')} a las $hora';
+  if (d == hoy) return tr('Libre hoy a las {h}', {'h': hora});
+  if (d == hoy.add(const Duration(days: 1))) return tr('Libre mañana a las {h}', {'h': hora});
+  return tr('Libre el {d} a las {h}',
+      {'d': DateFormat('EEE d', codigoIdioma).format(h).replaceAll('.', ''), 'h': hora});
 }
 
 class _BloqueManicurista extends StatelessWidget {
@@ -331,8 +333,8 @@ class _BloqueManicurista extends StatelessWidget {
     final distancia = m.distanciaKm == null
         ? null
         : m.distanciaKm! < 1
-            ? 'A ${(m.distanciaKm! * 1000).round()} m'
-            : 'A ${m.distanciaKm!.toStringAsFixed(1).replaceAll('.', ',')} km';
+            ? tr('A {d}', {'d': '${(m.distanciaKm! * 1000).round()} m'})
+            : tr('A {d}', {'d': '${NumberFormat('0.0', codigoIdioma).format(m.distanciaKm!)} km'});
     final acento = Theme.of(context).colorScheme.primary;
     final acentoSuave = Theme.of(context).colorScheme.secondary;
     return Column(
@@ -413,7 +415,7 @@ class _BloqueManicurista extends StatelessWidget {
                                   color: acento.withValues(alpha: 0.14),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
-                                child: Text(etiquetaEstilo(e),
+                                child: Text(tr(etiquetaEstilo(e)),
                                     style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: acentoSuave)),
                               ),
                           ],
@@ -444,7 +446,7 @@ class _BloqueManicurista extends StatelessWidget {
                                     Flexible(
                                       child: Text(
                                         m.proximoHueco == null
-                                            ? 'Sin huecos próximos'
+                                            ? tr('Sin huecos próximos')
                                             : textoDisponible(m.proximoHueco!, DateTime.now()),
                                         style: TextStyle(
                                           color: m.proximoHueco == null
@@ -460,9 +462,9 @@ class _BloqueManicurista extends StatelessWidget {
                                 if (m.precioDesde != null) ...[
                                   const SizedBox(height: 4),
                                   Text.rich(TextSpan(children: [
-                                    const TextSpan(
-                                        text: 'Desde ',
-                                        style: TextStyle(color: NailsyColors.textoSecundario, fontSize: 13)),
+                                    TextSpan(
+                                        text: tr('Desde '),
+                                        style: const TextStyle(color: NailsyColors.textoSecundario, fontSize: 13)),
                                     TextSpan(
                                         text: precio(m.precioDesde!),
                                         style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
@@ -483,12 +485,12 @@ class _BloqueManicurista extends StatelessWidget {
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                             ),
                             onPressed: onTap,
-                            child: const Row(
+                            child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Text('Reservar'),
-                                SizedBox(width: 6),
-                                Icon(Icons.arrow_forward, size: 18),
+                                Text(tr('Reservar')),
+                                const SizedBox(width: 6),
+                                const Icon(Icons.arrow_forward, size: 18),
                               ],
                             ),
                           ),
@@ -503,7 +505,7 @@ class _BloqueManicurista extends StatelessWidget {
         ),
         if (otras.isNotEmpty) ...[
           const SizedBox(height: 16),
-          Text('Más trabajos de ${m.nombre.split(' ').first}',
+          Text(tr('Más trabajos de {n}', {'n': m.nombre.split(' ').first}),
               style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
           const SizedBox(height: 10),
           SizedBox(
@@ -557,13 +559,13 @@ class _SinResultados extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           Text(
-            'No hemos encontrado ${sector.profesional}s con esos filtros.',
+            tr('No hemos encontrado {p} con esos filtros.', {'p': tr('${sector.profesional}s')}),
             textAlign: TextAlign.center,
             style: const TextStyle(fontSize: 24, height: 1.2, fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 10),
           Text(
-            soloHoy ? 'Quita «Hoy» para ver los próximos días.' : 'Prueba con otra zona o estilo.',
+            tr(soloHoy ? 'Quita «Hoy» para ver los próximos días.' : 'Prueba con otra zona o estilo.'),
             textAlign: TextAlign.center,
             style: const TextStyle(fontSize: 16, color: NailsyColors.textoSecundario),
           ),
@@ -583,7 +585,7 @@ class _SinResultados extends StatelessWidget {
               textStyle: const TextStyle(fontFamily: fuenteNailsy, fontSize: 16, fontWeight: FontWeight.w700),
             ),
             icon: const Icon(Icons.refresh_rounded, color: NailsyColors.oro),
-            label: const Text('Restablecer filtros', overflow: TextOverflow.ellipsis),
+            label: Text(tr('Restablecer filtros'), overflow: TextOverflow.ellipsis),
           ),
           ),
             ],

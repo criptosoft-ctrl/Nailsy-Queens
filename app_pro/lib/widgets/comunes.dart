@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../data/agenda_repo.dart';
 import '../theme.dart';
+import '../i18n.dart';
 
 final euros = NumberFormat.currency(locale: 'es_ES', symbol: '€', decimalDigits: 2);
 
@@ -21,7 +22,7 @@ void aviso(BuildContext context, String texto) {
 
 /// Traduce cualquier error a un mensaje para la manicurista.
 String mensajeError(Object e) {
-  if (e is ErrorNailsy) return e.mensaje;
+  if (e is ErrorNailsy) return tr(e.mensaje);
   // Mientras probamos, enseñamos el motivo técnico para poder arreglarlo.
   if (e is StorageException) return 'Error al guardar el archivo (${e.statusCode ?? '-'}): ${e.message}';
   if (e is PostgrestException) return 'Error de la base de datos (${e.code ?? '-'}): ${e.message}';

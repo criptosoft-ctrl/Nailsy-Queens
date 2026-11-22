@@ -7,6 +7,7 @@ import '../widgets/comunes.dart';
 import 'clienta_repo.dart';
 import 'reservar_screen.dart';
 import '../sectores.dart';
+import '../i18n.dart';
 
 /// Perfil de una manicurista tal como lo ve la clienta. Devuelve `true` si se reservó.
 class PerfilManicuristaScreen extends StatefulWidget {
@@ -78,7 +79,7 @@ class _PerfilManicuristaScreenState extends State<PerfilManicuristaScreen> {
     if (p == null) {
       return Scaffold(
         appBar: AppBar(),
-        body: const EstadoVacio(icono: Icons.storefront_outlined, texto: 'Este perfil ya no está disponible.'),
+        body: EstadoVacio(icono: Icons.storefront_outlined, texto: tr('Este perfil ya no está disponible.')),
       );
     }
     final urlPerfil = widget.repo.urlFoto(p.foto);
@@ -149,7 +150,7 @@ class _PerfilManicuristaScreenState extends State<PerfilManicuristaScreen> {
                             color: context.acento.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Text(etiquetaEstilo(e),
+                          child: Text(tr(etiquetaEstilo(e)),
                               style: TextStyle(color: context.acentoSuave, fontSize: 12)),
                         ),
                     ],
@@ -162,7 +163,7 @@ class _PerfilManicuristaScreenState extends State<PerfilManicuristaScreen> {
 
                 // ---- Trabajos ----
                 if (p.fotos.isNotEmpty) ...[
-                  TituloSeccion('Trabajos (${p.fotos.length})'),
+                  TituloSeccion(tr('Trabajos ({n})', {'n': p.fotos.length})),
                   GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
@@ -179,9 +180,9 @@ class _PerfilManicuristaScreenState extends State<PerfilManicuristaScreen> {
                     ),
                   ),
                 ],
-                const TituloSeccion('Servicios'),
+                TituloSeccion(tr('Servicios')),
                 if (p.servicios.isEmpty)
-                  const Text('Todavía no ha publicado servicios.', style: TextStyle(color: NailsyColors.textoSecundario)),
+                  Text(tr('Todavía no ha publicado servicios.'), style: const TextStyle(color: NailsyColors.textoSecundario)),
                 for (final s in p.servicios)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 8),
@@ -204,21 +205,21 @@ class _PerfilManicuristaScreenState extends State<PerfilManicuristaScreen> {
                           FilledButton(
                             style: FilledButton.styleFrom(minimumSize: const Size(0, 38)),
                             onPressed: () => _reservar(s),
-                            child: const Text('Reservar'),
+                            child: Text(tr('Reservar')),
                           ),
                         ],
                       ),
                     ),
                   ),
                 if (p.anadidos.isNotEmpty) ...[
-                  TituloSeccion(context.sector.cobroPorUna ? 'Nail Art y extras' : 'Extras'),
+                  TituloSeccion(tr(context.sector.cobroPorUna ? 'Nail Art y extras' : 'Extras')),
                   for (final a in p.anadidos)
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 4),
                       child: Row(
                         children: [
                           Expanded(child: Text(a.nombre)),
-                          Text('+${precio(a.precio)}${a.porUna ? '/uña' : ''}',
+                          Text('+${precio(a.precio)}${a.porUna ? tr('/uña') : ''}',
                               style: const TextStyle(color: NailsyColors.textoSecundario)),
                         ],
                       ),
@@ -226,7 +227,7 @@ class _PerfilManicuristaScreenState extends State<PerfilManicuristaScreen> {
                 ],
                 const SizedBox(height: 16),
                 Text(
-                  'Cancelación gratuita hasta ${p.horasCancelacion} h antes de la cita.',
+                  tr('Cancelación gratuita hasta {h} h antes de la cita.', {'h': p.horasCancelacion}),
                   style: const TextStyle(color: NailsyColors.textoSecundario, fontSize: 13),
                 ),
               ],

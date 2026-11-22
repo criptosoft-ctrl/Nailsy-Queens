@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import '../sectores.dart';
 import '../theme.dart';
 import '../widgets/comunes.dart';
+import '../widgets/selector_idioma.dart';
+import '../i18n.dart';
 
 /// Portada de GlamGo: la clienta elige qué tipo de servicio quiere reservar.
-/// Cada sector abre su propia sección (Nailsy Queens para uñas, Barbershop…).
+/// Cada sector abre su propia sección (Manicura, Barbería…).
 class InicioGlamGoScreen extends StatelessWidget {
   const InicioGlamGoScreen({super.key, required this.alAbrir});
 
@@ -16,7 +18,7 @@ class InicioGlamGoScreen extends StatelessWidget {
     if (s.activo) {
       alAbrir(s);
     } else {
-      aviso(context, '${s.marca} llega muy pronto a GlamGo.');
+      aviso(context, tr('{s} llega muy pronto a GlamGo.', {'s': tr(s.marca)}));
     }
   }
 
@@ -39,7 +41,7 @@ class InicioGlamGoScreen extends StatelessWidget {
             children: [
               const _Cabecera(),
               const SizedBox(height: 18),
-              const _TituloOro('¿Qué te apetece hoy?'),
+              _TituloOro(tr('¿Qué te apetece hoy?')),
               const SizedBox(height: 14),
               // Todas las secciones con el mismo tamaño, en cuadrícula de 2 columnas.
               GridView.count(
@@ -106,11 +108,13 @@ class _Cabecera extends StatelessWidget {
                 const SizedBox(height: 4),
                 CustomPaint(size: const Size(190, 14), painter: _TrazoDorado()),
                 const SizedBox(height: 14),
-                const Text('Reserva belleza cerca de ti, sin llamadas.',
+                Text(tr('Reserva belleza cerca de ti, sin llamadas.'),
                     style: TextStyle(color: Color(0xFFD5DAE8), fontSize: 16)),
               ],
             ),
           ),
+          // Idioma (ES / EN / DE), siempre a mano para los turistas.
+          const Positioned(top: 10, right: 0, child: BotonIdioma()),
         ],
       ),
     );
@@ -243,7 +247,7 @@ class _TarjetaSector extends StatelessWidget {
                     ),
                     const Spacer(),
                     Text(
-                      sector.marca,
+                      tr(sector.marca),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
@@ -256,7 +260,7 @@ class _TarjetaSector extends StatelessWidget {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      sector.descripcion,
+                      tr(sector.descripcion),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(fontSize: 13, height: 1.3, color: Colors.white.withValues(alpha: 0.85)),
@@ -270,16 +274,16 @@ class _TarjetaSector extends StatelessWidget {
                           border: Border.all(color: Colors.white.withValues(alpha: 0.6)),
                           color: Colors.black.withValues(alpha: 0.08),
                         ),
-                        child: const Row(
+                        child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Flexible(
-                              child: Text('Reservar',
+                              child: Text(tr('Reservar'),
                                   overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(fontWeight: FontWeight.w700, color: Colors.white, fontSize: 14)),
+                                  style: const TextStyle(fontWeight: FontWeight.w700, color: Colors.white, fontSize: 14)),
                             ),
-                            SizedBox(width: 6),
-                            Icon(Icons.arrow_forward, color: Colors.white, size: 17),
+                            const SizedBox(width: 6),
+                            const Icon(Icons.arrow_forward, color: Colors.white, size: 17),
                           ],
                         ),
                       )
@@ -291,10 +295,10 @@ class _TarjetaSector extends StatelessWidget {
                           color: Colors.white.withValues(alpha: 0.10),
                           border: Border.all(color: Colors.white.withValues(alpha: 0.14)),
                         ),
-                        child: const Text('Próximamente',
+                        child: Text(tr('Próximamente'),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: TextStyle(fontWeight: FontWeight.w700, color: Color(0xFFD5DAE8), fontSize: 13)),
+                            style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFFD5DAE8), fontSize: 13)),
                       ),
                   ],
                 ),

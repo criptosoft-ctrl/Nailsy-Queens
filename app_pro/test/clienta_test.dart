@@ -4,6 +4,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:nailsy_pro/clienta/app_clienta.dart';
 import 'package:nailsy_pro/clienta/clienta_repo.dart';
 import 'package:nailsy_pro/clienta/reservar_screen.dart';
+import 'package:nailsy_pro/i18n.dart';
 import 'package:nailsy_pro/models/publico.dart';
 import 'package:nailsy_pro/theme.dart';
 
@@ -22,20 +23,50 @@ DateTime _proximoLunes() {
 
 /// La app abre en la portada de GlamGo; entra en la sección de uñas.
 Future<void> _abrirNails(WidgetTester tester) async {
-  await tester.tap(find.text('Nailsy Queens'));
+  await tester.tap(find.text('Manicura'));
   await tester.pumpAndSettle();
 }
 
 void main() {
-  setUpAll(() => initializeDateFormatting('es'));
+  setUpAll(() => initializeDateFormatting());
+  tearDown(() => idiomaActual.value = Idioma.es);
+
+  testWidgets('Idiomas: la portada cambia a inglés y alemán desde el botón de idioma', (tester) async {
+    _movil(tester);
+    await tester.pumpWidget(ClientaApp(repo: DemoClientaRepo()));
+    await tester.pumpAndSettle();
+    expect(find.text('¿Qué te apetece hoy?'.toUpperCase()), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Idioma'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('English'));
+    await tester.pumpAndSettle();
+    expect(find.text('Manicure'), findsOneWidget);
+    expect(find.text('Barber'), findsOneWidget);
+    expect(find.text('Book'), findsNWidgets(2));
+    expect(find.text('My bookings'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Language'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Deutsch'));
+    await tester.pumpAndSettle();
+    expect(find.text('Maniküre'), findsOneWidget);
+    expect(find.text('Demnächst'), findsNWidgets(2));
+
+    // El buscador también sale en alemán.
+    await tester.tap(find.text('Maniküre'));
+    await tester.pumpAndSettle();
+    expect(find.text('Heute'), findsOneWidget);
+    expect(find.text('In meiner Nähe'), findsOneWidget);
+  });
 
   testWidgets('La portada de GlamGo muestra los sectores y abre Nailsy Queens', (tester) async {
     _movil(tester);
     await tester.pumpWidget(ClientaApp(repo: DemoClientaRepo()));
     await tester.pumpAndSettle();
 
-    expect(find.text('Nailsy Queens'), findsOneWidget);
-    expect(find.text('Barbershop'), findsOneWidget);
+    expect(find.text('Manicura'), findsOneWidget);
+    expect(find.text('Barbería'), findsOneWidget);
     expect(find.text('Peluquería'), findsOneWidget);
     expect(find.text('Próximamente'), findsNWidgets(2));
 
@@ -48,14 +79,14 @@ void main() {
     expect(find.text('Eudy Nails'), findsOneWidget);
     await tester.tap(find.byTooltip('Volver a GlamGo'));
     await tester.pumpAndSettle();
-    expect(find.text('Barbershop'), findsOneWidget);
+    expect(find.text('Barbería'), findsOneWidget);
   });
 
   testWidgets('Barbershop muestra solo barberos, con sus filtros y vocabulario', (tester) async {
     _movil(tester);
     await tester.pumpWidget(ClientaApp(repo: DemoClientaRepo()));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Barbershop'));
+    await tester.tap(find.text('Barbería'));
     await tester.pumpAndSettle();
 
     expect(find.text('Leo Barber'), findsOneWidget);
@@ -85,7 +116,7 @@ void main() {
     expect(find.text('Eudy Nails'), findsOneWidget);
     await tester.scrollUntilVisible(find.text('Acrylic Studio'), 300, scrollable: find.byType(Scrollable).first);
     expect(find.text('Acrylic Studio'), findsOneWidget);
-    await tester.scrollUntilVisible(find.text('Nailsy Queens'), -300, scrollable: find.byType(Scrollable).first);
+    await tester.scrollUntilVisible(find.text('Manicura'), -300, scrollable: find.byType(Scrollable).first);
 
     final acrilico = find.text('Acrílico').first;
     await tester.ensureVisible(acrilico);

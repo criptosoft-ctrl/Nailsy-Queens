@@ -13,6 +13,7 @@ import 'package:nailsy_pro/main.dart';
 import 'package:nailsy_pro/clienta/clienta_repo.dart';
 import 'package:nailsy_pro/clienta/reservar_screen.dart';
 import 'package:nailsy_pro/data/agenda_repo.dart';
+import 'package:nailsy_pro/i18n.dart';
 import 'package:nailsy_pro/screens/clientas_screen.dart';
 import 'package:nailsy_pro/screens/home_shell.dart';
 import 'package:nailsy_pro/screens/login_screen.dart';
@@ -86,7 +87,7 @@ DateTime _proximoLunes() {
 
 void main() {
   setUpAll(() async {
-    await initializeDateFormatting('es');
+    await initializeDateFormatting();
     await _cargarFuentes();
   });
 
@@ -104,7 +105,7 @@ void main() {
     });
     await tester.pumpAndSettle();
     await _foto('c00_inicio_glamgo');
-    await tester.tap(find.text('Nailsy Queens'));
+    await tester.tap(find.text('Manicura'));
     await tester.pumpAndSettle();
     await _foto('c01_buscar');
 
@@ -150,7 +151,7 @@ void main() {
     // Barbershop
     await tester.pumpWidget(ClientaApp(repo: DemoClientaRepo(), key: UniqueKey()));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Barbershop'));
+    await tester.tap(find.text('Barbería'));
     await tester.pumpAndSettle();
     await _foto('c07_barbershop');
     await tester.tap(find.text('Niños'));
@@ -249,5 +250,26 @@ void main() {
     await tester.tap(find.text('Mi perfil público'));
     await tester.pumpAndSettle();
     await _foto('p13_perfil_publico');
+  });
+
+  testWidgets('Capturas · idiomas (inglés y alemán)', (tester) async {
+    _movil(tester);
+    addTearDown(() => idiomaActual.value = Idioma.es);
+    for (final idioma in [Idioma.en, Idioma.de]) {
+      idiomaActual.value = idioma;
+      await tester.pumpWidget(ClientaApp(repo: DemoClientaRepo(), key: UniqueKey()));
+      await tester.pumpAndSettle();
+      await tester.runAsync(() async {
+        final ctx = tester.element(find.byType(InicioGlamGoScreen));
+        for (final f in ['cabecera', 'unas', 'barberia', 'peluqueria', 'estetica']) {
+          await precacheImage(AssetImage('assets/portada/$f.jpg'), ctx);
+        }
+      });
+      await tester.pumpAndSettle();
+      await _foto('i_${idioma.name}_portada');
+      await tester.tap(find.text(idioma == Idioma.en ? 'Manicure' : 'Maniküre'));
+      await tester.pumpAndSettle();
+      await _foto('i_${idioma.name}_buscar');
+    }
   });
 }

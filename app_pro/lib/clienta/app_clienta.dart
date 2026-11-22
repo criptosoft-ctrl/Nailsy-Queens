@@ -11,39 +11,62 @@ import 'clienta_repo.dart';
 import 'cuenta_screen.dart';
 import 'inicio_glamgo_screen.dart';
 import 'mis_citas_screen.dart';
+import '../i18n.dart';
 
-class ClientaApp extends StatelessWidget {
+class ClientaApp extends StatefulWidget {
   const ClientaApp({super.key, required this.repo, this.demo = false});
 
   final ClientaRepo repo;
   final bool demo;
 
   @override
+  State<ClientaApp> createState() => _ClientaAppState();
+}
+
+class _ClientaAppState extends State<ClientaApp> {
+  // Pestaña abierta: se conserva cuando la app se vuelve a montar al cambiar de idioma.
+  int _pestana = 0;
+
+  @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: marcaGlamGo,
-      debugShowCheckedModeBanner: false,
-      theme: temaGlamGo(),
-      locale: const Locale('es', 'ES'),
-      supportedLocales: const [Locale('es', 'ES'), Locale('es', 'CO'), Locale('en')],
-      localizationsDelegates: GlobalMaterialLocalizations.delegates,
-      home: ClientaShell(repo: repo, demo: demo),
+    // Al cambiar de idioma se repinta toda la app.
+    return ValueListenableBuilder<Idioma>(
+      valueListenable: idiomaActual,
+      builder: (context, idioma, _) => MaterialApp(
+        title: marcaGlamGo,
+        debugShowCheckedModeBanner: false,
+        theme: temaGlamGo(),
+        locale: idioma.locale,
+        supportedLocales: [for (final i in Idioma.values) i.locale],
+        localizationsDelegates: GlobalMaterialLocalizations.delegates,
+        home: ClientaShell(
+          key: ValueKey(idioma),
+          repo: widget.repo,
+          demo: widget.demo,
+          pestanaInicial: _pestana,
+          alCambiarPestana: (i) => _pestana = i,
+        ),
+      ),
     );
   }
 }
 
 class ClientaShell extends StatefulWidget {
-  const ClientaShell({super.key, required this.repo, this.demo = false});
+  const ClientaShell(
+      {super.key, required this.repo, this.demo = false, this.pestanaInicial = 0, this.alCambiarPestana});
 
   final ClientaRepo repo;
   final bool demo;
+  final int pestanaInicial;
+  final ValueChanged<int>? alCambiarPestana;
 
   @override
   State<ClientaShell> createState() => _ClientaShellState();
 }
 
 class _ClientaShellState extends State<ClientaShell> {
-  int _tab = 0;
+  late int _tab = widget.pestanaInicial;
+  set _ultimaPestana(int i) => widget.alCambiarPestana?.call(i);
   int _visitas = 0;
   StreamSubscription<void>? _sub;
 
@@ -104,6 +127,7 @@ class _ClientaShellState extends State<ClientaShell> {
 
   void irAMisCitas() => setState(() {
         _tab = 1;
+        _ultimaPestana = 1;
         _visitas++;
       });
 
@@ -111,7 +135,10 @@ class _ClientaShellState extends State<ClientaShell> {
   Widget build(BuildContext context) {
     final pantallas = [
       InicioGlamGoScreen(alAbrir: _abrirSector),
-      MisCitasScreen(key: ValueKey('citas-$_visitas'), repo: widget.repo, alBuscar: () => setState(() => _tab = 0)),
+      MisCitasScreen(key: ValueKey('citas-$_visitas'), repo: widget.repo, alBuscar: () => setState(() {
+            _tab = 0;
+            _ultimaPestana = 0;
+          })),
       CuentaScreen(key: ValueKey('cuenta-$_visitas'), repo: widget.repo),
     ];
     return Scaffold(
@@ -124,10 +151,10 @@ class _ClientaShellState extends State<ClientaShell> {
               width: double.infinity,
               color: NailsyColors.ambar,
               padding: EdgeInsets.only(top: MediaQuery.paddingOf(context).top + 4, bottom: 4),
-              child: const Text(
-                'MODO DEMO · datos de ejemplo',
+              child: Text(
+                tr('MODO DEMO · datos de ejemplo'),
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.black, fontSize: 12, fontWeight: FontWeight.w700),
+                style: const TextStyle(color: Colors.black, fontSize: 12, fontWeight: FontWeight.w700),
               ),
             ),
           Expanded(
@@ -145,6 +172,7 @@ class _ClientaShellState extends State<ClientaShell> {
         alElegir: (i) => setState(() {
           if (i != _tab) _visitas++;
           _tab = i;
+          _ultimaPestana = i;
         }),
       ),
     );
@@ -193,7 +221,7 @@ class _BarraGlamGo extends StatelessWidget {
                           color: i == seleccionada ? NailsyColors.oro : NailsyColors.textoSecundario, size: 26),
                       const SizedBox(height: 4),
                       Text(
-                        _opciones[i].$3,
+                        tr(_opciones[i].$3),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(

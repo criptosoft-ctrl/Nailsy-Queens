@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../theme.dart';
 import '../widgets/comunes.dart';
 import 'clienta_repo.dart';
+import '../i18n.dart';
 
 /// Hoja para entrar o crear cuenta de clienta. Devuelve `true` si queda la sesión iniciada.
 Future<bool> pedirAcceso(BuildContext context, ClientaRepo repo, {String? motivo}) async {
@@ -82,13 +83,13 @@ class _FormAccesoState extends State<FormAcceso> {
   Future<void> _olvide() async {
     final email = _email.text.trim();
     if (!email.contains('@')) {
-      aviso(context, 'Escribe tu email y vuelve a pulsar "¿Olvidaste tu contraseña?".');
+      aviso(context, tr('Escribe tu email y vuelve a pulsar "¿Olvidaste tu contraseña?".'));
       return;
     }
     setState(() => _cargando = true);
     try {
       await widget.repo.recuperarContrasena(email);
-      if (mounted) aviso(context, 'Te hemos enviado un enlace a $email. Ábrelo en este mismo móvil o navegador.');
+      if (mounted) aviso(context, tr('Te hemos enviado un enlace a {email}. Ábrelo en este mismo móvil o navegador.', {'email': email}));
     } catch (e) {
       if (mounted) aviso(context, mensajeError(e));
     } finally {
@@ -106,11 +107,11 @@ class _FormAccesoState extends State<FormAcceso> {
           children: [
             Icon(Icons.mark_email_unread_outlined, size: 56, color: Theme.of(context).colorScheme.primary),
             const SizedBox(height: 12),
-            const Text('Revisa tu email', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+            Text(tr('Revisa tu email'), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
             Text(
-              'Te hemos enviado un enlace a ${_email.text.trim()} para confirmar tu cuenta. '
-              'Después vuelve aquí y entra con tu email y contraseña.',
+              tr('Te hemos enviado un enlace a {email} para confirmar tu cuenta. Después vuelve aquí y entra con tu email y contraseña.',
+                  {'email': _email.text.trim()}),
               textAlign: TextAlign.center,
               style: const TextStyle(color: NailsyColors.textoSecundario),
             ),
@@ -120,7 +121,7 @@ class _FormAccesoState extends State<FormAcceso> {
                 _esperandoEmail = false;
                 _registro = false;
               }),
-              child: const Text('Ya lo he confirmado, entrar'),
+              child: Text(tr('Ya lo he confirmado, entrar')),
             ),
           ],
         ),
@@ -136,7 +137,7 @@ class _FormAccesoState extends State<FormAcceso> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(_registro ? 'Crea tu cuenta' : 'Entra en tu cuenta',
+              Text(tr(_registro ? 'Crea tu cuenta' : 'Entra en tu cuenta'),
                   style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
               if (widget.motivo != null) ...[
                 const SizedBox(height: 4),
@@ -147,14 +148,14 @@ class _FormAccesoState extends State<FormAcceso> {
                 TextFormField(
                   controller: _nombre,
                   textCapitalization: TextCapitalization.words,
-                  decoration: const InputDecoration(labelText: 'Nombre y apellido'),
-                  validator: (v) => (v == null || v.trim().isEmpty) ? 'Escribe tu nombre' : null,
+                  decoration: InputDecoration(labelText: tr('Nombre y apellido')),
+                  validator: (v) => (v == null || v.trim().isEmpty) ? tr('Escribe tu nombre') : null,
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _telefono,
                   keyboardType: TextInputType.phone,
-                  decoration: const InputDecoration(labelText: 'Teléfono (para avisarte de tu cita)'),
+                  decoration: InputDecoration(labelText: tr('Teléfono (para avisarte de tu cita)')),
                 ),
                 const SizedBox(height: 12),
               ],
@@ -163,31 +164,31 @@ class _FormAccesoState extends State<FormAcceso> {
                 keyboardType: TextInputType.emailAddress,
                 autofillHints: const [AutofillHints.email],
                 decoration: const InputDecoration(labelText: 'Email'),
-                validator: (v) => (v == null || !v.contains('@')) ? 'Email no válido' : null,
+                validator: (v) => (v == null || !v.contains('@')) ? tr('Email no válido') : null,
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _password,
                 obscureText: true,
                 autofillHints: const [AutofillHints.password],
-                decoration: const InputDecoration(labelText: 'Contraseña'),
-                validator: (v) => (v == null || v.length < 6) ? 'Mínimo 6 caracteres' : null,
+                decoration: InputDecoration(labelText: tr('Contraseña')),
+                validator: (v) => (v == null || v.length < 6) ? tr('Mínimo 6 caracteres') : null,
               ),
               const SizedBox(height: 20),
               FilledButton(
                 onPressed: _cargando ? null : _enviar,
                 child: _cargando
                     ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.5))
-                    : Text(_registro ? 'Crear cuenta' : 'Entrar'),
+                    : Text(tr(_registro ? 'Crear cuenta' : 'Entrar')),
               ),
               if (!_registro)
                 TextButton(
                   onPressed: _cargando ? null : _olvide,
-                  child: const Text('¿Olvidaste tu contraseña?', style: TextStyle(color: NailsyColors.textoSecundario)),
+                  child: Text(tr('¿Olvidaste tu contraseña?'), style: const TextStyle(color: NailsyColors.textoSecundario)),
                 ),
               TextButton(
                 onPressed: _cargando ? null : () => setState(() => _registro = !_registro),
-                child: Text(_registro ? '¿Ya tienes cuenta? Entra' : '¿No tienes cuenta? Créala',
+                child: Text(tr(_registro ? '¿Ya tienes cuenta? Entra' : '¿No tienes cuenta? Créala'),
                     style: TextStyle(color: Theme.of(context).colorScheme.secondary)),
               ),
             ],

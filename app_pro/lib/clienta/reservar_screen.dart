@@ -8,6 +8,7 @@ import '../theme.dart';
 import '../widgets/comunes.dart';
 import 'acceso_clienta.dart';
 import 'clienta_repo.dart';
+import '../i18n.dart';
 
 /// Reserva: extras → día → hueco libre → confirmar. Devuelve `true` si se reservó.
 class ReservarScreen extends StatefulWidget {
@@ -73,7 +74,7 @@ class _ReservarScreenState extends State<ReservarScreen> {
         _huecos = [];
         _cargandoHuecos = false;
       });
-      aviso(context, 'No se pudieron cargar los horarios.');
+      aviso(context, tr('No se pudieron cargar los horarios.'));
     }
   }
 
@@ -85,7 +86,7 @@ class _ReservarScreenState extends State<ReservarScreen> {
 
   Future<void> _confirmar() async {
     if (_hora == null) return;
-    final ok = await pedirAcceso(context, widget.repo, motivo: 'Para guardar tu reserva necesitamos tu nombre y email.');
+    final ok = await pedirAcceso(context, widget.repo, motivo: tr('Para guardar tu reserva necesitamos tu nombre y email.'));
     if (!ok || !mounted) return;
     setState(() => _reservando = true);
     try {
@@ -103,14 +104,14 @@ class _ReservarScreenState extends State<ReservarScreen> {
         builder: (ctx) => AlertDialog(
           backgroundColor: NailsyColors.superficie,
           icon: const Icon(Icons.check_circle, color: NailsyColors.verde, size: 56),
-          title: const Text('¡Reserva confirmada!'),
+          title: Text(tr('¡Reserva confirmada!')),
           content: Text(
-            '${widget.servicio.nombre} con ${widget.perfil.nombre}\n'
-            '${toBeginningOfSentenceCase(DateFormat("EEEE d 'de' MMMM 'a las' HH:mm", 'es').format(_hora!))}',
+            '${tr('{s} con {p}', {'s': widget.servicio.nombre, 'p': widget.perfil.nombre})}\n'
+            '${toBeginningOfSentenceCase(DateFormat.MMMMEEEEd(codigoIdioma).add_Hm().format(_hora!))}',
             textAlign: TextAlign.center,
           ),
           actions: [
-            FilledButton(onPressed: () => Navigator.pop(ctx), child: const Text('Ver mis citas')),
+            FilledButton(onPressed: () => Navigator.pop(ctx), child: Text(tr('Ver mis citas'))),
           ],
         ),
       );
@@ -128,7 +129,7 @@ class _ReservarScreenState extends State<ReservarScreen> {
     final p = _p;
     final perfil = widget.perfil;
     return Scaffold(
-      appBar: AppBar(title: Text('Reservar · ${perfil.nombre}')),
+      appBar: AppBar(title: Text(tr('Reservar · {n}', {'n': perfil.nombre}))),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 160),
         children: [
@@ -152,7 +153,7 @@ class _ReservarScreenState extends State<ReservarScreen> {
 
           // ---- Extras ----
           if (perfil.anadidos.isNotEmpty) ...[
-            const TituloSeccion('Añade Nail Art o extras'),
+            TituloSeccion(tr(context.sector.cobroPorUna ? 'Añade Nail Art o extras' : 'Añade extras')),
             for (final a in perfil.anadidos)
               Padding(
                 padding: const EdgeInsets.only(bottom: 8),
@@ -165,7 +166,7 @@ class _ReservarScreenState extends State<ReservarScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(a.nombre, style: const TextStyle(fontWeight: FontWeight.w600)),
-                            Text('+${precio(a.precio)}${a.porUna ? ' por uña' : ''}',
+                            Text('+${precio(a.precio)}${a.porUna ? tr(' por uña') : ''}',
                                 style: const TextStyle(color: NailsyColors.textoSecundario, fontSize: 13)),
                           ],
                         ),
@@ -174,7 +175,7 @@ class _ReservarScreenState extends State<ReservarScreen> {
                         Switch(value: (_cantidades[a.id] ?? 0) > 0, onChanged: (v) => _cambiarCantidad(a, v ? 1 : 0))
                       else ...[
                         IconButton(
-                          tooltip: 'Menos uñas',
+                          tooltip: tr('Menos uñas'),
                           onPressed: (_cantidades[a.id] ?? 0) > 0 ? () => _cambiarCantidad(a, _cantidades[a.id]! - 1) : null,
                           icon: const Icon(Icons.remove_circle_outline),
                         ),
@@ -184,7 +185,7 @@ class _ReservarScreenState extends State<ReservarScreen> {
                               textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.w700)),
                         ),
                         IconButton(
-                          tooltip: 'Más uñas',
+                          tooltip: tr('Más uñas'),
                           onPressed: (_cantidades[a.id] ?? 0) < 10
                               ? () => _cambiarCantidad(a, (_cantidades[a.id] ?? 0) + 1)
                               : null,
@@ -198,7 +199,7 @@ class _ReservarScreenState extends State<ReservarScreen> {
           ],
 
           // ---- Día ----
-          const TituloSeccion('Elige día'),
+          TituloSeccion(tr('Elige día')),
           SizedBox(
             height: 74,
             child: ListView.separated(
@@ -223,10 +224,10 @@ class _ReservarScreenState extends State<ReservarScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(DateFormat('EEE', 'es').format(d).toUpperCase().replaceAll('.', ''),
+                        Text(DateFormat('EEE', codigoIdioma).format(d).toUpperCase().replaceAll('.', ''),
                             style: TextStyle(fontSize: 12, color: sel ? context.sobreAcento : NailsyColors.textoSecundario)),
                         Text('${d.day}', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: sel ? context.sobreAcento : null)),
-                        Text(DateFormat('MMM', 'es').format(d).replaceAll('.', ''),
+                        Text(DateFormat('MMM', codigoIdioma).format(d).replaceAll('.', ''),
                             style: TextStyle(fontSize: 11, color: sel ? context.sobreAcento : NailsyColors.textoSecundario)),
                       ],
                     ),
@@ -237,20 +238,20 @@ class _ReservarScreenState extends State<ReservarScreen> {
           ),
 
           // ---- Hora ----
-          const TituloSeccion('Elige hora'),
+          TituloSeccion(tr('Elige hora')),
           if (_cargandoHuecos)
             const Padding(padding: EdgeInsets.all(24), child: Center(child: CircularProgressIndicator()))
           else if (perfil.diasLaborables.isEmpty)
             Tarjeta(
               child: Text(
-                '${perfil.nombre} todavía no ha publicado su horario, así que aún no se puede reservar online.',
+                tr('{n} todavía no ha publicado su horario, así que aún no se puede reservar online.', {'n': perfil.nombre}),
                 style: const TextStyle(color: NailsyColors.textoSecundario),
               ),
             )
           else if (_huecos.isEmpty)
-            const Tarjeta(
-              child: Text('No quedan huecos libres este día. Prueba con otro.',
-                  style: TextStyle(color: NailsyColors.textoSecundario)),
+            Tarjeta(
+              child: Text(tr('No quedan huecos libres este día. Prueba con otro.'),
+                  style: const TextStyle(color: NailsyColors.textoSecundario)),
             )
           else
             Wrap(
@@ -266,16 +267,17 @@ class _ReservarScreenState extends State<ReservarScreen> {
               ],
             ),
 
-          TituloSeccion('Nota para ${context.sector.elProfesional}'),
+          TituloSeccion(tr('Nota para {p}', {'p': tr(context.sector.elProfesional)})),
           TextField(
             controller: _notas,
             maxLines: 2,
             textCapitalization: TextCapitalization.sentences,
-            decoration: const InputDecoration(hintText: 'Diseño que te gustaría, largo, color… (opcional)'),
+            decoration: InputDecoration(
+                hintText: tr(context.sector.cobroPorUna ? 'Diseño que te gustaría, largo, color… (opcional)' : 'Lo que te gustaría (opcional)')),
           ),
           const SizedBox(height: 12),
           Text(
-            'Cancelación gratuita hasta ${perfil.horasCancelacion} h antes desde "Mis citas".',
+            tr('Cancelación gratuita hasta {h} h antes desde "Mis citas".', {'h': perfil.horasCancelacion}),
             style: const TextStyle(color: NailsyColors.textoSecundario, fontSize: 13),
           ),
         ],
@@ -296,7 +298,7 @@ class _ReservarScreenState extends State<ReservarScreen> {
                     child: Text(
                       _hora == null
                           ? formatoDuracion(p.duracionMin)
-                          : '${DateFormat("EEE d MMM · HH:mm", 'es').format(_hora!)} · ${formatoDuracion(p.duracionMin)}',
+                          : '${DateFormat.MMMEd(codigoIdioma).add_Hm().format(_hora!)} · ${formatoDuracion(p.duracionMin)}',
                       style: const TextStyle(color: NailsyColors.textoSecundario),
                     ),
                   ),
@@ -304,17 +306,17 @@ class _ReservarScreenState extends State<ReservarScreen> {
                 ],
               ),
               const SizedBox(height: 4),
-              const Align(
+              Align(
                 alignment: Alignment.centerLeft,
-                child: Text('Pagas en el local. Sin comisiones.',
-                    style: TextStyle(color: NailsyColors.textoSecundario, fontSize: 12)),
+                child: Text(tr('Pagas en el local. Sin comisiones.'),
+                    style: const TextStyle(color: NailsyColors.textoSecundario, fontSize: 12)),
               ),
               const SizedBox(height: 10),
               FilledButton(
                 onPressed: (_hora == null || _reservando) ? null : _confirmar,
                 child: _reservando
                     ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.5))
-                    : Text(_hora == null ? 'Elige una hora' : 'Confirmar reserva'),
+                    : Text(tr(_hora == null ? 'Elige una hora' : 'Confirmar reserva')),
               ),
             ],
           ),
