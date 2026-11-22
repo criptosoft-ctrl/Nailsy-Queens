@@ -2,8 +2,8 @@
 
 Plataforma 100% especializada en manicura, con dos apps sobre el mismo código:
 
-- **GlamGo** (clientes) → https://glamgo.netlify.app — portada con secciones (Nailsy Queens para uñas, Barbershop…), buscar por zona, estilo o cercanía, ver el portafolio y reservar en los huecos libres.
-- **GlamGo Pro** (profesionales) → https://glamgo.netlify.app/pro — agenda, clientes y ficha técnica, tarifario, portafolio, horario y perfil público.
+- **GlamGo** (clientes) → https://glamgo-es.netlify.app — portada con secciones (Nailsy Queens para uñas, Barbershop…), buscar por zona, estilo o cercanía, ver el portafolio y reservar en los huecos libres.
+- **GlamGo Pro** (profesionales) → https://glamgo-es.netlify.app/pro — agenda, clientes y ficha técnica, tarifario, portafolio, horario y perfil público.
 
 ## Estructura
 
