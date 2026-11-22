@@ -636,6 +636,7 @@ class TarjetaDomicilio extends StatelessWidget {
           Row(
             children: [
               Expanded(
+                flex: 3,
                 child: FilledButton.icon(
                   style: FilledButton.styleFrom(minimumSize: const Size(0, 46)),
                   onPressed: () => launchUrl(_mapa, mode: LaunchMode.externalApplication),
@@ -645,6 +646,7 @@ class TarjetaDomicilio extends StatelessWidget {
               ),
               const SizedBox(width: 10),
               Expanded(
+                flex: 2,
                 child: OutlinedButton.icon(
                   style: OutlinedButton.styleFrom(minimumSize: const Size(0, 46)),
                   onPressed: (c.telefono ?? '').trim().isEmpty
