@@ -142,8 +142,11 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.widgetWithText(InputChip, 'Uñas esculpidas'), findsOneWidget);
 
-    await tester.tap(find.descendant(
-        of: find.widgetWithText(InputChip, 'Manicura rusa'), matching: find.byTooltip('Quitar')));
+    final quitar =
+        find.descendant(of: find.widgetWithText(InputChip, 'Manicura rusa'), matching: find.byTooltip('Quitar'));
+    await tester.ensureVisible(quitar);
+    await tester.pumpAndSettle();
+    await tester.tap(quitar);
     await tester.pumpAndSettle();
     expect(find.widgetWithText(InputChip, 'Manicura rusa'), findsNothing);
   });
