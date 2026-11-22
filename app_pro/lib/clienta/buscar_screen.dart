@@ -571,7 +571,8 @@ class _SinResultados extends StatelessWidget {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-          OutlinedButton.icon(
+          Flexible(
+            child: OutlinedButton.icon(
             onPressed: alRestablecer,
             style: OutlinedButton.styleFrom(
               foregroundColor: NailsyColors.texto,
@@ -582,7 +583,8 @@ class _SinResultados extends StatelessWidget {
               textStyle: const TextStyle(fontFamily: fuenteNailsy, fontSize: 16, fontWeight: FontWeight.w700),
             ),
             icon: const Icon(Icons.refresh_rounded, color: NailsyColors.oro),
-            label: const Text('Restablecer filtros'),
+            label: const Text('Restablecer filtros', overflow: TextOverflow.ellipsis),
+          ),
           ),
             ],
           ),
