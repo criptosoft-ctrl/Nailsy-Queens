@@ -114,7 +114,8 @@ DateTime _inicioDia(DateTime d) => DateTime(d.year, d.month, d.day);
 }
 
 const _selectCita = 'id, clienta_id, inicio, fin, precio_total, estado, estado_pago, notas, '
-    'clientas(nombre, fichas_una(alergias)), servicios(nombre)';
+    'a_domicilio, direccion_cita, lat_cita, lng_cita, suplemento, viaje_min, '
+    'clientas(nombre, telefono, fichas_una(alergias)), servicios(nombre)';
 
 class SupabaseAgendaRepo implements AgendaRepo {
   SupabaseAgendaRepo(this._db);
@@ -522,6 +523,13 @@ class DemoAgendaRepo implements AgendaRepo {
         precio: 28,
         estado: EstadoCita.confirmada,
         estadoPago: EstadoPago.pagado,
+        aDomicilio: true,
+        direccion: 'C/ Perojo 22, 3ºB · Las Palmas',
+        lat: 28.1036,
+        lng: -15.4176,
+        telefono: '600 555 666',
+        suplemento: 5,
+        viajeMin: 30,
       ),
     ]);
     // Citas pasadas (historial y estadísticas)
@@ -687,6 +695,9 @@ class DemoAgendaRepo implements AgendaRepo {
     ciudad: 'Las Palmas de Gran Canaria',
     bio: 'Especialista en manicura rusa y Nail Art a mano alzada.',
     especialidades: ['rusa', 'gel', 'nail_art'],
+    lat: 28.1096,
+    lng: -15.4153,
+    domicilio: Domicilio(activo: true, radioKm: 12, importe: 5, viajeMin: 30),
   );
   List<FranjaHorario> _horario = [
     for (var d = 1; d <= 7; d++) FranjaHorario(dia: d, inicioMin: 9 * 60, finMin: 18 * 60),

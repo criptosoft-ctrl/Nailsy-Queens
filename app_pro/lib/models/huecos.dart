@@ -9,7 +9,7 @@ class Hueco {
   Duration get duracion => fin.difference(inicio);
 }
 
-/// Huecos libres de un día: horario de trabajo menos citas activas y bloqueos.
+/// Huecos libres de un día: horario de trabajo menos citas activas (con su viaje, si son a domicilio) y bloqueos.
 /// Solo devuelve huecos de al menos [minimoMin] minutos.
 List<Hueco> huecosDelDia(
   DateTime dia,
@@ -21,7 +21,7 @@ List<Hueco> huecosDelDia(
   final d0 = DateTime(dia.year, dia.month, dia.day);
   final ocupados = <(DateTime, DateTime)>[
     for (final c in citas)
-      if (c.activa) (c.inicio, c.fin),
+      if (c.activa) (c.ocupadoInicio, c.ocupadoFin),
     for (final b in bloqueos) (b.inicio, b.fin),
   ]..sort((a, b) => a.$1.compareTo(b.$1));
 

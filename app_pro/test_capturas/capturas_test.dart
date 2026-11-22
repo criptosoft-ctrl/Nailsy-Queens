@@ -252,6 +252,60 @@ void main() {
     await _foto('p13_perfil_publico');
   });
 
+  testWidgets('Capturas · a domicilio', (tester) async {
+    _movil(tester);
+    final repo = DemoClientaRepo();
+    await tester.pumpWidget(ClientaApp(repo: repo));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Manicura'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('A domicilio'));
+    await tester.pumpAndSettle();
+    await _foto('d01_buscar_domicilio');
+
+    final perfil = (await repo.perfil('m1'))!;
+    tester.state<NavigatorState>(find.byType(Navigator).last).push(MaterialPageRoute<bool>(
+      builder: (_) => ReservarScreen(
+        repo: repo,
+        perfil: perfil,
+        servicio: perfil.servicios.first,
+        desde: _proximoLunes(),
+        ubicacion: () async => (lat: 28.1036, lng: -15.4176),
+      ),
+    ));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('En mi casa'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).first, 'C/ Perojo 22, 3ºB');
+    await tester.tap(find.text('Usar mi ubicación para comprobar la zona'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(ChoiceChip, '10:00'));
+    await tester.pumpAndSettle();
+    await _foto('d02_reservar_domicilio');
+
+    final h = DateTime.now();
+    await tester.pumpWidget(_app(HomeShell(
+        repo: DemoAgendaRepo(), key: UniqueKey(), ahora: () => DateTime(h.year, h.month, h.day, 9, 45))));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.text('Carla Sanz'), 300, scrollable: find.byType(Scrollable).first);
+    await tester.pumpAndSettle();
+    await _foto('d03_agenda_viaje');
+    await tester.tap(find.text('Carla Sanz'));
+    await tester.pumpAndSettle();
+    await _foto('d04_ficha_domicilio');
+    _nav(tester).pop();
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.text('Hola, Eudy'), -300, scrollable: find.byType(Scrollable).first);
+    await tester.tap(find.byTooltip('Mi cuenta'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Mi perfil público'));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.text('Tiempo de viaje entre citas'), 300,
+        scrollable: find.byType(Scrollable).first);
+    await tester.pumpAndSettle();
+    await _foto('d05_pro_domicilio');
+  });
+
   testWidgets('Capturas · idiomas (inglés y alemán)', (tester) async {
     _movil(tester);
     addTearDown(() => idiomaActual.value = Idioma.es);

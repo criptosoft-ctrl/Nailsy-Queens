@@ -6,6 +6,7 @@ import '../theme.dart';
 import '../widgets/comunes.dart';
 import 'clienta_repo.dart';
 import 'reservar_screen.dart';
+import 'buscar_screen.dart' show textoSuplemento;
 import '../sectores.dart';
 import '../i18n.dart';
 
@@ -127,6 +128,27 @@ class _PerfilManicuristaScreenState extends State<PerfilManicuristaScreen> {
                       Flexible(
                         child: Text([p.direccion, p.ciudad].whereType<String>().join(', '),
                             textAlign: TextAlign.center, style: const TextStyle(color: NailsyColors.textoSecundario)),
+                      ),
+                    ],
+                  ),
+                ],
+                if (p.domicilio.activo) ...[
+                  const SizedBox(height: 4),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.home_outlined, size: 16, color: context.acentoSuave),
+                      const SizedBox(width: 4),
+                      Flexible(
+                        child: Text(
+                          p.atiendeLocal
+                              ? tr('También a domicilio · {s} · hasta {k} km',
+                                  {'s': textoSuplemento(p.domicilio), 'k': p.domicilio.radioKm})
+                              : tr('Solo a domicilio · {s} · hasta {k} km',
+                                  {'s': textoSuplemento(p.domicilio), 'k': p.domicilio.radioKm}),
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(color: NailsyColors.textoSecundario),
+                        ),
                       ),
                     ],
                   ),

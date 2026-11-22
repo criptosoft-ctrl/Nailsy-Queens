@@ -4,13 +4,33 @@ import '../data/agenda_repo.dart' show ErrorNailsy;
 import '../models/catalogo.dart';
 import '../models/publico.dart';
 
+/// Dirección de la clienta para una cita a domicilio.
+class DireccionCita {
+  const DireccionCita({required this.texto, required this.lat, required this.lng});
+
+  final String texto;
+  final double lat;
+  final double lng;
+}
+
 /// Lo que necesita la app de clientas. Todo pasa por funciones seguras de la base
 /// de datos: la clienta nunca ve agendas ni datos de otras personas.
 abstract class ClientaRepo {
   Future<List<ResumenManicurista>> buscar(
-      {String? texto, String? estilo, double? lat, double? lng, bool soloHoy = false, String sector = 'nails'});
+      {String? texto,
+      String? estilo,
+      double? lat,
+      double? lng,
+      bool soloHoy = false,
+      String sector = 'nails',
+      bool domicilio = false});
   Future<PerfilPublico?> perfil(String id);
-  Future<List<DateTime>> huecosLibres(String manicuristaId, DateTime dia, int duracionMin);
+
+  /// [viajeMin]: minutos de viaje que deben quedar libres antes y después (citas a domicilio).
+  Future<List<DateTime>> huecosLibres(String manicuristaId, DateTime dia, int duracionMin, {int viajeMin = 0});
+
+  /// Si esa dirección cae dentro de su zona a domicilio, a qué distancia y cuánto cuesta ir.
+  Future<ZonaComprobada?> comprobarZona(String manicuristaId, double lat, double lng);
 
   /// Devuelve el id de la cita creada.
   Future<String> reservar({
@@ -19,6 +39,7 @@ abstract class ClientaRepo {
     required DateTime inicio,
     Map<String, int> anadidos = const {},
     String? notas,
+    DireccionCita? domicilio,
   });
   Future<List<MiCita>> misCitas();
   Future<void> cancelar(String citaId);
@@ -55,6 +76,11 @@ Never _relanzar(Object e) {
       'Este perfil no acepta reservas ahora mismo',
       'Inicia sesión para reservar',
       'No se puede cancelar esta cita',
+      'Este perfil no atiende a domicilio',
+      'Este perfil solo atiende a domicilio',
+      'Tu dirección está fuera de su zona',
+      'Escribe tu dirección',
+      'No se pudo comprobar la distancia. Usa tu ubicación',
     ];
     for (final m in conocidos) {
       if (e.message.contains(m)) throw ErrorNailsy('$m.');
@@ -90,6 +116,7 @@ class SupabaseClientaRepo implements ClientaRepo {
     double? lng,
     bool soloHoy = false,
     String sector = 'nails',
+    bool domicilio = false,
   }) async {
     final filas = await _db.rpc('buscar_manicuristas', params: {
       'p_texto': (texto ?? '').trim(),
@@ -98,6 +125,7 @@ class SupabaseClientaRepo implements ClientaRepo {
       'p_lng': lng,
       'p_solo_hoy': soloHoy,
       'p_sector': sector,
+      'p_domicilio': domicilio,
     });
     return [for (final f in filas as List) ResumenManicurista.fromMap(Map<String, dynamic>.from(f as Map))];
   }
@@ -110,13 +138,21 @@ class SupabaseClientaRepo implements ClientaRepo {
   }
 
   @override
-  Future<List<DateTime>> huecosLibres(String manicuristaId, DateTime dia, int duracionMin) async {
+  Future<List<DateTime>> huecosLibres(String manicuristaId, DateTime dia, int duracionMin, {int viajeMin = 0}) async {
     final res = await _db.rpc('huecos_libres', params: {
       'p_manicurista': manicuristaId,
       'p_dia': _fecha(dia),
       'p_duracion': duracionMin,
+      'p_viaje': viajeMin,
     });
     return [for (final h in res as List) DateTime.parse(h.toString()).toLocal()];
+  }
+
+  @override
+  Future<ZonaComprobada?> comprobarZona(String manicuristaId, double lat, double lng) async {
+    final res = await _db.rpc('comprobar_zona', params: {'p_id': manicuristaId, 'p_lat': lat, 'p_lng': lng});
+    if (res == null) return null;
+    return ZonaComprobada.fromMap(Map<String, dynamic>.from(res as Map));
   }
 
   @override
@@ -126,6 +162,7 @@ class SupabaseClientaRepo implements ClientaRepo {
     required DateTime inicio,
     Map<String, int> anadidos = const {},
     String? notas,
+    DireccionCita? domicilio,
   }) async {
     try {
       final id = await _db.rpc('reservar', params: {
@@ -137,6 +174,10 @@ class SupabaseClientaRepo implements ClientaRepo {
             if (e.value > 0) {'id': e.key, 'cantidad': e.value},
         ],
         'p_notas': notas,
+        'p_domicilio': domicilio != null,
+        'p_direccion': domicilio?.texto,
+        'p_lat': domicilio?.lat,
+        'p_lng': domicilio?.lng,
       });
       return id as String;
     } catch (e) {
@@ -260,6 +301,7 @@ class DemoClientaRepo implements ClientaRepo {
         Anadido(id: 'a2', nombre: 'Retirada de material', duracionMin: 15, precio: 5),
       ],
       diasLaborables: [1, 2, 3, 4, 5, 6],
+      domicilio: Domicilio(activo: true, radioKm: 10, importe: 5, viajeMin: 30),
     ),
     PerfilPublico(
       id: 'm2',
@@ -302,6 +344,7 @@ class DemoClientaRepo implements ClientaRepo {
     double? lng,
     bool soloHoy = false,
     String sector = 'nails',
+    bool domicilio = false,
   }) async {
     final q = (texto ?? '').trim().toLowerCase();
     final ahora = DateTime.now();
@@ -310,6 +353,7 @@ class DemoClientaRepo implements ClientaRepo {
     final lista = [
       for (final p in _perfiles)
         if (_sectorDe[p.id] == sector &&
+            (!domicilio || p.domicilio.activo) &&
             (q.isEmpty || p.nombre.toLowerCase().contains(q) || (p.ciudad ?? '').toLowerCase().contains(q)) &&
             (estilo == null ||
                 estilo.isEmpty ||
@@ -327,6 +371,7 @@ class DemoClientaRepo implements ClientaRepo {
             duracionDesde: p.servicios.isEmpty
                 ? null
                 : (p.servicios.toList()..sort((a, b) => a.precio.compareTo(b.precio))).first.duracionMin,
+            domicilio: p.domicilio,
           ),
     ];
     return soloHoy ? lista.where((m) => m.proximoHueco!.day == ahora.day).toList() : lista;
@@ -336,7 +381,7 @@ class DemoClientaRepo implements ClientaRepo {
   Future<PerfilPublico?> perfil(String id) async => _perfiles.where((p) => p.id == id).firstOrNull;
 
   @override
-  Future<List<DateTime>> huecosLibres(String manicuristaId, DateTime dia, int duracionMin) async {
+  Future<List<DateTime>> huecosLibres(String manicuristaId, DateTime dia, int duracionMin, {int viajeMin = 0}) async {
     final p = await perfil(manicuristaId);
     if (p == null || !p.diasLaborables.contains(dia.weekday) || duracionMin <= 0) return [];
     final ocupadas = _citas.where((c) => c.manicuristaId == manicuristaId && c.activa).toList();
@@ -344,11 +389,25 @@ class DemoClientaRepo implements ClientaRepo {
     final apertura = DateTime(dia.year, dia.month, dia.day, 9);
     final cierre = DateTime(dia.year, dia.month, dia.day, 18);
     for (var t = apertura; !t.add(Duration(minutes: duracionMin)).isAfter(cierre); t = t.add(const Duration(minutes: 30))) {
-      final fin = t.add(Duration(minutes: duracionMin));
-      final libre = ocupadas.every((c) => !(c.inicio.isBefore(fin) && t.isBefore(c.fin)));
+      final ini = t.subtract(Duration(minutes: viajeMin));
+      final fin = t.add(Duration(minutes: duracionMin + viajeMin));
+      final libre = ocupadas.every((c) => !(c.inicio.isBefore(fin) && ini.isBefore(c.fin)));
       if (libre && t.isAfter(DateTime.now().add(const Duration(hours: 1)))) res.add(t);
     }
     return res;
+  }
+
+  @override
+  Future<ZonaComprobada?> comprobarZona(String manicuristaId, double lat, double lng) async {
+    final p = await perfil(manicuristaId);
+    if (p == null || !p.domicilio.activo) return null;
+    const km = 4.2;
+    return ZonaComprobada(
+      dentro: km <= p.domicilio.radioKm,
+      distanciaKm: km,
+      suplemento: p.domicilio.porKm ? double.parse((p.domicilio.importe * km).toStringAsFixed(2)) : p.domicilio.importe,
+      radioKm: p.domicilio.radioKm,
+    );
   }
 
   @override
@@ -358,24 +417,35 @@ class DemoClientaRepo implements ClientaRepo {
     required DateTime inicio,
     Map<String, int> anadidos = const {},
     String? notas,
+    DireccionCita? domicilio,
   }) async {
     if (!conSesion) throw const ErrorNailsy('Inicia sesión para reservar.');
     final p = (await perfil(manicuristaId))!;
     final pres = Presupuesto.calcular(servicio, p.anadidos, anadidos);
-    final libres = await huecosLibres(manicuristaId, inicio, pres.duracionMin);
+    var suplemento = 0.0;
+    if (domicilio != null) {
+      final z = await comprobarZona(manicuristaId, domicilio.lat, domicilio.lng);
+      if (z == null) throw const ErrorNailsy('Este perfil no atiende a domicilio.');
+      if (!z.dentro) throw const ErrorNailsy('Tu dirección está fuera de su zona.');
+      suplemento = z.suplemento;
+    }
+    final viaje = domicilio == null ? 0 : p.domicilio.viajeMin;
+    final libres = await huecosLibres(manicuristaId, inicio, pres.duracionMin, viajeMin: viaje);
     if (!libres.contains(inicio)) throw const ErrorNailsy('Ese horario ya no está disponible.');
     final id = 'cita-${_n++}';
     _citas.add(MiCita(
       id: id,
       inicio: inicio,
       fin: inicio.add(Duration(minutes: pres.duracionMin)),
-      precio: pres.precio,
+      precio: pres.precio + suplemento,
       estado: 'confirmada',
       servicio: servicio.nombre,
       manicuristaId: p.id,
       manicurista: p.nombre,
-      direccion: p.direccion,
-      ciudad: p.ciudad,
+      direccion: domicilio?.texto ?? p.direccion,
+      ciudad: domicilio == null ? p.ciudad : null,
+      aDomicilio: domicilio != null,
+      suplemento: suplemento,
     ));
     return id;
   }

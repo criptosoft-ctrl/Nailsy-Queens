@@ -49,7 +49,29 @@ class Cita {
     this.estadoPago = EstadoPago.sinPago,
     this.alergias = const [],
     this.notas,
+    this.aDomicilio = false,
+    this.direccion,
+    this.lat,
+    this.lng,
+    this.telefono,
+    this.suplemento = 0,
+    this.viajeMin = 0,
   });
+
+  /// A domicilio: dirección de la clienta, coordenadas para "Cómo llegar" y teléfono para "Llamar".
+  final bool aDomicilio;
+  final String? direccion;
+  final double? lat;
+  final double? lng;
+  final String? telefono;
+  final double suplemento;
+
+  /// Minutos de viaje bloqueados antes y después de la cita.
+  final int viajeMin;
+
+  /// Tiempo ocupado en la agenda contando el viaje.
+  DateTime get ocupadoInicio => inicio.subtract(Duration(minutes: viajeMin));
+  DateTime get ocupadoFin => fin.add(Duration(minutes: viajeMin));
 
   final String id;
   final String? clientaId;
@@ -86,6 +108,13 @@ class Cita {
         estadoPago: estadoPago ?? this.estadoPago,
         alergias: alergias,
         notas: notas ?? this.notas,
+        aDomicilio: aDomicilio,
+        direccion: direccion,
+        lat: lat,
+        lng: lng,
+        telefono: telefono,
+        suplemento: suplemento,
+        viajeMin: viajeMin,
       );
 
   /// Construye una cita a partir de una fila de Supabase:
@@ -110,6 +139,13 @@ class Cita {
       estado: estadoCitaDesdeDb(m['estado'] as String),
       estadoPago: estadoPagoDesdeDb(m['estado_pago'] as String?),
       notas: m['notas'] as String?,
+      aDomicilio: (m['a_domicilio'] as bool?) ?? false,
+      direccion: m['direccion_cita'] as String?,
+      lat: (m['lat_cita'] as num?)?.toDouble(),
+      lng: (m['lng_cita'] as num?)?.toDouble(),
+      telefono: clienta?['telefono'] as String?,
+      suplemento: ((m['suplemento'] as num?) ?? 0).toDouble(),
+      viajeMin: ((m['viaje_min'] as num?) ?? 0).toInt(),
     );
   }
 }

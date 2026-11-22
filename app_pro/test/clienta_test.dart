@@ -192,6 +192,33 @@ void main() {
     expect(libres.contains(citas.single.inicio), isFalse);
   });
 
+  test('A domicilio: se comprueba la zona y se suma el suplemento que pone ella', () async {
+    final repo = DemoClientaRepo();
+    final r = await repo.buscar(domicilio: true);
+    expect(r.map((m) => m.id), ['m1']);
+    expect(r.single.domicilio.importe, 5);
+
+    final z = (await repo.comprobarZona('m1', 28.1, -15.4))!;
+    expect(z.dentro, isTrue);
+    expect(z.suplemento, 5);
+    expect(await repo.comprobarZona('m2', 28.1, -15.4), isNull); // no va a domicilio
+
+    final perfil = (await repo.perfil('m1'))!;
+    final semi = perfil.servicios.last; // 45 min, 20 €
+    final dia = _proximoLunes();
+    final huecos = await repo.huecosLibres('m1', dia, semi.duracionMin, viajeMin: 30);
+    await repo.reservar(
+      manicuristaId: 'm1',
+      servicio: semi,
+      inicio: huecos.first,
+      domicilio: const DireccionCita(texto: 'C/ Perojo 22', lat: 28.1, lng: -15.4),
+    );
+    final cita = (await repo.misCitas()).single;
+    expect(cita.precio, 25);
+    expect(cita.aDomicilio, isTrue);
+    expect(cita.direccion, 'C/ Perojo 22');
+  });
+
   testWidgets('Sin sesión, Mis citas pide entrar', (tester) async {
     _movil(tester);
     await tester.pumpWidget(ClientaApp(repo: DemoClientaRepo(conSesion: false)));

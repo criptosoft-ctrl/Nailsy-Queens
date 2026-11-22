@@ -152,7 +152,10 @@ class _TarjetaCita extends StatelessWidget {
               const SizedBox(height: 4),
               Text('${c.servicio} · ${c.manicurista}'),
               if (c.direccion != null || c.ciudad != null)
-                Text([c.direccion, c.ciudad].whereType<String>().join(', '),
+                Text(
+                    c.aDomicilio
+                        ? tr('A domicilio · {d}', {'d': c.direccion ?? ''})
+                        : [c.direccion, c.ciudad].whereType<String>().join(', '),
                     style: const TextStyle(color: NailsyColors.textoSecundario, fontSize: 13)),
               if (c.estado == 'cancelada')
                 Padding(

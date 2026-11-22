@@ -225,6 +225,12 @@ class _AgendaScreenState extends State<AgendaScreen> {
       for (final c in _citas)
         (inicio: c.inicio, w: _FilaCita(cita: c, enCurso: c.enCursoAhora(ahora), ahora: ahora, onTap: () => _abrirCita(c))),
       for (final b in _bloqueos) (inicio: b.inicio, w: _FilaBloqueo(bloqueo: b)),
+      // Viaje de ida y vuelta de las citas a domicilio: tiempo bloqueado.
+      for (final c in _citas)
+        if (c.activa && c.aDomicilio && c.viajeMin > 0) ...[
+          (inicio: c.ocupadoInicio, w: _FilaViaje(inicio: c.ocupadoInicio, minutos: c.viajeMin, ida: true)),
+          (inicio: c.fin, w: _FilaViaje(inicio: c.fin, minutos: c.viajeMin, ida: false)),
+        ],
       for (final h in huecos)
         (
           inicio: h.inicio,
@@ -431,7 +437,22 @@ class _FilaCita extends StatelessWidget {
                       ),
                       const SizedBox(height: 3),
                       Text(cita.servicioNombre, style: const TextStyle(color: NailsyColors.textoSecundario, fontSize: 14.5)),
-                      if (enCurso || estado != null || cita.alergias.isNotEmpty) ...[
+                      if (cita.aDomicilio && cita.direccion != null) ...[
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Icon(Icons.place_outlined, size: 15, color: context.acentoSuave),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(cita.direccion!,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(color: NailsyColors.textoSecundario, fontSize: 13.5)),
+                            ),
+                          ],
+                        ),
+                      ],
+                      if (enCurso || estado != null || cita.alergias.isNotEmpty || cita.aDomicilio) ...[
                         const SizedBox(height: 10),
                         Wrap(
                           spacing: 6,
@@ -443,6 +464,13 @@ class _FilaCita extends StatelessWidget {
                                   color: context.acentoSuave,
                                   fondo: context.acento.withValues(alpha: 0.16)),
                             if (estado != null) estado,
+                            if (cita.aDomicilio)
+                              Pildora(
+                                texto: 'A domicilio',
+                                color: context.acentoSuave,
+                                fondo: context.acento.withValues(alpha: 0.16),
+                                icono: Icons.home_outlined,
+                              ),
                             if (cita.alergias.isNotEmpty)
                               Pildora(
                                 texto: 'Alergia ${cita.alergias.map(etiquetaAlergia).join(', ').toLowerCase()}',
@@ -482,6 +510,41 @@ class _FilaBloqueo extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 10),
           child: Text(bloqueo.motivo ?? 'Bloqueado', style: const TextStyle(color: NailsyColors.textoSecundario)),
+        ),
+        const Expanded(child: LineaDiscontinua()),
+      ],
+    );
+  }
+}
+
+/// Tiempo de viaje antes o después de una cita a domicilio.
+class _FilaViaje extends StatelessWidget {
+  const _FilaViaje({required this.inicio, required this.minutos, required this.ida});
+
+  final DateTime inicio;
+  final int minutos;
+  final bool ida;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        SizedBox(
+          width: 60,
+          child: Text(_hora.format(inicio), style: const TextStyle(color: NailsyColors.textoSecundario)),
+        ),
+        const Expanded(child: LineaDiscontinua()),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.directions_car_outlined, size: 16, color: context.acentoSuave),
+              const SizedBox(width: 6),
+              Text('${ida ? 'Viaje de ida' : 'Vuelta'} · $minutos min',
+                  style: const TextStyle(color: NailsyColors.textoSecundario)),
+            ],
+          ),
         ),
         const Expanded(child: LineaDiscontinua()),
       ],

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../data/agenda_repo.dart';
 import '../models/cita.dart';
@@ -337,6 +338,12 @@ class _FichaCitaScreenState extends State<FichaCitaScreen> {
                     ),
                   ),
 
+                  // ---- A domicilio ----
+                  if (c.aDomicilio) ...[
+                    const SizedBox(height: 14),
+                    TarjetaDomicilio(cita: c),
+                  ],
+
                   // ---- Alergias ----
                   if (alergias.isNotEmpty) ...[
                     const SizedBox(height: 14),
@@ -560,3 +567,92 @@ class _RejillaFicha extends StatelessWidget {
 
 
 String _mayus(String t) => t.isEmpty ? t : t[0].toUpperCase() + t.substring(1);
+
+
+/// Dirección de una cita a domicilio con "Cómo llegar" (Google Maps) y "Llamar".
+class TarjetaDomicilio extends StatelessWidget {
+  const TarjetaDomicilio({super.key, required this.cita});
+
+  final Cita cita;
+
+  Uri get _mapa {
+    final destino = cita.lat != null && cita.lng != null ? '${cita.lat},${cita.lng}' : (cita.direccion ?? '');
+    return Uri.https('www.google.com', '/maps/dir/', {'api': '1', 'destination': destino});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = cita;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: NailsyColors.superficie,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: context.acento.withValues(alpha: 0.5)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Pildora(
+                texto: 'A domicilio',
+                color: context.acentoSuave,
+                fondo: context.acento.withValues(alpha: 0.16),
+                icono: Icons.home_outlined,
+              ),
+              const Spacer(),
+              if (c.suplemento > 0)
+                Text('Desplazamiento +${precio(c.suplemento)}',
+                    style: const TextStyle(color: NailsyColors.textoSecundario, fontSize: 13)),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(Icons.place_outlined, color: context.acentoSuave, size: 20),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(c.direccion ?? 'Sin dirección',
+                    style: const TextStyle(fontSize: 15.5, fontWeight: FontWeight.w600)),
+              ),
+            ],
+          ),
+          if (c.viajeMin > 0) ...[
+            const SizedBox(height: 4),
+            Padding(
+              padding: const EdgeInsets.only(left: 28),
+              child: Text('Agenda bloqueada ${c.viajeMin} min antes y después para el viaje',
+                  style: const TextStyle(color: NailsyColors.textoSecundario, fontSize: 12.5)),
+            ),
+          ],
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: FilledButton.icon(
+                  style: FilledButton.styleFrom(minimumSize: const Size(0, 46)),
+                  onPressed: () => launchUrl(_mapa, mode: LaunchMode.externalApplication),
+                  icon: const Icon(Icons.directions, size: 20),
+                  label: const Text('Cómo llegar'),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(minimumSize: const Size(0, 46)),
+                  onPressed: (c.telefono ?? '').trim().isEmpty
+                      ? null
+                      : () => launchUrl(Uri(scheme: 'tel', path: c.telefono!.replaceAll(' ', ''))),
+                  icon: const Icon(Icons.call_outlined, size: 20),
+                  label: const Text('Llamar'),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}

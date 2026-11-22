@@ -27,6 +27,9 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
   final _nombre = TextEditingController();
   final _bio = TextEditingController();
   final _instagram = TextEditingController();
+  final _suplemento = TextEditingController();
+  bool _atiendeLocal = true;
+  Domicilio _dom = const Domicilio();
   MiPerfil _perfil = const MiPerfil(nombre: '');
   Set<String> _especialidades = {};
   bool _publico = false;
@@ -45,7 +48,7 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
 
   @override
   void dispose() {
-    for (final c in [_nombre, _negocio, _telefono, _ciudad, _direccion, _bio, _instagram]) {
+    for (final c in [_nombre, _negocio, _telefono, _ciudad, _direccion, _bio, _instagram, _suplemento]) {
       c.dispose();
     }
     super.dispose();
@@ -68,6 +71,9 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
         _bio.text = p.bio ?? '';
         _instagram.text = p.instagram ?? '';
         _especialidades = {...p.especialidades};
+        _atiendeLocal = p.atiendeLocal;
+        _dom = p.domicilio;
+        _suplemento.text = _dom.importe == 0 ? '' : _formatoImporte(_dom.importe);
         _publico = p.publico;
         _zona = zonasHorarias.containsKey(p.zonaHoraria) ? p.zonaHoraria : 'Atlantic/Canary';
         _pendientes = p.pendientes(
@@ -100,9 +106,21 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
         lat: _perfil.lat,
         lng: _perfil.lng,
         zonaHoraria: _zona,
+        atiendeLocal: _atiendeLocal,
+        domicilio: _dom.copyWith(importe: _importe()),
       );
 
+  double _importe() => double.tryParse(_suplemento.text.trim().replaceAll(',', '.').replaceAll('€', '')) ?? 0;
+
   Future<void> _guardar() async {
+    if (!_atiendeLocal && !_dom.activo) {
+      aviso(context, 'Elige al menos un sitio donde atiendes: tu local o a domicilio.');
+      return;
+    }
+    if (_dom.activo && _perfil.lat == null) {
+      aviso(context, 'Para atender a domicilio guarda tu ubicación (botón "Usar mi ubicación actual"): desde ahí se mide tu zona.');
+      return;
+    }
     if (!_form.currentState!.validate()) {
       // El campo con error puede estar fuera de la pantalla: avisamos aquí también.
       aviso(
@@ -154,6 +172,90 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
     } finally {
       if (mounted) setState(() => _buscandoUbicacion = false);
     }
+  }
+
+  /// Zona en km, suplemento (lo pone ella) y tiempo de viaje.
+  Widget _ajustesDomicilio() {
+    final acento = context.acento;
+    return Container(
+      margin: const EdgeInsets.only(top: 4, bottom: 4),
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
+      decoration: BoxDecoration(
+        color: NailsyColors.superficie,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: NailsyColors.borde),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Expanded(child: Text('Hasta dónde vas', style: TextStyle(fontWeight: FontWeight.w700))),
+              Text('${_dom.radioKm} km', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18, color: acento)),
+            ],
+          ),
+          Slider(
+            value: _dom.radioKm.clamp(3, 30).toDouble(),
+            min: 3,
+            max: 30,
+            divisions: 27,
+            label: '${_dom.radioKm} km',
+            onChanged: (v) => setState(() => _dom = _dom.copyWith(radioKm: v.round())),
+          ),
+          const Text('Se mide en línea recta desde tu ubicación guardada.',
+              style: TextStyle(color: NailsyColors.textoSecundario, fontSize: 12)),
+          const SizedBox(height: 14),
+          const Text('Suplemento por desplazamiento', style: TextStyle(fontWeight: FontWeight.w700)),
+          const SizedBox(height: 8),
+          SegmentedButton<bool>(
+            showSelectedIcon: false,
+            segments: const [
+              ButtonSegment(value: false, label: Text('Fijo por cita')),
+              ButtonSegment(value: true, label: Text('Por km')),
+            ],
+            selected: {_dom.porKm},
+            onSelectionChanged: (v) => setState(() => _dom = _dom.copyWith(porKm: v.first)),
+          ),
+          const SizedBox(height: 10),
+          TextField(
+            controller: _suplemento,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            onChanged: (_) => setState(() {}),
+            decoration: InputDecoration(
+              labelText: _dom.porKm ? 'Importe por km' : 'Importe por cita',
+              hintText: _dom.porKm ? 'Ej. 0,50' : 'Ej. 5',
+              suffixText: _dom.porKm ? '€/km' : '€',
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            _importe() <= 0
+                ? 'Déjalo vacío o en 0 si no cobras el desplazamiento.'
+                : _dom.porKm
+                    ? 'Ej.: a 6 km se suman ${precio(double.parse((_importe() * 6).toStringAsFixed(2)))} a la cita.'
+                    : 'Se suman ${precio(_importe())} a cada cita a domicilio.',
+            style: const TextStyle(color: NailsyColors.textoSecundario, fontSize: 12),
+          ),
+          const SizedBox(height: 14),
+          const Text('Tiempo de viaje entre citas', style: TextStyle(fontWeight: FontWeight.w700)),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            children: [
+              for (final m in const [15, 30, 45])
+                ChoiceChip(
+                  label: Text('$m min'),
+                  selected: _dom.viajeMin == m,
+                  onSelected: (_) => setState(() => _dom = _dom.copyWith(viajeMin: m)),
+                ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          const Text('Se bloquea en tu agenda antes y después de cada cita a domicilio.',
+              style: TextStyle(color: NailsyColors.textoSecundario, fontSize: 12)),
+        ],
+      ),
+    );
   }
 
   @override
@@ -269,22 +371,45 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
               validator: (v) => (_publico && (v == null || v.trim().isEmpty)) ? 'Necesaria para aparecer en el buscador' : null,
             ),
             const SizedBox(height: 12),
-            TextFormField(
-              controller: _direccion,
-              textCapitalization: TextCapitalization.sentences,
-              decoration: const InputDecoration(labelText: 'Dirección (se muestra al reservar)'),
+            const SizedBox(height: 4),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              value: _atiendeLocal,
+              onChanged: (v) => setState(() => _atiendeLocal = v),
+              secondary: Icon(Icons.storefront_outlined, color: context.acento),
+              title: const Text('En mi local', style: TextStyle(fontWeight: FontWeight.w700)),
+              subtitle: Text('${_mayus(context.sector.lasClientes)} vienen a tu salón o cabina'),
             ),
+            if (_atiendeLocal) ...[
+              TextFormField(
+                controller: _direccion,
+                textCapitalization: TextCapitalization.sentences,
+                decoration: const InputDecoration(labelText: 'Dirección del local (se muestra al reservar)'),
+              ),
+              const SizedBox(height: 4),
+            ],
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              value: _dom.activo,
+              onChanged: (v) => setState(() => _dom = _dom.copyWith(activo: v)),
+              secondary: Icon(Icons.home_outlined, color: context.acento),
+              title: const Text('A domicilio', style: TextStyle(fontWeight: FontWeight.w700)),
+              subtitle: Text('Vas a casa de ${context.sector.laCliente}'),
+            ),
+            if (_dom.activo) _ajustesDomicilio(),
             const SizedBox(height: 12),
             OutlinedButton.icon(
               onPressed: _buscandoUbicacion ? null : _usarUbicacion,
               icon: _buscandoUbicacion
                   ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
                   : Icon(tieneUbicacion ? Icons.where_to_vote : Icons.my_location),
-              label: Text(tieneUbicacion ? 'Ubicación guardada · actualizar' : 'Usar mi ubicación actual (desde el local)'),
+              label: Text(tieneUbicacion ? 'Ubicación guardada · actualizar' : 'Usar mi ubicación actual'),
             ),
             const SizedBox(height: 4),
             Text(
-              'Sirve para que te encuentren ${context.sector.lasClientes} que buscan "cerca de mí". Hazlo estando en tu local.',
+              _dom.activo
+                  ? 'Sirve para que te encuentren ${context.sector.lasClientes} que buscan "cerca de mí" y para medir tu zona a domicilio. Hazlo desde tu local o desde donde sales.'
+                  : 'Sirve para que te encuentren ${context.sector.lasClientes} que buscan "cerca de mí". Hazlo estando en tu local.',
               style: const TextStyle(color: NailsyColors.textoSecundario, fontSize: 12),
             ),
             const SizedBox(height: 12),
@@ -314,3 +439,6 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
 
 
 String _mayus(String t) => t.isEmpty ? t : t[0].toUpperCase() + t.substring(1);
+
+String _formatoImporte(double v) =>
+    v == v.roundToDouble() ? v.toStringAsFixed(0) : v.toStringAsFixed(2).replaceAll('.', ',');

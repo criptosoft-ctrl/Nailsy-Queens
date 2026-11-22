@@ -34,6 +34,62 @@ const zonasHorarias = <String, String>{
 List<String> _lista(Object? v) => v == null ? [] : (v as List).map((e) => e.toString()).toList();
 double? _dbl(Object? v) => v == null ? null : (v as num).toDouble();
 
+/// Cómo cobra el desplazamiento a domicilio la profesional (lo pone ella).
+class Domicilio {
+  const Domicilio({this.activo = false, this.radioKm = 10, this.porKm = false, this.importe = 0, this.viajeMin = 30});
+
+  final bool activo;
+  final int radioKm;
+
+  /// true: [importe] € por km; false: [importe] € fijos por cita.
+  final bool porKm;
+  final double importe;
+  final int viajeMin;
+
+  bool get gratis => importe <= 0;
+
+  factory Domicilio.fromMap(Map<String, dynamic> m, {String clave = 'atiende_domicilio'}) => Domicilio(
+        activo: (m[clave] as bool?) ?? false,
+        radioKm: ((m['radio_km'] as num?) ?? 10).toInt(),
+        porKm: m['suplemento_tipo'] == 'km',
+        importe: _dbl(m['suplemento_importe']) ?? 0,
+        viajeMin: ((m['viaje_min'] as num?) ?? 30).toInt(),
+      );
+
+  Map<String, dynamic> toMap() => {
+        'atiende_domicilio': activo,
+        'radio_km': radioKm,
+        'suplemento_tipo': porKm ? 'km' : 'fijo',
+        'suplemento_importe': importe,
+        'viaje_min': viajeMin,
+      };
+
+  Domicilio copyWith({bool? activo, int? radioKm, bool? porKm, double? importe, int? viajeMin}) => Domicilio(
+        activo: activo ?? this.activo,
+        radioKm: radioKm ?? this.radioKm,
+        porKm: porKm ?? this.porKm,
+        importe: importe ?? this.importe,
+        viajeMin: viajeMin ?? this.viajeMin,
+      );
+}
+
+/// Resultado de comprobar si una dirección cae dentro de la zona a domicilio.
+class ZonaComprobada {
+  const ZonaComprobada({required this.dentro, this.distanciaKm, this.suplemento = 0, this.radioKm = 10});
+
+  final bool dentro;
+  final double? distanciaKm;
+  final double suplemento;
+  final int radioKm;
+
+  factory ZonaComprobada.fromMap(Map<String, dynamic> m) => ZonaComprobada(
+        dentro: (m['dentro'] as bool?) ?? false,
+        distanciaKm: _dbl(m['distancia_km']),
+        suplemento: _dbl(m['suplemento']) ?? 0,
+        radioKm: ((m['radio_km'] as num?) ?? 10).toInt(),
+      );
+}
+
 /// Tarjeta de resultado del buscador.
 class ResumenManicurista {
   const ResumenManicurista({
@@ -48,11 +104,15 @@ class ResumenManicurista {
     this.fotos = const [],
     this.proximoHueco,
     this.duracionDesde,
+    this.domicilio = const Domicilio(),
   });
 
   final String id;
   final String nombre;
   final String? ciudad;
+
+  /// Si atiende a domicilio y cuánto cobra por ir.
+  final Domicilio domicilio;
 
   /// Primer hueco libre en los próximos 14 días (para el servicio más corto).
   final DateTime? proximoHueco;
@@ -81,6 +141,7 @@ class ResumenManicurista {
         precioDesde: _dbl(m['precio_desde']),
         fotos: _lista(m['fotos']),
         duracionDesde: (m['duracion_desde'] as num?)?.toInt(),
+        domicilio: Domicilio.fromMap(m, clave: 'a_domicilio'),
         proximoHueco: m['proximo_hueco'] == null ? null : DateTime.parse(m['proximo_hueco'] as String).toLocal(),
       );
 }
@@ -101,6 +162,8 @@ class PerfilPublico {
     this.fotos = const [],
     this.diasLaborables = const [],
     this.horasCancelacion = 24,
+    this.atiendeLocal = true,
+    this.domicilio = const Domicilio(),
   });
 
   final String id;
@@ -111,6 +174,8 @@ class PerfilPublico {
   final String? foto;
   final String? instagram;
   final List<String> especialidades;
+  final bool atiendeLocal;
+  final Domicilio domicilio;
   final List<Servicio> servicios;
   final List<Anadido> anadidos;
   final List<String> fotos;
@@ -133,6 +198,8 @@ class PerfilPublico {
         fotos: _lista(m['fotos']),
         diasLaborables: [for (final d in (m['dias_laborables'] as List? ?? [])) (d as num).toInt()],
         horasCancelacion: ((m['horas_cancelacion'] as num?) ?? 24).toInt(),
+        atiendeLocal: (m['atiende_local'] as bool?) ?? true,
+        domicilio: Domicilio.fromMap(m),
       );
 
   double? get precioDesde =>
@@ -153,12 +220,16 @@ class MiCita {
     this.direccion,
     this.ciudad,
     this.horasCancelacion = 24,
+    this.aDomicilio = false,
+    this.suplemento = 0,
   });
 
   final String id;
   final DateTime inicio;
   final DateTime fin;
   final double precio;
+  final bool aDomicilio;
+  final double suplemento;
   final String estado;
   final String servicio;
   final String manicuristaId;
@@ -185,6 +256,8 @@ class MiCita {
         direccion: direccion,
         ciudad: ciudad,
         horasCancelacion: horasCancelacion,
+        aDomicilio: aDomicilio,
+        suplemento: suplemento,
       );
 
   factory MiCita.fromMap(Map<String, dynamic> m) => MiCita(
@@ -199,6 +272,8 @@ class MiCita {
         direccion: m['direccion'] as String?,
         ciudad: m['ciudad'] as String?,
         horasCancelacion: ((m['horas_cancelacion'] as num?) ?? 24).toInt(),
+        aDomicilio: (m['a_domicilio'] as bool?) ?? false,
+        suplemento: _dbl(m['suplemento']) ?? 0,
       );
 }
 
@@ -218,8 +293,12 @@ class MiPerfil {
     this.lat,
     this.lng,
     this.zonaHoraria = 'Atlantic/Canary',
+    this.atiendeLocal = true,
+    this.domicilio = const Domicilio(),
   });
 
+  final bool atiendeLocal;
+  final Domicilio domicilio;
   final String nombre;
   final String? nombreNegocio;
   final String? telefono;
@@ -248,6 +327,8 @@ class MiPerfil {
         lat: _dbl(m['lat']),
         lng: _dbl(m['lng']),
         zonaHoraria: (m['zona_horaria'] as String?) ?? 'Atlantic/Canary',
+        atiendeLocal: (m['atiende_local'] as bool?) ?? true,
+        domicilio: Domicilio.fromMap(m),
       );
 
   Map<String, dynamic> toMap() => {
@@ -264,6 +345,8 @@ class MiPerfil {
         'lat': lat,
         'lng': lng,
         'zona_horaria': zonaHoraria,
+        'atiende_local': atiendeLocal,
+        ...domicilio.toMap(),
       };
 
   MiPerfil copyWith({String? foto, double? lat, double? lng}) => MiPerfil(
@@ -280,6 +363,8 @@ class MiPerfil {
         lat: lat ?? this.lat,
         lng: lng ?? this.lng,
         zonaHoraria: zonaHoraria,
+        atiendeLocal: atiendeLocal,
+        domicilio: domicilio,
       );
 
   /// Qué falta para que tenga sentido aparecer en el buscador.

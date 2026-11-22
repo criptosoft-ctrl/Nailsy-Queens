@@ -35,6 +35,7 @@ class _BuscarScreenState extends State<BuscarScreen> {
   final _texto = TextEditingController();
   String? _estilo;
   bool _soloHoy = false;
+  bool _domicilio = false;
   ({double lat, double lng})? _cerca;
   List<ResumenManicurista> _resultados = [];
   bool _cargando = true;
@@ -68,6 +69,7 @@ class _BuscarScreenState extends State<BuscarScreen> {
         lng: _cerca?.lng,
         soloHoy: _soloHoy,
         sector: widget.sector,
+        domicilio: _domicilio,
       );
       if (!mounted) return;
       setState(() {
@@ -116,6 +118,7 @@ class _BuscarScreenState extends State<BuscarScreen> {
     _texto.clear();
     setState(() {
       _soloHoy = false;
+      _domicilio = false;
       _estilo = null;
       _cerca = null;
     });
@@ -246,6 +249,16 @@ class _BuscarScreenState extends State<BuscarScreen> {
                             ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))
                             : null,
                       ),
+                      _chip(
+                        tr('A domicilio'),
+                        _domicilio,
+                        () {
+                          setState(() => _domicilio = !_domicilio);
+                          _buscar();
+                        },
+                        icono: Icon(Icons.home_outlined,
+                            size: 16, color: _domicilio ? _sobreAcento : const Color(0xFFE4E8F2)),
+                      ),
                       for (final e in _sector.estilos.entries)
                         _chip(tr(e.value), _estilo == e.key, () {
                           setState(() => _estilo = _estilo == e.key ? null : e.key);
@@ -296,6 +309,12 @@ class _BuscarScreenState extends State<BuscarScreen> {
       ),
     );
   }
+}
+
+/// "+5 €", "+0,50 €/km" o "sin suplemento": lo que cobra por ir a casa.
+String textoSuplemento(Domicilio d) {
+  if (d.gratis) return tr('sin suplemento');
+  return d.porKm ? '+${precio(d.importe)}/km' : '+${precio(d.importe)}';
 }
 
 /// "Hoy · 14:00", "Mañana · 09:00", "Lun 24 · 09:30"… (tarjeta del buscador).
@@ -359,6 +378,30 @@ class _BloqueManicurista extends StatelessWidget {
                     fit: StackFit.expand,
                     children: [
                       FotoRemota(url: repo.urlFoto(m.fotos.isNotEmpty ? m.fotos.first : m.foto)),
+                      if (m.domicilio.activo)
+                        Positioned(
+                          left: 12,
+                          top: 12,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: acento,
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.home_outlined, size: 14, color: Theme.of(context).colorScheme.onPrimary),
+                                const SizedBox(width: 4),
+                                Text('${tr('A domicilio')} · ${textoSuplemento(m.domicilio)}',
+                                    style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w800,
+                                        color: Theme.of(context).colorScheme.onPrimary)),
+                              ],
+                            ),
+                          ),
+                        ),
                       if (distancia != null)
                         Positioned(
                           left: 12,

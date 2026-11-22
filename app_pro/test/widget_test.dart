@@ -98,6 +98,43 @@ void main() {
         ['10:30-11:0', '14:0-18:0']);
   });
 
+  test('Las citas a domicilio ocupan también el viaje de ida y vuelta', () {
+    final d = DateTime(2026, 11, 23); // lunes
+    DateTime h(int hh, [int mm = 0]) => DateTime(2026, 11, 23, hh, mm);
+    final huecos = huecosDelDia(
+      d,
+      const [FranjaHorario(dia: 1, inicioMin: 9 * 60, finMin: 18 * 60)],
+      [
+        Cita(
+            id: 'a',
+            clientaNombre: 'A',
+            servicioNombre: 's',
+            inicio: h(11),
+            fin: h(12),
+            precio: 1,
+            estado: EstadoCita.confirmada,
+            aDomicilio: true,
+            viajeMin: 30),
+      ],
+      const [],
+    );
+    expect(huecos.map((x) => '${x.inicio.hour}:${x.inicio.minute}-${x.fin.hour}:${x.fin.minute}').toList(),
+        ['9:0-10:30', '12:30-18:0']);
+  });
+
+  testWidgets('La ficha de una cita a domicilio muestra la dirección, Cómo llegar y Llamar', (tester) async {
+    await _abrirPro(tester);
+    await tester.scrollUntilVisible(find.text('Carla Sanz'), 300, scrollable: find.byType(Scrollable).first);
+    expect(find.textContaining('Viaje de ida'), findsOneWidget);
+    expect(find.textContaining('Vuelta'), findsOneWidget);
+    await tester.tap(find.text('Carla Sanz'));
+    await tester.pumpAndSettle();
+    expect(find.text('A domicilio'), findsOneWidget);
+    expect(find.textContaining('C/ Perojo 22'), findsOneWidget);
+    expect(find.text('Cómo llegar'), findsOneWidget);
+    expect(find.text('Llamar'), findsOneWidget);
+  });
+
   test('ResumenMes calcula ingresos, ausencias y servicios', () {
     DateTime h(int d) => DateTime(2026, 11, d, 10);
     Cita c(String id, int dia, double p, EstadoCita e, String s) => Cita(
