@@ -211,13 +211,13 @@ class _TarjetaSector extends StatelessWidget {
                 top: 0,
                 bottom: 0,
                 right: 0,
-                width: 120,
+                width: 100,
                 child: ShaderMask(
                   shaderCallback: (r) => const LinearGradient(
                     begin: Alignment.centerLeft,
                     end: Alignment.centerRight,
                     colors: [Colors.transparent, Colors.white],
-                    stops: [0.0, 0.55],
+                    stops: [0.0, 0.65],
                   ).createShader(r),
                   blendMode: BlendMode.dstIn,
                   child: Opacity(
