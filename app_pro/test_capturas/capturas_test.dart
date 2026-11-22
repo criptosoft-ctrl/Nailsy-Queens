@@ -8,6 +8,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:nailsy_pro/clienta/app_clienta.dart';
+import 'package:nailsy_pro/clienta/inicio_glamgo_screen.dart';
 import 'package:nailsy_pro/main.dart';
 import 'package:nailsy_pro/clienta/clienta_repo.dart';
 import 'package:nailsy_pro/clienta/reservar_screen.dart';
@@ -93,6 +94,14 @@ void main() {
     _movil(tester);
     final repo = DemoClientaRepo();
     await tester.pumpWidget(ClientaApp(repo: repo));
+    await tester.pumpAndSettle();
+    // En las pruebas las fotos no se decodifican solas: se cargan antes de la captura.
+    await tester.runAsync(() async {
+      final ctx = tester.element(find.byType(InicioGlamGoScreen));
+      for (final f in ['cabecera', 'unas', 'barberia', 'peluqueria', 'estetica']) {
+        await precacheImage(AssetImage('assets/portada/$f.jpg'), ctx);
+      }
+    });
     await tester.pumpAndSettle();
     await _foto('c00_inicio_glamgo');
     await tester.tap(find.text('Nailsy Queens'));

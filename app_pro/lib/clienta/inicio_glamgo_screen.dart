@@ -92,7 +92,7 @@ class _Cabecera extends StatelessWidget {
           Positioned(
             left: 0,
             top: 34,
-            right: 90,
+            right: 0,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
