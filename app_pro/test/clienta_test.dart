@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:nailsy_pro/clienta/app_clienta.dart';
+import 'package:nailsy_pro/clienta/buscar_screen.dart';
 import 'package:nailsy_pro/clienta/clienta_repo.dart';
 import 'package:nailsy_pro/clienta/reservar_screen.dart';
 import 'package:nailsy_pro/i18n.dart';
@@ -223,6 +224,33 @@ void main() {
     expect(cita.precio, 25);
     expect(cita.aDomicilio, isTrue);
     expect(cita.direccion, 'C/ Perojo 22');
+  });
+
+  testWidgets('Escribir una zona la sitúa en el mapa y busca alrededor', (tester) async {
+    final repo = DemoClientaRepo();
+    String? pedida;
+    await tester.pumpWidget(MaterialApp(
+      theme: nailsyTheme(),
+      home: BuscarScreen(
+        repo: repo,
+        alReservar: () {},
+        situarZona: (z) async {
+          pedida = z;
+          return (lat: 27.99, lng: -15.42);
+        },
+      ),
+    ));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), 'Telde');
+    await tester.testTextInput.receiveAction(TextInputAction.search);
+    await tester.pumpAndSettle();
+    expect(pedida, 'Telde');
+    expect(find.textContaining('cerca de Telde'), findsOneWidget);
+  });
+
+  test('El texto también busca en las especialidades', () async {
+    final r = await DemoClientaRepo().buscar(texto: 'acríl');
+    expect(r.map((m) => m.nombre), ['Acrylic Studio']);
   });
 
   testWidgets('Sin sesión, Mis citas pide entrar', (tester) async {

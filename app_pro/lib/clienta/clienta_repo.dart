@@ -23,7 +23,8 @@ abstract class ClientaRepo {
       double? lng,
       bool soloHoy = false,
       String sector = 'nails',
-      bool domicilio = false});
+      bool domicilio = false,
+      double? zonaKm});
   Future<PerfilPublico?> perfil(String id);
 
   /// [viajeMin]: minutos de viaje que deben quedar libres antes y después (citas a domicilio).
@@ -117,6 +118,7 @@ class SupabaseClientaRepo implements ClientaRepo {
     bool soloHoy = false,
     String sector = 'nails',
     bool domicilio = false,
+    double? zonaKm,
   }) async {
     final filas = await _db.rpc('buscar_manicuristas', params: {
       'p_texto': (texto ?? '').trim(),
@@ -126,6 +128,7 @@ class SupabaseClientaRepo implements ClientaRepo {
       'p_solo_hoy': soloHoy,
       'p_sector': sector,
       'p_domicilio': domicilio,
+      'p_zona_km': zonaKm,
     });
     return [for (final f in filas as List) ResumenManicurista.fromMap(Map<String, dynamic>.from(f as Map))];
   }
@@ -345,6 +348,7 @@ class DemoClientaRepo implements ClientaRepo {
     bool soloHoy = false,
     String sector = 'nails',
     bool domicilio = false,
+    double? zonaKm,
   }) async {
     final q = (texto ?? '').trim().toLowerCase();
     final ahora = DateTime.now();
@@ -354,7 +358,11 @@ class DemoClientaRepo implements ClientaRepo {
       for (final p in _perfiles)
         if (_sectorDe[p.id] == sector &&
             (!domicilio || p.domicilio.activo) &&
-            (q.isEmpty || p.nombre.toLowerCase().contains(q) || (p.ciudad ?? '').toLowerCase().contains(q)) &&
+            (q.isEmpty ||
+                zonaKm != null || // demo: todas están "cerca" de la zona escrita
+                p.nombre.toLowerCase().contains(q) ||
+                (p.ciudad ?? '').toLowerCase().contains(q) ||
+                p.especialidades.any((e) => etiquetaEstilo(e).toLowerCase().contains(q))) &&
             (estilo == null ||
                 estilo.isEmpty ||
                 p.especialidades.contains(estilo) ||

@@ -9,14 +9,33 @@ import '../widgets/comunes.dart';
 import 'clienta_repo.dart';
 import 'perfil_manicurista_screen.dart';
 import '../i18n.dart';
+import '../lugares.dart';
 
 /// Pantalla principal de la clienta ("Descubrir"): buscar manicurista por zona, estilo,
 /// cercanía o disponibilidad hoy.
+/// Radio alrededor de una zona escrita para incluir a quien trabaja cerca.
+const kmZona = 15.0;
+
 class BuscarScreen extends StatefulWidget {
   const BuscarScreen(
-      {super.key, required this.repo, required this.alReservar, this.sector = 'nails', this.alVolver});
+      {super.key,
+      required this.repo,
+      required this.alReservar,
+      this.sector = 'nails',
+      this.alVolver,
+      this.situarZona});
 
   final ClientaRepo repo;
+
+  /// Sitúa en el mapa una zona escrita. Por defecto OpenStreetMap; en modo demostración no se usa.
+  final Future<({double lat, double lng})?> Function(String zona)? situarZona;
+
+  Future<({double lat, double lng})?> buscarZona(String zona) {
+    final f = situarZona;
+    if (f != null) return f(zona);
+    if (repo is DemoClientaRepo) return Future.value(null);
+    return buscarLugar(zona, idioma: codigoIdioma);
+  }
 
   /// Sector de GlamGo que se está buscando (uñas, barbería…).
   final String sector;
@@ -37,6 +56,10 @@ class _BuscarScreenState extends State<BuscarScreen> {
   bool _soloHoy = false;
   bool _domicilio = false;
   ({double lat, double lng})? _cerca;
+
+  /// Zona escrita situada en el mapa (p. ej. "Telde"): se buscan las cercanas y las que van hasta allí.
+  ({double lat, double lng})? _lugar;
+  String? _nombreLugar;
   List<ResumenManicurista> _resultados = [];
   bool _cargando = true;
   bool _localizando = false;
@@ -62,17 +85,24 @@ class _BuscarScreenState extends State<BuscarScreen> {
   Future<void> _buscar() async {
     setState(() => _cargando = true);
     try {
+      final texto = _texto.text.trim();
+      // Si escribe una zona, la situamos en el mapa (si no se encuentra, se busca solo por el texto).
+      final lugar = _cerca == null && texto.isNotEmpty ? await widget.buscarZona(texto) : null;
+      final punto = _cerca ?? lugar;
       final r = await widget.repo.buscar(
-        texto: _texto.text,
+        texto: texto,
         estilo: _estilo,
-        lat: _cerca?.lat,
-        lng: _cerca?.lng,
+        lat: punto?.lat,
+        lng: punto?.lng,
         soloHoy: _soloHoy,
         sector: widget.sector,
         domicilio: _domicilio,
+        zonaKm: lugar != null ? kmZona : null,
       );
       if (!mounted) return;
       setState(() {
+        _lugar = lugar;
+        _nombreLugar = lugar != null ? texto : null;
         _resultados = r;
         _cargando = false;
       });
@@ -283,7 +313,8 @@ class _BuscarScreenState extends State<BuscarScreen> {
                     padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
                     child: Text(
                       '${_resultados.length} ${tr(_resultados.length == 1 ? _sector.profesional : '${_sector.profesional}s')}'
-                      '${_cerca != null ? tr(' · por cercanía') : ''}',
+                      '${_cerca != null ? tr(' · por cercanía') : ''}'
+                      '${_cerca == null && _lugar != null ? tr(' · cerca de {z}', {'z': _nombreLugar ?? ''}) : ''}',
                       style: const TextStyle(fontSize: 13, color: NailsyColors.textoSecundario),
                     ),
                   ),

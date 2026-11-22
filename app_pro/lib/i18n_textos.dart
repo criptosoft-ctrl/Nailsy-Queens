@@ -169,4 +169,5 @@ const traducciones = <String, (String, String)>{
   'Este perfil solo atiende a domicilio.': ('This profile only does home visits.', 'Dieses Profil macht nur Hausbesuche.'),
   'Tu dirección está fuera de su zona.': ('Your address is outside their area.', 'Deine Adresse liegt außerhalb des Einsatzgebiets.'),
   'Escribe tu dirección.': ('Enter your address.', 'Gib deine Adresse ein.'),
+  ' · cerca de {z}': (' · near {z}', ' · in der Nähe von {z}'),
 };
