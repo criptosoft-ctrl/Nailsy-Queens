@@ -6,6 +6,7 @@ import '../theme.dart';
 import '../widgets/comunes.dart';
 import 'clienta_repo.dart';
 import 'reservar_screen.dart';
+import '../whatsapp.dart';
 import 'buscar_screen.dart' show textoSuplemento;
 import '../sectores.dart';
 import '../i18n.dart';
@@ -181,6 +182,25 @@ class _PerfilManicuristaScreenState extends State<PerfilManicuristaScreen> {
                 if (p.bio != null) ...[
                   const SizedBox(height: 12),
                   Text(p.bio!, textAlign: TextAlign.center, style: const TextStyle(height: 1.4)),
+                ],
+                if (enlaceWhatsapp(p.whatsapp, '') != null) ...[
+                  const SizedBox(height: 14),
+                  Center(
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: verdeWhatsapp,
+                        side: const BorderSide(color: verdeWhatsapp),
+                      ),
+                      onPressed: () => abrirWhatsapp(
+                          p.whatsapp, tr('Hola {n}, te escribo desde GlamGo.', {'n': p.nombre})),
+                      icon: const Icon(Icons.chat_outlined),
+                      label: Text(tr('Escribir por WhatsApp')),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(tr('Para reservar usa el botón Reservar: así tu hora queda guardada.'),
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: NailsyColors.textoSecundario, fontSize: 12)),
                 ],
 
                 // ---- Trabajos ----

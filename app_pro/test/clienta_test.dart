@@ -8,6 +8,7 @@ import 'package:nailsy_pro/clienta/reservar_screen.dart';
 import 'package:nailsy_pro/i18n.dart';
 import 'package:nailsy_pro/models/publico.dart';
 import 'package:nailsy_pro/theme.dart';
+import 'package:nailsy_pro/whatsapp.dart';
 
 void _movil(WidgetTester tester) {
   tester.view.physicalSize = const Size(1200, 2700);
@@ -246,6 +247,14 @@ void main() {
     await tester.pumpAndSettle();
     expect(pedida, 'Telde');
     expect(find.textContaining('cerca de Telde'), findsOneWidget);
+  });
+
+  test('WhatsApp: número con prefijo y mensaje', () {
+    expect(numeroWhatsapp('600 111 222'), '34600111222');
+    expect(numeroWhatsapp('+57 300 123 4567'), '573001234567');
+    expect(numeroWhatsapp('123'), isNull);
+    final u = enlaceWhatsapp('600111222', 'Hola Eudy')!;
+    expect(u.toString(), 'https://wa.me/34600111222?text=Hola+Eudy');
   });
 
   test('El texto también busca en las especialidades', () async {

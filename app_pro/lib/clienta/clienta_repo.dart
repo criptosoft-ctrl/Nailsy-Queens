@@ -305,6 +305,7 @@ class DemoClientaRepo implements ClientaRepo {
       ],
       diasLaborables: [1, 2, 3, 4, 5, 6],
       domicilio: Domicilio(activo: true, radioKm: 10, importe: 5, viajeMin: 30),
+      whatsapp: '600 111 222',
     ),
     PerfilPublico(
       id: 'm2',

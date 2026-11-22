@@ -7,6 +7,7 @@ import '../widgets/comunes.dart';
 import 'acceso_clienta.dart';
 import 'clienta_repo.dart';
 import '../i18n.dart';
+import '../whatsapp.dart';
 
 class MisCitasScreen extends StatefulWidget {
   const MisCitasScreen({super.key, required this.repo, required this.alBuscar});
@@ -20,6 +21,9 @@ class MisCitasScreen extends StatefulWidget {
 
 class _MisCitasScreenState extends State<MisCitasScreen> {
   List<MiCita> _citas = [];
+
+  /// WhatsApp de cada profesional con cita próxima (solo si ella lo muestra).
+  Map<String, String> _whatsapp = {};
   bool _cargando = true;
 
   @override
@@ -35,9 +39,17 @@ class _MisCitasScreenState extends State<MisCitasScreen> {
     }
     try {
       final c = await widget.repo.misCitas();
+      final wa = <String, String>{};
+      for (final id in {for (final x in c) if (x.futura && x.activa) x.manicuristaId}) {
+        try {
+          final tel = (await widget.repo.perfil(id))?.whatsapp;
+          if (enlaceWhatsapp(tel, '') != null) wa[id] = tel!;
+        } catch (_) {}
+      }
       if (!mounted) return;
       setState(() {
         _citas = c;
+        _whatsapp = wa;
         _cargando = false;
       });
     } catch (e) {
@@ -109,7 +121,8 @@ class _MisCitasScreenState extends State<MisCitasScreen> {
                             label: Text(tr('Buscar en GlamGo')),
                           ),
                         ),
-                      for (final c in proximas) _TarjetaCita(cita: c, onCancelar: () => _cancelar(c)),
+                      for (final c in proximas)
+                        _TarjetaCita(cita: c, onCancelar: () => _cancelar(c), whatsapp: _whatsapp[c.manicuristaId]),
                       if (pasadas.isNotEmpty) ...[
                         TituloSeccion(tr('Anteriores y canceladas')),
                         for (final c in pasadas) _TarjetaCita(cita: c),
@@ -122,10 +135,11 @@ class _MisCitasScreenState extends State<MisCitasScreen> {
 }
 
 class _TarjetaCita extends StatelessWidget {
-  const _TarjetaCita({required this.cita, this.onCancelar});
+  const _TarjetaCita({required this.cita, this.onCancelar, this.whatsapp});
 
   final MiCita cita;
   final VoidCallback? onCancelar;
+  final String? whatsapp;
 
   @override
   Widget build(BuildContext context) {
@@ -164,12 +178,26 @@ class _TarjetaCita extends StatelessWidget {
                       style: const TextStyle(color: NailsyColors.rojo, fontWeight: FontWeight.w600)),
                 ),
               if (onCancelar != null)
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: onCancelar,
-                    child: Text(tr('Cancelar cita'), style: const TextStyle(color: NailsyColors.rojo)),
-                  ),
+                Row(
+                  children: [
+                    if (whatsapp != null)
+                      Flexible(
+                        child: TextButton.icon(
+                          style: TextButton.styleFrom(foregroundColor: verdeWhatsapp),
+                          onPressed: () => abrirWhatsapp(
+                              whatsapp,
+                              tr('Hola {n}, te escribo por mi cita del {f} en GlamGo.',
+                                  {'n': c.manicurista, 'f': fecha})),
+                          icon: const Icon(Icons.chat_outlined, size: 18),
+                          label: Text(tr('WhatsApp'), overflow: TextOverflow.ellipsis),
+                        ),
+                      ),
+                    const Spacer(),
+                    TextButton(
+                      onPressed: onCancelar,
+                      child: Text(tr('Cancelar cita'), style: const TextStyle(color: NailsyColors.rojo)),
+                    ),
+                  ],
                 ),
             ],
           ),

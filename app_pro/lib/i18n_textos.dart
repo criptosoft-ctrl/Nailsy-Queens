@@ -170,4 +170,9 @@ const traducciones = <String, (String, String)>{
   'Tu dirección está fuera de su zona.': ('Your address is outside their area.', 'Deine Adresse liegt außerhalb des Einsatzgebiets.'),
   'Escribe tu dirección.': ('Enter your address.', 'Gib deine Adresse ein.'),
   ' · cerca de {z}': (' · near {z}', ' · in der Nähe von {z}'),
+  'Escribir por WhatsApp': ('Message on WhatsApp', 'Per WhatsApp schreiben'),
+  'WhatsApp': ('WhatsApp', 'WhatsApp'),
+  'Hola {n}, te escribo desde GlamGo.': ('Hi {n}, I\'m writing to you from GlamGo.', 'Hallo {n}, ich schreibe dir über GlamGo.'),
+  'Hola {n}, te escribo por mi cita del {f} en GlamGo.': ('Hi {n}, I\'m writing about my GlamGo appointment on {f}.', 'Hallo {n}, ich schreibe wegen meines GlamGo-Termins am {f}.'),
+  'Para reservar usa el botón Reservar: así tu hora queda guardada.': ('To book, use the Book button so your time is saved.', 'Zum Buchen nutze den Button Buchen, damit dein Termin gespeichert ist.'),
 };

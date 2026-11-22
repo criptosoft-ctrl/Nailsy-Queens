@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import '../data/agenda_repo.dart';
 import '../models/publico.dart';
 import '../theme.dart';
+import '../whatsapp.dart';
 import '../ubicacion.dart';
 import '../widgets/comunes.dart';
 import '../sectores.dart';
@@ -29,6 +30,7 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
   final _instagram = TextEditingController();
   final _suplemento = TextEditingController();
   bool _atiendeLocal = true;
+  bool _whatsapp = false;
   Domicilio _dom = const Domicilio();
   MiPerfil _perfil = const MiPerfil(nombre: '');
   List<String> _especialidades = [];
@@ -74,6 +76,7 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
         // Las antiguas claves (rusa, gel…) se pasan a su nombre para que ella las pueda editar.
         _especialidades = [for (final e in p.especialidades) etiquetaEstilo(e)];
         _atiendeLocal = p.atiendeLocal;
+        _whatsapp = p.whatsappVisible;
         _dom = p.domicilio;
         _suplemento.text = _dom.importe == 0 ? '' : _formatoImporte(_dom.importe);
         _publico = p.publico;
@@ -110,6 +113,7 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
         zonaHoraria: _zona,
         atiendeLocal: _atiendeLocal,
         domicilio: _dom.copyWith(importe: _importe()),
+        whatsappVisible: _whatsapp && _t(_telefono) != null,
       );
 
   double _importe() => double.tryParse(_suplemento.text.trim().replaceAll(',', '.').replaceAll('€', '')) ?? 0;
@@ -364,7 +368,26 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
             TextFormField(
               controller: _telefono,
               keyboardType: TextInputType.phone,
-              decoration: InputDecoration(labelText: 'Teléfono (no se muestra a ${context.sector.lasClientes})'),
+              onChanged: (_) => setState(() {}),
+              decoration: InputDecoration(
+                labelText: _whatsapp
+                    ? 'Teléfono (WhatsApp)'
+                    : 'Teléfono (no se muestra a ${context.sector.lasClientes})',
+              ),
+            ),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              value: _whatsapp,
+              onChanged: (v) {
+                if (v && _t(_telefono) == null) {
+                  aviso(context, 'Escribe primero tu teléfono de WhatsApp.');
+                  return;
+                }
+                setState(() => _whatsapp = v);
+              },
+              secondary: const Icon(Icons.chat_outlined, color: verdeWhatsapp),
+              title: const Text('Botón de WhatsApp', style: TextStyle(fontWeight: FontWeight.w700)),
+              subtitle: Text('${_mayus(context.sector.lasClientes)} te podrán escribir a este número'),
             ),
             // ---- Especialidades ----
             const TituloSeccion('Especialidades'),

@@ -181,6 +181,12 @@ T = {
 'Escribe tu dirección.': ('Enter your address.', 'Gib deine Adresse ein.'),
 # Buscar por zona
 ' · cerca de {z}': (' · near {z}', ' · in der Nähe von {z}'),
+# WhatsApp
+'Escribir por WhatsApp': ('Message on WhatsApp', 'Per WhatsApp schreiben'),
+'WhatsApp': ('WhatsApp', 'WhatsApp'),
+'Hola {n}, te escribo desde GlamGo.': ('Hi {n}, I\'m writing to you from GlamGo.', 'Hallo {n}, ich schreibe dir über GlamGo.'),
+'Hola {n}, te escribo por mi cita del {f} en GlamGo.': ('Hi {n}, I\'m writing about my GlamGo appointment on {f}.', 'Hallo {n}, ich schreibe wegen meines GlamGo-Termins am {f}.'),
+'Para reservar usa el botón Reservar: así tu hora queda guardada.': ('To book, use the Book button so your time is saved.', 'Zum Buchen nutze den Button Buchen, damit dein Termin gespeichert ist.'),
 }
 
 def dart(s):

@@ -164,7 +164,11 @@ class PerfilPublico {
     this.horasCancelacion = 24,
     this.atiendeLocal = true,
     this.domicilio = const Domicilio(),
+    this.whatsapp,
   });
+
+  /// Teléfono para el botón de WhatsApp (solo si ella lo quiere mostrar).
+  final String? whatsapp;
 
   final String id;
   final String nombre;
@@ -200,6 +204,7 @@ class PerfilPublico {
         horasCancelacion: ((m['horas_cancelacion'] as num?) ?? 24).toInt(),
         atiendeLocal: (m['atiende_local'] as bool?) ?? true,
         domicilio: Domicilio.fromMap(m),
+        whatsapp: m['whatsapp'] as String?,
       );
 
   double? get precioDesde =>
@@ -295,8 +300,11 @@ class MiPerfil {
     this.zonaHoraria = 'Atlantic/Canary',
     this.atiendeLocal = true,
     this.domicilio = const Domicilio(),
+    this.whatsappVisible = false,
   });
 
+  /// Si muestra el botón de WhatsApp con su teléfono.
+  final bool whatsappVisible;
   final bool atiendeLocal;
   final Domicilio domicilio;
   final String nombre;
@@ -329,6 +337,7 @@ class MiPerfil {
         zonaHoraria: (m['zona_horaria'] as String?) ?? 'Atlantic/Canary',
         atiendeLocal: (m['atiende_local'] as bool?) ?? true,
         domicilio: Domicilio.fromMap(m),
+        whatsappVisible: (m['whatsapp_visible'] as bool?) ?? false,
       );
 
   Map<String, dynamic> toMap() => {
@@ -346,6 +355,7 @@ class MiPerfil {
         'lng': lng,
         'zona_horaria': zonaHoraria,
         'atiende_local': atiendeLocal,
+        'whatsapp_visible': whatsappVisible,
         ...domicilio.toMap(),
       };
 
@@ -365,6 +375,7 @@ class MiPerfil {
         zonaHoraria: zonaHoraria,
         atiendeLocal: atiendeLocal,
         domicilio: domicilio,
+        whatsappVisible: whatsappVisible,
       );
 
   /// Qué falta para que tenga sentido aparecer en el buscador.
