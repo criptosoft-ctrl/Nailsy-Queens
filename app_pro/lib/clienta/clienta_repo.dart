@@ -324,6 +324,9 @@ class DemoClientaRepo implements ClientaRepo {
             precioDesde: p.precioDesde,
             distanciaKm: lat == null ? null : (p.id == 'm2' ? 9.8 : 1.2),
             proximoHueco: p.id == 'm2' ? manana10 : hoy14,
+            duracionDesde: p.servicios.isEmpty
+                ? null
+                : (p.servicios.toList()..sort((a, b) => a.precio.compareTo(b.precio))).first.duracionMin,
           ),
     ];
     return soloHoy ? lista.where((m) => m.proximoHueco!.day == ahora.day).toList() : lista;

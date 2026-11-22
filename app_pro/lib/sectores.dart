@@ -16,6 +16,7 @@ class Sector {
     required this.nombre,
     required this.marca,
     required this.descripcion,
+    required this.lema,
     required this.icono,
     required this.profesional,
     required this.elProfesional,
@@ -43,6 +44,9 @@ class Sector {
   /// Nombre de la sección dentro de GlamGo ("Nailsy Queens"…).
   final String marca;
   final String descripcion;
+
+  /// Frase bajo el título de la sección ("Manicura y nail art cerca de ti").
+  final String lema;
   final IconData icono;
 
   /// Cómo se llama a la profesional ("manicurista", "barbero"…).
@@ -90,6 +94,7 @@ const sectores = [
     nombre: 'Uñas',
     marca: 'Nailsy Queens',
     descripcion: 'Manicura, gel, acrílico y nail art',
+    lema: 'Manicura y nail art cerca de ti',
     icono: Icons.front_hand_outlined,
     profesional: 'manicurista',
     elProfesional: 'la manicurista',
@@ -113,6 +118,7 @@ const sectores = [
     nombre: 'Barbería',
     marca: 'Barbershop',
     descripcion: 'Cortes, degradados y barba',
+    lema: 'Cortes y barba cerca de ti',
     icono: Icons.content_cut,
     profesional: 'barbero',
     elProfesional: 'el barbero',
@@ -135,6 +141,7 @@ const sectores = [
     nombre: 'Peluquería',
     marca: 'Peluquería',
     descripcion: 'Corte, color y peinados',
+    lema: 'Corte, color y peinados cerca de ti',
     icono: Icons.face_3_outlined,
     profesional: 'peluquera',
     elProfesional: 'la peluquera',
@@ -157,6 +164,7 @@ const sectores = [
     nombre: 'Estética',
     marca: 'Estética',
     descripcion: 'Cejas, pestañas, depilación y faciales',
+    lema: 'Cejas, pestañas y faciales cerca de ti',
     icono: Icons.spa_outlined,
     profesional: 'esteticista',
     elProfesional: 'la esteticista',

@@ -47,6 +47,7 @@ class ResumenManicurista {
     this.precioDesde,
     this.fotos = const [],
     this.proximoHueco,
+    this.duracionDesde,
   });
 
   final String id;
@@ -55,6 +56,9 @@ class ResumenManicurista {
 
   /// Primer hueco libre en los próximos 14 días (para el servicio más corto).
   final DateTime? proximoHueco;
+
+  /// Duración (min) del servicio más barato, para "Desde 35 € · 1 h".
+  final int? duracionDesde;
 
   /// Ruta en Storage de la foto de perfil.
   final String? foto;
@@ -76,6 +80,7 @@ class ResumenManicurista {
         distanciaKm: _dbl(m['distancia_km']),
         precioDesde: _dbl(m['precio_desde']),
         fotos: _lista(m['fotos']),
+        duracionDesde: (m['duracion_desde'] as num?)?.toInt(),
         proximoHueco: m['proximo_hueco'] == null ? null : DateTime.parse(m['proximo_hueco'] as String).toLocal(),
       );
 }

@@ -197,7 +197,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 8),
                     TextButton.icon(
                       onPressed: () => launchUrl(
-                        kIsWeb ? Uri.parse('${Uri.base.origin}/') : Uri.parse('https://nailsy-queens.netlify.app/'),
+                        kIsWeb ? Uri.parse('${Uri.base.origin}/') : Uri.parse('https://glamgo.netlify.app/'),
                         webOnlyWindowName: '_self',
                       ),
                       icon: const Icon(Icons.search, size: 18, color: NailsyColors.textoSecundario),

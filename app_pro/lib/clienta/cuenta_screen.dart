@@ -18,7 +18,7 @@ class CuentaScreen extends StatefulWidget {
 class _CuentaScreenState extends State<CuentaScreen> {
   /// En la web, GlamGo Pro está en /pro/ del mismo sitio.
   Future<void> _abrirPro() async {
-    final url = kIsWeb ? Uri.parse('${Uri.base.origin}/pro/') : Uri.parse('https://nailsy-queens.netlify.app/pro/');
+    final url = kIsWeb ? Uri.parse('${Uri.base.origin}/pro/') : Uri.parse('https://glamgo.netlify.app/pro/');
     await launchUrl(url, webOnlyWindowName: '_self');
   }
 
