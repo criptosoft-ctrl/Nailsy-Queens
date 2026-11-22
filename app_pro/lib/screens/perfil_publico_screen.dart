@@ -213,10 +213,10 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
             ],
           ),
           Slider(
-            value: _dom.radioKm.clamp(3, 30).toDouble(),
+            value: _dom.radioKm.clamp(3, 60).toDouble(),
             min: 3,
-            max: 30,
-            divisions: 27,
+            max: 60,
+            divisions: 57,
             label: '${_dom.radioKm} km',
             onChanged: (v) => setState(() => _dom = _dom.copyWith(radioKm: v.round())),
           ),
