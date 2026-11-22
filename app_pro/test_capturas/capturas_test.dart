@@ -154,7 +154,7 @@ void main() {
     await tester.tap(find.text('Barbería'));
     await tester.pumpAndSettle();
     await _foto('c07_barbershop');
-    await tester.tap(find.text('Niños'));
+    await tester.tap(find.text('A domicilio'));
     await tester.pumpAndSettle();
     await tester.runAsync(() async {
       await precacheImage(const AssetImage('assets/vacio/barberia.png'), tester.element(find.text('Restablecer filtros')));
