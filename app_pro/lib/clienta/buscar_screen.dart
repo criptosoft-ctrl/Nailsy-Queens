@@ -568,6 +568,9 @@ class _SinResultados extends StatelessWidget {
             style: const TextStyle(fontSize: 16, color: NailsyColors.textoSecundario),
           ),
           const SizedBox(height: 26),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
           OutlinedButton.icon(
             onPressed: alRestablecer,
             style: OutlinedButton.styleFrom(
@@ -576,10 +579,12 @@ class _SinResultados extends StatelessWidget {
               minimumSize: const Size(0, 54),
               padding: const EdgeInsets.symmetric(horizontal: 28),
               shape: const StadiumBorder(),
-              textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+              textStyle: const TextStyle(fontFamily: fuenteNailsy, fontSize: 16, fontWeight: FontWeight.w700),
             ),
             icon: const Icon(Icons.refresh_rounded, color: NailsyColors.oro),
             label: const Text('Restablecer filtros'),
+          ),
+            ],
           ),
         ],
       ),
