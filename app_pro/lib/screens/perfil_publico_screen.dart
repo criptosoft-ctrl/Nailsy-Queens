@@ -31,7 +31,8 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
   bool _atiendeLocal = true;
   Domicilio _dom = const Domicilio();
   MiPerfil _perfil = const MiPerfil(nombre: '');
-  Set<String> _especialidades = {};
+  List<String> _especialidades = [];
+  final _nuevaEspecialidad = TextEditingController();
   bool _publico = false;
   String _zona = 'Atlantic/Canary';
   bool _cargando = true;
@@ -48,7 +49,7 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
 
   @override
   void dispose() {
-    for (final c in [_nombre, _negocio, _telefono, _ciudad, _direccion, _bio, _instagram, _suplemento]) {
+    for (final c in [_nombre, _negocio, _telefono, _ciudad, _direccion, _bio, _instagram, _suplemento, _nuevaEspecialidad]) {
       c.dispose();
     }
     super.dispose();
@@ -70,7 +71,8 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
         _direccion.text = p.direccion ?? '';
         _bio.text = p.bio ?? '';
         _instagram.text = p.instagram ?? '';
-        _especialidades = {...p.especialidades};
+        // Las antiguas claves (rusa, gel…) se pasan a su nombre para que ella las pueda editar.
+        _especialidades = [for (final e in p.especialidades) etiquetaEstilo(e)];
         _atiendeLocal = p.atiendeLocal;
         _dom = p.domicilio;
         _suplemento.text = _dom.importe == 0 ? '' : _formatoImporte(_dom.importe);
@@ -101,7 +103,7 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
         bio: _t(_bio),
         foto: _perfil.foto,
         instagram: _t(_instagram)?.replaceAll('@', ''),
-        especialidades: _especialidades.toList(),
+        especialidades: List.of(_especialidades),
         publico: _publico,
         lat: _perfil.lat,
         lng: _perfil.lng,
@@ -113,6 +115,8 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
   double _importe() => double.tryParse(_suplemento.text.trim().replaceAll(',', '.').replaceAll('€', '')) ?? 0;
 
   Future<void> _guardar() async {
+    // Si dejó escrita una especialidad sin pulsar +, se añade también.
+    if (_nuevaEspecialidad.text.trim().isNotEmpty) _anadirEspecialidad();
     if (!_atiendeLocal && !_dom.activo) {
       aviso(context, 'Elige al menos un sitio donde atiendes: tu local o a domicilio.');
       return;
@@ -172,6 +176,20 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
     } finally {
       if (mounted) setState(() => _buscandoUbicacion = false);
     }
+  }
+
+  void _anadirEspecialidad() {
+    final t = _nuevaEspecialidad.text.trim().replaceAll(RegExp(r'\s+'), ' ');
+    if (t.isEmpty) return;
+    final nueva = t[0].toUpperCase() + t.substring(1);
+    if (_especialidades.any((e) => e.toLowerCase() == nueva.toLowerCase())) {
+      aviso(context, 'Ya tienes "$nueva".');
+      return;
+    }
+    setState(() {
+      _especialidades.add(nueva);
+      _nuevaEspecialidad.clear();
+    });
   }
 
   /// Zona en km, suplemento (lo pone ella) y tiempo de viaje.
@@ -350,18 +368,52 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
             ),
             // ---- Especialidades ----
             const TituloSeccion('Especialidades'),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (final e in context.sector.estilos.entries)
-                  FilterChip(
-                    label: Text(e.value),
-                    selected: _especialidades.contains(e.key),
-                    onSelected: (v) => setState(() => v ? _especialidades.add(e.key) : _especialidades.remove(e.key)),
+            const Text('Escribe lo que haces. Se muestran en tu tarjeta y sirven para que te encuentren.',
+                style: TextStyle(color: NailsyColors.textoSecundario, fontSize: 13)),
+            const SizedBox(height: 10),
+            if (_especialidades.isNotEmpty) ...[
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final e in _especialidades)
+                    InputChip(
+                      label: Text(e),
+                      onDeleted: () => setState(() => _especialidades.remove(e)),
+                      deleteButtonTooltipMessage: 'Quitar',
+                    ),
+                ],
+              ),
+              const SizedBox(height: 10),
+            ],
+            if (_especialidades.length < _maxEspecialidades)
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _nuevaEspecialidad,
+                      textCapitalization: TextCapitalization.sentences,
+                      maxLength: 24,
+                      textInputAction: TextInputAction.done,
+                      onSubmitted: (_) => _anadirEspecialidad(),
+                      decoration: InputDecoration(
+                        labelText: 'Nueva especialidad',
+                        hintText: context.sector.id == 'barberia' ? 'Ej. Degradado' : 'Ej. Uñas esculpidas',
+                        counterText: '',
+                      ),
+                    ),
                   ),
-              ],
-            ),
+                  const SizedBox(width: 8),
+                  IconButton.filled(
+                    tooltip: 'Añadir',
+                    onPressed: _anadirEspecialidad,
+                    icon: const Icon(Icons.add),
+                  ),
+                ],
+              )
+            else
+              Text('Máximo $_maxEspecialidades. Quita una para añadir otra.',
+                  style: const TextStyle(color: NailsyColors.textoSecundario, fontSize: 13)),
             // ---- Ubicación ----
             const TituloSeccion('Dónde trabajas'),
             TextFormField(
@@ -439,6 +491,8 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
 
 
 String _mayus(String t) => t.isEmpty ? t : t[0].toUpperCase() + t.substring(1);
+
+const _maxEspecialidades = 8;
 
 String _formatoImporte(double v) =>
     v == v.roundToDouble() ? v.toStringAsFixed(0) : v.toStringAsFixed(2).replaceAll('.', ',');

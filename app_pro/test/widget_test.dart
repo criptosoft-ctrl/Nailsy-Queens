@@ -122,6 +122,28 @@ void main() {
         ['9:0-10:30', '12:30-18:0']);
   });
 
+  testWidgets('Las especialidades las escribe y las quita la profesional', (tester) async {
+    await _abrirPro(tester);
+    await tester.tap(find.byTooltip('Mi cuenta'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Mi perfil público'));
+    await tester.pumpAndSettle();
+    final lista = find.byType(Scrollable).first;
+    await tester.scrollUntilVisible(find.text('Nueva especialidad'), 300, scrollable: lista);
+    await tester.pumpAndSettle();
+    expect(find.widgetWithText(InputChip, 'Manicura rusa'), findsOneWidget);
+
+    await tester.enterText(find.widgetWithText(TextField, 'Nueva especialidad'), 'uñas esculpidas');
+    await tester.tap(find.byTooltip('Añadir'));
+    await tester.pumpAndSettle();
+    expect(find.widgetWithText(InputChip, 'Uñas esculpidas'), findsOneWidget);
+
+    await tester.tap(find.descendant(
+        of: find.widgetWithText(InputChip, 'Manicura rusa'), matching: find.byTooltip('Quitar')));
+    await tester.pumpAndSettle();
+    expect(find.widgetWithText(InputChip, 'Manicura rusa'), findsNothing);
+  });
+
   testWidgets('La ficha de una cita a domicilio muestra la dirección, Cómo llegar y Llamar', (tester) async {
     await _abrirPro(tester);
     await tester.scrollUntilVisible(find.text('Carla Sanz'), 300, scrollable: find.byType(Scrollable).first);
