@@ -19,14 +19,15 @@ class NailsyColors {
   static const salviaEstetica = Color(0xFF5CC8A4);
   static const sobreSalviaEstetica = Color(0xFF0A2A20);
 
-  // ---- Base neutra (gris carbón) ----
-  static const fondo = Color(0xFF121014);
-  static const superficie = Color(0xFF1E1B22);
-  static const superficieAlta = Color(0xFF28242D);
-  static const borde = Color(0xFF34303A);
-  static const barraNavegacion = Color(0xFF17151A);
+  // ---- Base azul noche (diseño GlamGo) ----
+  static const fondo = Color(0xFF0A1530);
+  static const fondoProfundo = Color(0xFF051024);
+  static const superficie = Color(0xFF121E3A);
+  static const superficieAlta = Color(0xFF1A2747);
+  static const borde = Color(0xFF2A3757);
+  static const barraNavegacion = Color(0xFF0E1934);
   static const texto = Color(0xFFF6F2EC);
-  static const textoSecundario = Color(0xFFA7A1AB);
+  static const textoSecundario = Color(0xFFA3ABC2);
 
   // ---- Estados (iguales en toda la app) ----
   static const verde = Color(0xFF4ADE80);

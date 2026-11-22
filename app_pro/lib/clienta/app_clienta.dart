@@ -139,17 +139,82 @@ class _ClientaShellState extends State<ClientaShell> {
           ),
         ],
       ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _tab,
-        onDestinationSelected: (i) => setState(() {
+      backgroundColor: NailsyColors.fondoProfundo,
+      bottomNavigationBar: _BarraGlamGo(
+        seleccionada: _tab,
+        alElegir: (i) => setState(() {
           if (i != _tab) _visitas++;
           _tab = i;
         }),
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.home_outlined), label: 'Inicio'),
-          NavigationDestination(icon: Icon(Icons.calendar_month_outlined), label: 'Mis citas'),
-          NavigationDestination(icon: Icon(Icons.person_outline), label: 'Perfil'),
-        ],
+      ),
+    );
+  }
+}
+
+
+/// Barra de abajo flotante, con la pestaña elegida en oro y una rayita debajo (diseño GlamGo).
+class _BarraGlamGo extends StatelessWidget {
+  const _BarraGlamGo({required this.seleccionada, required this.alElegir});
+
+  final int seleccionada;
+  final ValueChanged<int> alElegir;
+
+  static const _opciones = [
+    (Icons.home_outlined, Icons.home_rounded, 'Inicio'),
+    (Icons.calendar_month_outlined, Icons.calendar_month, 'Mis citas'),
+    (Icons.person_outline, Icons.person, 'Perfil'),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      top: false,
+      minimum: const EdgeInsets.only(bottom: 10),
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(12, 0, 12, 0),
+        height: 74,
+        decoration: BoxDecoration(
+          color: NailsyColors.barraNavegacion.withValues(alpha: 0.96),
+          borderRadius: BorderRadius.circular(30),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
+          boxShadow: const [BoxShadow(color: Colors.black54, blurRadius: 18, offset: Offset(0, 6))],
+        ),
+        child: Row(
+          children: [
+            for (var i = 0; i < _opciones.length; i++)
+              Expanded(
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(30),
+                  onTap: () => alElegir(i),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(i == seleccionada ? _opciones[i].$2 : _opciones[i].$1,
+                          color: i == seleccionada ? NailsyColors.oro : NailsyColors.textoSecundario, size: 26),
+                      const SizedBox(height: 4),
+                      Text(
+                        _opciones[i].$3,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: i == seleccionada ? FontWeight.w700 : FontWeight.w500,
+                          color: i == seleccionada ? NailsyColors.oro : NailsyColors.textoSecundario,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        width: i == seleccionada ? 46 : 0,
+                        height: 3,
+                        decoration: BoxDecoration(color: NailsyColors.oro, borderRadius: BorderRadius.circular(2)),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

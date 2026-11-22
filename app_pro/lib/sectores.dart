@@ -23,6 +23,7 @@ class Sector {
     required this.color,
     required this.sobreColor,
     required this.colorSuave,
+    required this.imagen,
     required this.clientes,
     required this.cliente,
     required this.laCliente,
@@ -58,6 +59,9 @@ class Sector {
   final Color sobreColor;
   final Color colorSuave;
 
+  /// Foto decorativa de la tarjeta de la portada.
+  final String imagen;
+
   /// Vocabulario: "Clientas"/"Clientes", "clienta"/"cliente", "la clienta"/"el cliente"…
   final String clientes;
   final String cliente;
@@ -86,13 +90,14 @@ const sectores = [
     nombre: 'Uñas',
     marca: 'Nailsy Queens',
     descripcion: 'Manicura, gel, acrílico y nail art',
-    icono: Icons.back_hand_outlined,
+    icono: Icons.front_hand_outlined,
     profesional: 'manicurista',
     elProfesional: 'la manicurista',
     activo: true,
     color: NailsyColors.rosa,
     sobreColor: NailsyColors.sobreRosa,
     colorSuave: NailsyColors.rosaSuave,
+    imagen: 'assets/portada/unas.jpg',
     clientes: 'Clientas',
     cliente: 'clienta',
     laCliente: 'la clienta',
@@ -115,6 +120,7 @@ const sectores = [
     color: NailsyColors.azulBarberia,
     sobreColor: NailsyColors.sobreAzulBarberia,
     colorSuave: Color(0xFFA9C4F7),
+    imagen: 'assets/portada/barberia.jpg',
     clientes: 'Clientes',
     cliente: 'cliente',
     laCliente: 'el cliente',
@@ -129,13 +135,14 @@ const sectores = [
     nombre: 'Peluquería',
     marca: 'Peluquería',
     descripcion: 'Corte, color y peinados',
-    icono: Icons.face_retouching_natural,
+    icono: Icons.face_3_outlined,
     profesional: 'peluquera',
     elProfesional: 'la peluquera',
     activo: false,
     color: NailsyColors.violetaPeluqueria,
     sobreColor: NailsyColors.sobreVioletaPeluqueria,
     colorSuave: Color(0xFFD0BDF9),
+    imagen: 'assets/portada/peluqueria.jpg',
     clientes: 'Clientas',
     cliente: 'clienta',
     laCliente: 'la clienta',
@@ -157,6 +164,7 @@ const sectores = [
     color: NailsyColors.salviaEstetica,
     sobreColor: NailsyColors.sobreSalviaEstetica,
     colorSuave: Color(0xFFA8E3CF),
+    imagen: 'assets/portada/estetica.jpg',
     clientes: 'Clientas',
     cliente: 'clienta',
     laCliente: 'la clienta',
