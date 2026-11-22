@@ -480,7 +480,7 @@ class _BloqueManicurista extends StatelessWidget {
                                 spacing: 6,
                                 runSpacing: 6,
                                 children: [
-                                  for (final e in m.especialidades.take(3))
+                                  for (final e in m.especialidades)
                                     Material(
                                       color: estiloActivo == e ? acento : acento.withValues(alpha: 0.14),
                                       borderRadius: BorderRadius.circular(10),
