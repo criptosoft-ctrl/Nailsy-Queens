@@ -15,7 +15,7 @@ T = {
 # Secciones
 'Manicura': ('Manicure', 'Maniküre'),
 'Barbería': ('Barber', 'Barbier'),
-'Peluquería': ('Hair salon', 'Friseur'),
+'Salón de Belleza': ('Beauty Salon', 'Schönheitssalon'),
 'Estética': ('Beauty', 'Kosmetik'),
 'Manicura, gel, acrílico y nail art': ('Manicure, gel, acrylic and nail art', 'Maniküre, Gel, Acryl und Nail Art'),
 'Cortes, degradados y barba': ('Haircuts, fades and beards', 'Haarschnitte, Fades und Bart'),

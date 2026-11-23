@@ -144,8 +144,8 @@ const sectores = [
   ),
   Sector(
     id: 'peluqueria',
-    nombre: 'Peluquería',
-    marca: 'Peluquería',
+    nombre: 'Salón de Belleza',
+    marca: 'Salón de Belleza',
     descripcion: 'Corte, color y peinados',
     lema: 'Corte, color y peinados cerca de ti',
     icono: Icons.face_3_outlined,

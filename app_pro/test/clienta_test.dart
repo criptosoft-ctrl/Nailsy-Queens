@@ -69,12 +69,12 @@ void main() {
 
     expect(find.text('Manicura'), findsOneWidget);
     expect(find.text('Barbería'), findsOneWidget);
-    expect(find.text('Peluquería'), findsOneWidget);
+    expect(find.text('Salón de Belleza'), findsOneWidget);
     expect(find.text('Próximamente'), findsNWidgets(2));
 
-    await tester.tap(find.text('Peluquería'));
+    await tester.tap(find.text('Salón de Belleza'));
     await tester.pump();
-    expect(find.text('Peluquería llega muy pronto a GlamGo.'), findsOneWidget);
+    expect(find.text('Salón de Belleza llega muy pronto a GlamGo.'), findsOneWidget);
     await tester.pumpAndSettle(const Duration(seconds: 5));
 
     await _abrirNails(tester);
