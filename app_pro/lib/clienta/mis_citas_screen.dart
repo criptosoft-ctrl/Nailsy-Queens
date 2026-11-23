@@ -69,89 +69,13 @@ class _MisCitasScreenState extends State<MisCitasScreen> {
 
   /// Hoja para valorar una cita finalizada.
   Future<void> _valorar(MiCita c, [int inicial = 0]) async {
-    final comentario = TextEditingController();
-    var estrellas = inicial;
-    var enviando = false;
-    const etiquetas = ['', 'Muy mal', 'Mal', 'Normal', 'Muy bien', '¡Excelente!'];
     final ok = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       backgroundColor: NailsyColors.superficie,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(26))),
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setHoja) => Padding(
-          padding: EdgeInsets.fromLTRB(20, 12, 20, 20 + MediaQuery.of(ctx).viewInsets.bottom),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Center(
-                child: Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(color: NailsyColors.borde, borderRadius: BorderRadius.circular(2))),
-              ),
-              const SizedBox(height: 16),
-              Text(tr('Valora tu cita con {n}', {'n': c.manicurista}),
-                  textAlign: TextAlign.center, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
-              const SizedBox(height: 4),
-              Text(
-                '${c.servicio} · ${DateFormat.MMMEd(codigoIdioma).add_Hm().format(c.inicio)}',
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: NailsyColors.textoSecundario, fontSize: 13),
-              ),
-              const SizedBox(height: 14),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  for (var i = 1; i <= 5; i++)
-                    IconButton(
-                      tooltip: tr('{n} estrellas', {'n': i}),
-                      iconSize: 40,
-                      onPressed: () => setHoja(() => estrellas = i),
-                      icon: Icon(i <= estrellas ? Icons.star_rounded : Icons.star_outline_rounded,
-                          color: i <= estrellas ? NailsyColors.oro : NailsyColors.textoSecundario),
-                    ),
-                ],
-              ),
-              SizedBox(
-                height: 22,
-                child: Text(estrellas == 0 ? '' : tr(etiquetas[estrellas]),
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(color: NailsyColors.oro, fontWeight: FontWeight.w700)),
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: comentario,
-                maxLines: 3,
-                maxLength: 500,
-                textCapitalization: TextCapitalization.sentences,
-                decoration: InputDecoration(hintText: tr('Cuéntanos qué tal (opcional)')),
-              ),
-              Text(tr('Se publica con tu nombre y la inicial del apellido.'),
-                  style: const TextStyle(color: NailsyColors.textoSecundario, fontSize: 12)),
-              const SizedBox(height: 14),
-              FilledButton(
-                onPressed: estrellas == 0 || enviando
-                    ? null
-                    : () async {
-                        setHoja(() => enviando = true);
-                        try {
-                          await widget.repo.valorar(c.id, estrellas, comentario: comentario.text);
-                          if (ctx.mounted) Navigator.pop(ctx, true);
-                        } catch (e) {
-                          setHoja(() => enviando = false);
-                          if (ctx.mounted) aviso(ctx, mensajeError(e));
-                        }
-                      },
-                child: Text(tr(estrellas == 0 ? 'Elige las estrellas' : 'Publicar reseña')),
-              ),
-            ],
-          ),
-        ),
-      ),
+      builder: (_) => _HojaValorar(cita: c, repo: widget.repo, inicial: inicial),
     );
-    comentario.dispose();
     if (ok == true && mounted) {
       aviso(context, tr('¡Gracias por tu reseña!'));
       await _cargar();
@@ -330,6 +254,107 @@ class _TarjetaCita extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Estrellas grandes, comentario opcional y "Publicar reseña".
+class _HojaValorar extends StatefulWidget {
+  const _HojaValorar({required this.cita, required this.repo, this.inicial = 0});
+
+  final MiCita cita;
+  final ClientaRepo repo;
+  final int inicial;
+
+  @override
+  State<_HojaValorar> createState() => _HojaValorarState();
+}
+
+class _HojaValorarState extends State<_HojaValorar> {
+  static const _etiquetas = ['', 'Muy mal', 'Mal', 'Normal', 'Muy bien', '¡Excelente!'];
+  final _comentario = TextEditingController();
+  late int _estrellas = widget.inicial;
+  bool _enviando = false;
+
+  @override
+  void dispose() {
+    _comentario.dispose();
+    super.dispose();
+  }
+
+  Future<void> _publicar() async {
+    setState(() => _enviando = true);
+    try {
+      await widget.repo.valorar(widget.cita.id, _estrellas, comentario: _comentario.text);
+      if (mounted) Navigator.pop(context, true);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _enviando = false);
+      aviso(context, mensajeError(e));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = widget.cita;
+    return Padding(
+      padding: EdgeInsets.fromLTRB(20, 12, 20, 20 + MediaQuery.of(context).viewInsets.bottom),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Center(
+            child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(color: NailsyColors.borde, borderRadius: BorderRadius.circular(2))),
+          ),
+          const SizedBox(height: 16),
+          Text(tr('Valora tu cita con {n}', {'n': c.manicurista}),
+              textAlign: TextAlign.center, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+          const SizedBox(height: 4),
+          Text(
+            '${c.servicio} · ${DateFormat.MMMEd(codigoIdioma).add_Hm().format(c.inicio)}',
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: NailsyColors.textoSecundario, fontSize: 13),
+          ),
+          const SizedBox(height: 14),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              for (var i = 1; i <= 5; i++)
+                IconButton(
+                  tooltip: tr('{n} estrellas', {'n': i}),
+                  iconSize: 40,
+                  onPressed: () => setState(() => _estrellas = i),
+                  icon: Icon(i <= _estrellas ? Icons.star_rounded : Icons.star_outline_rounded,
+                      color: i <= _estrellas ? NailsyColors.oro : NailsyColors.textoSecundario),
+                ),
+            ],
+          ),
+          SizedBox(
+            height: 22,
+            child: Text(_estrellas == 0 ? '' : tr(_etiquetas[_estrellas]),
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: NailsyColors.oro, fontWeight: FontWeight.w700)),
+          ),
+          const SizedBox(height: 8),
+          TextField(
+            controller: _comentario,
+            maxLines: 3,
+            maxLength: 500,
+            textCapitalization: TextCapitalization.sentences,
+            decoration: InputDecoration(hintText: tr('Cuéntanos qué tal (opcional)')),
+          ),
+          Text(tr('Se publica con tu nombre y la inicial del apellido.'),
+              style: const TextStyle(color: NailsyColors.textoSecundario, fontSize: 12)),
+          const SizedBox(height: 14),
+          FilledButton(
+            onPressed: _estrellas == 0 || _enviando ? null : _publicar,
+            child: Text(tr(_estrellas == 0 ? 'Elige las estrellas' : 'Publicar reseña')),
+          ),
+        ],
       ),
     );
   }
