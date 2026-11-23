@@ -1,0 +1,8 @@
+commit: b3d54ff780da8eadedbe30a81f12ea1ec62d4aba
+rama: main
+analyze: success
+tests: success
+apk: success
+web: success
+supabase_conectado: true
+run: https://github.com/criptosoft-ctrl/Nailsy-Queens/actions/runs/45141876085

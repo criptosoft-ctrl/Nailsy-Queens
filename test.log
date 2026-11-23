@@ -1,0 +1,37 @@
+
+::group::✅ Passing tests
+✅ /home/runner/work/Nailsy-Queens/Nailsy-Queens/app_pro/test/widget_test.dart: La agenda muestra el día con su resumen, almuerzo y huecos libres
+✅ /home/runner/work/Nailsy-Queens/Nailsy-Queens/app_pro/test/widget_test.dart: GlamGo Pro de un barbero habla de clientes y usa la ficha del pelo
+✅ /home/runner/work/Nailsy-Queens/Nailsy-Queens/app_pro/test/widget_test.dart: Ficha de cita: alergia con consejo, empezar y finalizar cobrando
+✅ /home/runner/work/Nailsy-Queens/Nailsy-Queens/app_pro/test/widget_test.dart: huecosDelDia descuenta citas y bloqueos del horario
+✅ /home/runner/work/Nailsy-Queens/Nailsy-Queens/app_pro/test/widget_test.dart: Las citas a domicilio ocupan también el viaje de ida y vuelta
+✅ /home/runner/work/Nailsy-Queens/Nailsy-Queens/app_pro/test/clienta_test.dart: Idiomas: la portada cambia a inglés y alemán desde el botón de idioma
+✅ /home/runner/work/Nailsy-Queens/Nailsy-Queens/app_pro/test/widget_test.dart: Las especialidades las escribe y las quita la profesional
+✅ /home/runner/work/Nailsy-Queens/Nailsy-Queens/app_pro/test/clienta_test.dart: La portada de GlamGo muestra los sectores y abre Nailsy Queens
+✅ /home/runner/work/Nailsy-Queens/Nailsy-Queens/app_pro/test/clienta_test.dart: Barbershop muestra solo barberos, con sus filtros y vocabulario
+✅ /home/runner/work/Nailsy-Queens/Nailsy-Queens/app_pro/test/widget_test.dart: Mis reseñas: la profesional responde una vez
+✅ /home/runner/work/Nailsy-Queens/Nailsy-Queens/app_pro/test/clienta_test.dart: El buscador muestra manicuristas y filtra por estilo
+✅ /home/runner/work/Nailsy-Queens/Nailsy-Queens/app_pro/test/widget_test.dart: La ficha de una cita a domicilio muestra la dirección, Cómo llegar y Llamar
+✅ /home/runner/work/Nailsy-Queens/Nailsy-Queens/app_pro/test/widget_test.dart: ResumenMes calcula ingresos, ausencias y servicios
+✅ /home/runner/work/Nailsy-Queens/Nailsy-Queens/app_pro/test/widget_test.dart: Cita.fromMap lee una fila de Supabase
+✅ /home/runner/work/Nailsy-Queens/Nailsy-Queens/app_pro/test/widget_test.dart: Presupuesto suma servicio y añadidos (por uña y fijos)
+✅ /home/runner/work/Nailsy-Queens/Nailsy-Queens/app_pro/test/widget_test.dart: Clienta.fromMap lee las alergias embebidas como objeto o lista
+✅ /home/runner/work/Nailsy-Queens/Nailsy-Queens/app_pro/test/clienta_test.dart: El perfil muestra servicios y botón de reservar
+✅ /home/runner/work/Nailsy-Queens/Nailsy-Queens/app_pro/test/widget_test.dart: Clientas: lista y ficha con pestañas
+✅ /home/runner/work/Nailsy-Queens/Nailsy-Queens/app_pro/test/widget_test.dart: Estadísticas muestra ingresos y servicios
+✅ /home/runner/work/Nailsy-Queens/Nailsy-Queens/app_pro/test/clienta_test.dart: Reservar: extras suman al precio y la reserva queda en Mis citas
+✅ /home/runner/work/Nailsy-Queens/Nailsy-Queens/app_pro/test/clienta_test.dart: A domicilio: se comprueba la zona y se suma el suplemento que pone ella
+✅ /home/runner/work/Nailsy-Queens/Nailsy-Queens/app_pro/test/clienta_test.dart: Escribir una zona la sitúa en el mapa y busca alrededor
+✅ /home/runner/work/Nailsy-Queens/Nailsy-Queens/app_pro/test/clienta_test.dart: WhatsApp: número con prefijo y mensaje
+✅ /home/runner/work/Nailsy-Queens/Nailsy-Queens/app_pro/test/clienta_test.dart: El texto también busca en las especialidades
+✅ /home/runner/work/Nailsy-Queens/Nailsy-Queens/app_pro/test/widget_test.dart: Mi cuenta abre tarifario, horario y perfil público
+✅ /home/runner/work/Nailsy-Queens/Nailsy-Queens/app_pro/test/clienta_test.dart: Tras una cita finalizada se valora desde Mis citas
+✅ /home/runner/work/Nailsy-Queens/Nailsy-Queens/app_pro/test/clienta_test.dart: Valoración: nota, insignia y orden por mejor valoradas
+✅ /home/runner/work/Nailsy-Queens/Nailsy-Queens/app_pro/test/clienta_test.dart: Sin sesión, Mis citas pide entrar
+✅ /home/runner/work/Nailsy-Queens/Nailsy-Queens/app_pro/test/clienta_test.dart: MiPerfil.pendientes indica qué falta para aparecer
+✅ /home/runner/work/Nailsy-Queens/Nailsy-Queens/app_pro/test/clienta_test.dart: FranjaHorario lee las horas de Supabase
+✅ /home/runner/work/Nailsy-Queens/Nailsy-Queens/app_pro/test/widget_test.dart: Nueva cita calcula duración y precio, y pide la hora
+✅ /home/runner/work/Nailsy-Queens/Nailsy-Queens/app_pro/test/clienta_test.dart: En "Entrar" aparece la opción de recuperar contraseña
+::endgroup::
+
+🎉 32 tests passed.

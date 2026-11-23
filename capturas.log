@@ -1,0 +1,72 @@
+MaterialIcons-Regular.otf
+MaterialIcons_LICENSE.txt
+Roboto-Black.ttf
+Roboto-BlackItalic.ttf
+Roboto-Bold.ttf
+Roboto-BoldItalic.ttf
+Roboto-Italic.ttf
+Roboto-Light.ttf
+Roboto-LightItalic.ttf
+Roboto-Medium.ttf
+Roboto-MediumItalic.ttf
+Roboto-Regular.ttf
+Roboto-Thin.ttf
+Roboto-ThinItalic.ttf
+RobotoCondensed-Bold.ttf
+RobotoCondensed-BoldItalic.ttf
+RobotoCondensed-Italic.ttf
+RobotoCondensed-Light.ttf
+RobotoCondensed-LightItalic.ttf
+RobotoCondensed-Regular.ttf
+RobotoCondensed_LICENSE.txt
+Roboto_LICENSE.txt
+codepoints
+
+::group::✅ Passing tests
+✅ Capturas · app de clientas
+✅ Capturas · GlamGo Pro de un barbero
+✅ Capturas · Nailsy Pro
+✅ Capturas · a domicilio
+✅ Capturas · reseñas
+✅ Capturas · idiomas (inglés y alemán)
+::endgroup::
+
+🎉 6 tests passed.
+b01_agenda_barbero.png
+b02_ficha_cita_barbero.png
+c00_inicio_glamgo.png
+c01_buscar.png
+c02_perfil.png
+c03_reservar.png
+c04_confirmada.png
+c05_mis_citas.png
+c06_cuenta.png
+c07_barbershop.png
+c08_perfil_barbero.png
+c09_sin_resultados.png
+d01_buscar_domicilio.png
+d02_reservar_domicilio.png
+d03_agenda_viaje.png
+d04_ficha_domicilio.png
+d05_pro_domicilio.png
+i_de_buscar.png
+i_de_portada.png
+i_en_buscar.png
+i_en_portada.png
+p01_login.png
+p02_agenda.png
+p02b_agenda_abajo.png
+p03_ficha_cita.png
+p04_nueva_cita.png
+p06_clientas.png
+p07_ficha_clienta.png
+p08_portafolio.png
+p09_estadisticas.png
+p10_mi_cuenta.png
+p11_tarifario.png
+p12_horario.png
+p13_perfil_publico.png
+r01_buscar_estrellas.png
+r02_perfil_resenas.png
+r03_valorar.png
+r04_pro_resenas.png
