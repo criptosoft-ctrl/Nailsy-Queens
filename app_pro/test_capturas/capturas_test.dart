@@ -310,6 +310,45 @@ void main() {
     await _foto('d05_pro_domicilio');
   });
 
+  testWidgets('Capturas · reseñas', (tester) async {
+    _movil(tester);
+    final repo = DemoClientaRepo(conCitaPasada: true);
+    await tester.pumpWidget(ClientaApp(repo: repo));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Manicura'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Mejor valoradas'));
+    await tester.pumpAndSettle();
+    await _foto('r01_buscar_estrellas');
+
+    await tester.tap(find.text('Eudy Nails'));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.text('Laura M.'), 300, scrollable: find.byType(Scrollable).last);
+    await tester.drag(find.byType(Scrollable).last, const Offset(0, 220));
+    await tester.pumpAndSettle();
+    await _foto('r02_perfil_resenas');
+
+    await tester.pumpWidget(ClientaApp(repo: repo, key: UniqueKey()));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Mis citas').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byIcon(Icons.star_outline_rounded).at(4));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), 'Me encantó el diseño y fue muy puntual.');
+    await tester.pumpAndSettle();
+    await _foto('r03_valorar');
+
+    final h = DateTime.now();
+    await tester.pumpWidget(_app(HomeShell(
+        repo: DemoAgendaRepo(), key: UniqueKey(), ahora: () => DateTime(h.year, h.month, h.day, 9, 45))));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Mi cuenta'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Mis reseñas'));
+    await tester.pumpAndSettle();
+    await _foto('r04_pro_resenas');
+  });
+
   testWidgets('Capturas · idiomas (inglés y alemán)', (tester) async {
     _movil(tester);
     addTearDown(() => idiomaActual.value = Idioma.es);

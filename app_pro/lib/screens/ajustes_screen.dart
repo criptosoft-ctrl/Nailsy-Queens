@@ -4,6 +4,7 @@ import '../data/agenda_repo.dart';
 import '../theme.dart';
 import 'horario_screen.dart';
 import 'perfil_publico_screen.dart';
+import 'resenas_screen.dart';
 import 'tarifario_screen.dart';
 import '../sectores.dart';
 
@@ -49,6 +50,8 @@ class AjustesScreen extends StatelessWidget {
         children: [
           opcion(Icons.storefront_outlined, 'Mi perfil público', 'Lo que ven ${context.sector.lasClientes} en el buscador',
               () => PerfilPublicoScreen(repo: repo)),
+          opcion(Icons.star_outline_rounded, 'Mis reseñas', 'Lo que opinan ${context.sector.lasClientes} y tus respuestas',
+              () => ResenasScreen(repo: repo)),
           opcion(Icons.schedule_outlined, 'Horario de trabajo', 'Los huecos que pueden reservar ${context.sector.lasClientes}',
               () => HorarioScreen(repo: repo)),
           opcion(Icons.sell_outlined, 'Tarifario', context.sector.cobroPorUna ? 'Servicios, precios, duraciones y Nail Art' : 'Servicios, precios, duraciones y extras',
@@ -57,7 +60,7 @@ class AjustesScreen extends StatelessWidget {
           const ListTile(
             leading: Icon(Icons.info_outline, color: NailsyColors.textoSecundario),
             title: Text('GlamGo Pro'),
-            subtitle: Text('Versión 0.6'),
+            subtitle: Text('Versión 0.9'),
           ),
           if (!modoDemo)
             ListTile(

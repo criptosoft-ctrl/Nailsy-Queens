@@ -7,6 +7,7 @@ import '../widgets/comunes.dart';
 import 'clienta_repo.dart';
 import 'reservar_screen.dart';
 import '../whatsapp.dart';
+import '../widgets/resenas.dart';
 import 'buscar_screen.dart' show textoSuplemento;
 import '../sectores.dart';
 import '../i18n.dart';
@@ -24,6 +25,8 @@ class PerfilManicuristaScreen extends StatefulWidget {
 
 class _PerfilManicuristaScreenState extends State<PerfilManicuristaScreen> {
   PerfilPublico? _p;
+  List<Resena> _resenas = [];
+  bool _verTodas = false;
   bool _cargando = true;
 
   @override
@@ -35,9 +38,16 @@ class _PerfilManicuristaScreenState extends State<PerfilManicuristaScreen> {
   Future<void> _cargar() async {
     try {
       final p = await widget.repo.perfil(widget.manicuristaId);
+      List<Resena> r = [];
+      if (p != null && p.valoracion.hay) {
+        try {
+          r = await widget.repo.resenas(widget.manicuristaId, limite: 50);
+        } catch (_) {}
+      }
       if (!mounted) return;
       setState(() {
         _p = p;
+        _resenas = r;
         _cargando = false;
       });
     } catch (_) {
@@ -119,6 +129,8 @@ class _PerfilManicuristaScreenState extends State<PerfilManicuristaScreen> {
                 const SizedBox(height: 12),
                 Text(p.nombre,
                     textAlign: TextAlign.center, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800)),
+                const SizedBox(height: 6),
+                Center(child: InsigniaNota(valoracion: p.valoracion)),
                 if (p.ciudad != null || p.direccion != null) ...[
                   const SizedBox(height: 4),
                   Row(
@@ -264,6 +276,21 @@ class _PerfilManicuristaScreenState extends State<PerfilManicuristaScreen> {
                           Text('+${precio(a.precio)}${a.porUna ? tr('/uña') : ''}',
                               style: const TextStyle(color: NailsyColors.textoSecundario)),
                         ],
+                      ),
+                    ),
+                ],
+                // ---- Reseñas ----
+                if (p.valoracion.hay) ...[
+                  TituloSeccion(tr('Reseñas')),
+                  ResumenValoracion(valoracion: p.valoracion),
+                  const SizedBox(height: 12),
+                  for (final r in (_verTodas ? _resenas : _resenas.take(3)))
+                    TarjetaResena(resena: r, profesional: p.nombre),
+                  if (!_verTodas && _resenas.length > 3)
+                    Center(
+                      child: TextButton(
+                        onPressed: () => setState(() => _verTodas = true),
+                        child: Text(tr('Ver las {n} reseñas', {'n': _resenas.length})),
                       ),
                     ),
                 ],

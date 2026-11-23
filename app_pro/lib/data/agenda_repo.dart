@@ -79,6 +79,12 @@ abstract class AgendaRepo {
   // Perfil público, horario y portafolio
   Future<MiPerfil> miPerfil();
   Future<void> guardarPerfil(MiPerfil p);
+
+  // Reseñas
+  Future<List<Resena>> misResenas();
+
+  /// Responde una vez y en público a una reseña.
+  Future<void> responderResena(String id, String texto);
   Future<List<FranjaHorario>> horario();
   Future<void> guardarHorario(List<FranjaHorario> franjas);
   Future<List<FotoPortafolio>> fotos();
@@ -373,6 +379,27 @@ class SupabaseAgendaRepo implements AgendaRepo {
   @override
   Future<void> guardarPerfil(MiPerfil p) async {
     await _db.from('manicuristas').update(p.toMap()).eq('id', _uid);
+  }
+
+  @override
+  Future<List<Resena>> misResenas() async {
+    final filas = await _db
+        .from('resenas')
+        .select('id, autor, estrellas, comentario, respuesta, creado_en, citas(servicios(nombre))')
+        .eq('manicurista_id', _uid)
+        .order('creado_en', ascending: false);
+    return filas.map(Resena.fromMap).toList();
+  }
+
+  @override
+  Future<void> responderResena(String id, String texto) async {
+    try {
+      await _db.rpc('responder_resena', params: {'p_id': id, 'p_texto': texto});
+    } on PostgrestException catch (e) {
+      throw ErrorNailsy(e.message.contains('ya tiene respuesta')
+          ? 'Esta reseña ya tiene respuesta.'
+          : 'No se pudo enviar la respuesta.');
+    }
   }
 
   @override
@@ -709,6 +736,36 @@ class DemoAgendaRepo implements AgendaRepo {
 
   @override
   Future<void> guardarPerfil(MiPerfil p) async => _perfil = p;
+
+  final List<Resena> _resenas = [
+    Resena(
+        id: 'r0',
+        autor: 'Ana G.',
+        estrellas: 4,
+        fecha: DateTime.now(),
+        servicio: 'Esculpida',
+        comentario: 'Muy bonito el diseño, tardó un poco más de lo previsto.'),
+    Resena(
+        id: 'r1',
+        autor: 'Laura M.',
+        estrellas: 5,
+        fecha: DateTime(2026, 11, 12),
+        servicio: 'Manicura rusa',
+        comentario: 'Me hizo una manicura rusa preciosa y duró más de tres semanas.',
+        respuesta: '¡Gracias, Laura! Te espero el mes que viene.'),
+    Resena(id: 'r2', autor: 'Sara P.', estrellas: 5, fecha: DateTime(2026, 11, 5), servicio: 'Semipermanente'),
+  ];
+
+  @override
+  Future<List<Resena>> misResenas() async => List.of(_resenas);
+
+  @override
+  Future<void> responderResena(String id, String texto) async {
+    final i = _resenas.indexWhere((r) => r.id == id);
+    if (i < 0) return;
+    if (_resenas[i].respuesta != null) throw const ErrorNailsy('Esta reseña ya tiene respuesta.');
+    _resenas[i] = _resenas[i].conRespuesta(texto.trim());
+  }
 
   @override
   Future<List<FranjaHorario>> horario() async => List.of(_horario);

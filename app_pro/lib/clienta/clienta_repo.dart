@@ -24,7 +24,8 @@ abstract class ClientaRepo {
       bool soloHoy = false,
       String sector = 'nails',
       bool domicilio = false,
-      double? zonaKm});
+      double? zonaKm,
+      bool mejorValoradas = false});
   Future<PerfilPublico?> perfil(String id);
 
   /// [viajeMin]: minutos de viaje que deben quedar libres antes y después (citas a domicilio).
@@ -44,6 +45,12 @@ abstract class ClientaRepo {
   });
   Future<List<MiCita>> misCitas();
   Future<void> cancelar(String citaId);
+
+  // Reseñas
+  Future<List<Resena>> resenas(String manicuristaId, {int limite = 20});
+
+  /// Valora una cita finalizada (1–5 estrellas y comentario opcional).
+  Future<void> valorar(String citaId, int estrellas, {String? comentario});
 
   // Cuenta
   bool get conSesion;
@@ -82,6 +89,11 @@ Never _relanzar(Object e) {
       'Tu dirección está fuera de su zona',
       'Escribe tu dirección',
       'No se pudo comprobar la distancia. Usa tu ubicación',
+      'Inicia sesión para valorar',
+      'Elige de 1 a 5 estrellas',
+      'No encontramos esa cita',
+      'Podrás valorar cuando la cita esté finalizada',
+      'Ya valoraste esta cita',
     ];
     for (final m in conocidos) {
       if (e.message.contains(m)) throw ErrorNailsy('$m.');
@@ -119,6 +131,7 @@ class SupabaseClientaRepo implements ClientaRepo {
     String sector = 'nails',
     bool domicilio = false,
     double? zonaKm,
+    bool mejorValoradas = false,
   }) async {
     final filas = await _db.rpc('buscar_manicuristas', params: {
       'p_texto': (texto ?? '').trim(),
@@ -129,6 +142,7 @@ class SupabaseClientaRepo implements ClientaRepo {
       'p_sector': sector,
       'p_domicilio': domicilio,
       'p_zona_km': zonaKm,
+      'p_mejor_valoradas': mejorValoradas,
     });
     return [for (final f in filas as List) ResumenManicurista.fromMap(Map<String, dynamic>.from(f as Map))];
   }
@@ -198,6 +212,21 @@ class SupabaseClientaRepo implements ClientaRepo {
   Future<void> cancelar(String citaId) async {
     try {
       await _db.rpc('cancelar_mi_cita', params: {'p_cita': citaId});
+    } catch (e) {
+      _relanzar(e);
+    }
+  }
+
+  @override
+  Future<List<Resena>> resenas(String manicuristaId, {int limite = 20}) async {
+    final filas = await _db.rpc('resenas_publicas', params: {'p_id': manicuristaId, 'p_limite': limite});
+    return [for (final f in filas as List) Resena.fromMap(Map<String, dynamic>.from(f as Map))];
+  }
+
+  @override
+  Future<void> valorar(String citaId, int estrellas, {String? comentario}) async {
+    try {
+      await _db.rpc('valorar_cita', params: {'p_cita': citaId, 'p_estrellas': estrellas, 'p_comentario': comentario});
     } catch (e) {
       _relanzar(e);
     }
@@ -279,12 +308,54 @@ class SupabaseClientaRepo implements ClientaRepo {
 
 /// Datos de ejemplo para probar la app de clientas sin backend.
 class DemoClientaRepo implements ClientaRepo {
-  DemoClientaRepo({this.conSesion = true});
+  /// [conCitaPasada]: empieza con una cita ya finalizada, lista para valorar.
+  DemoClientaRepo({this.conSesion = true, bool conCitaPasada = false}) {
+    if (conCitaPasada) {
+      final ayer = DateTime.now().subtract(const Duration(days: 1));
+      final ini = DateTime(ayer.year, ayer.month, ayer.day, 10);
+      _citas.add(MiCita(
+        id: 'pasada',
+        inicio: ini,
+        fin: ini.add(const Duration(minutes: 90)),
+        precio: 35,
+        estado: 'completada',
+        servicio: 'Manicura rusa + gel',
+        manicuristaId: 'm1',
+        manicurista: 'Eudy Nails',
+        direccion: 'Calle Mayor de Triana 10',
+        ciudad: 'Las Palmas de Gran Canaria',
+      ));
+    }
+  }
 
   @override
   bool conSesion;
 
   final List<MiCita> _citas = [];
+
+  final Map<String, List<Resena>> _resenas = {
+    'm1': [
+      Resena(
+          id: 'r1',
+          autor: 'Laura M.',
+          estrellas: 5,
+          fecha: DateTime(2026, 11, 12),
+          comentario: 'Me hizo una manicura rusa preciosa y duró más de tres semanas. Súper puntual.',
+          respuesta: '¡Gracias, Laura! Te espero el mes que viene.'),
+      Resena(
+          id: 'r2',
+          autor: 'Sara P.',
+          estrellas: 5,
+          fecha: DateTime(2026, 11, 5),
+          comentario: 'Muy cuidadosa con mis uñas quebradizas. Repetiré.'),
+      Resena(
+          id: 'r3',
+          autor: 'Ana G.',
+          estrellas: 4,
+          fecha: DateTime(2026, 10, 28),
+          comentario: 'Muy bonito el diseño, tardó un poco más de lo previsto.'),
+    ],
+  };
   int _n = 1;
 
   static const _perfiles = [
@@ -306,6 +377,7 @@ class DemoClientaRepo implements ClientaRepo {
       diasLaborables: [1, 2, 3, 4, 5, 6],
       domicilio: Domicilio(activo: true, radioKm: 10, importe: 5, viajeMin: 30),
       whatsapp: '600 111 222',
+      valoracion: Valoracion(nota: 4.9, total: 23, reparto: {5: 20, 4: 2, 3: 1}),
     ),
     PerfilPublico(
       id: 'm2',
@@ -350,6 +422,7 @@ class DemoClientaRepo implements ClientaRepo {
     String sector = 'nails',
     bool domicilio = false,
     double? zonaKm,
+    bool mejorValoradas = false,
   }) async {
     final q = (texto ?? '').trim().toLowerCase();
     final ahora = DateTime.now();
@@ -381,8 +454,12 @@ class DemoClientaRepo implements ClientaRepo {
                 ? null
                 : (p.servicios.toList()..sort((a, b) => a.precio.compareTo(b.precio))).first.duracionMin,
             domicilio: p.domicilio,
+            valoracion: p.valoracion,
           ),
     ];
+    if (mejorValoradas) {
+      lista.sort((a, b) => (b.valoracion.nota ?? 0).compareTo(a.valoracion.nota ?? 0));
+    }
     return soloHoy ? lista.where((m) => m.proximoHueco!.day == ahora.day).toList() : lista;
   }
 
@@ -466,6 +543,28 @@ class DemoClientaRepo implements ClientaRepo {
   Future<void> cancelar(String citaId) async {
     final i = _citas.indexWhere((c) => c.id == citaId);
     if (i >= 0) _citas[i] = _citas[i].conEstado('cancelada');
+  }
+
+  @override
+  Future<List<Resena>> resenas(String manicuristaId, {int limite = 20}) async =>
+      (_resenas[manicuristaId] ?? const <Resena>[]).take(limite).toList();
+
+  @override
+  Future<void> valorar(String citaId, int estrellas, {String? comentario}) async {
+    final i = _citas.indexWhere((c) => c.id == citaId);
+    if (i < 0) throw const ErrorNailsy('No encontramos esa cita.');
+    final c = _citas[i];
+    if (c.estado != 'completada') throw const ErrorNailsy('Podrás valorar cuando la cita esté finalizada.');
+    if (c.misEstrellas != null) throw const ErrorNailsy('Ya valoraste esta cita.');
+    _citas[i] = c.conEstado(c.estado, estrellas: estrellas);
+    (_resenas[c.manicuristaId] ??= []).insert(
+        0,
+        Resena(
+            id: 'r${DateTime.now().microsecondsSinceEpoch}',
+            autor: 'Clienta D.',
+            estrellas: estrellas,
+            fecha: DateTime.now(),
+            comentario: (comentario ?? '').trim().isEmpty ? null : comentario!.trim()));
   }
 
   @override

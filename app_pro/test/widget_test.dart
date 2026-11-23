@@ -151,6 +151,24 @@ void main() {
     expect(find.widgetWithText(InputChip, 'Manicura rusa'), findsNothing);
   });
 
+  testWidgets('Mis reseñas: la profesional responde una vez', (tester) async {
+    await _abrirPro(tester);
+    await tester.tap(find.byTooltip('Mi cuenta'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Mis reseñas'));
+    await tester.pumpAndSettle();
+    expect(find.text('Ana G.'), findsOneWidget);
+    expect(find.text('Laura M.'), findsOneWidget);
+    // Laura ya tiene respuesta: solo hay cajas para Ana y Sara.
+    expect(find.text('Responder'), findsNWidgets(2));
+    await tester.enterText(find.byType(TextField).first, '¡Gracias, Ana!');
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Responder').first);
+    await tester.pumpAndSettle();
+    expect(find.textContaining('¡Gracias, Ana!'), findsOneWidget);
+    expect(find.text('Responder'), findsOneWidget);
+  });
+
   testWidgets('La ficha de una cita a domicilio muestra la dirección, Cómo llegar y Llamar', (tester) async {
     await _abrirPro(tester);
     await tester.scrollUntilVisible(find.text('Carla Sanz'), 300, scrollable: find.byType(Scrollable).first);

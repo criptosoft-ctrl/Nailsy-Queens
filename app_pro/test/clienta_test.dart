@@ -4,6 +4,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:nailsy_pro/clienta/app_clienta.dart';
 import 'package:nailsy_pro/clienta/buscar_screen.dart';
 import 'package:nailsy_pro/clienta/clienta_repo.dart';
+import 'package:nailsy_pro/data/agenda_repo.dart' show ErrorNailsy;
 import 'package:nailsy_pro/clienta/reservar_screen.dart';
 import 'package:nailsy_pro/i18n.dart';
 import 'package:nailsy_pro/models/publico.dart';
@@ -260,6 +261,37 @@ void main() {
   test('El texto también busca en las especialidades', () async {
     final r = await DemoClientaRepo().buscar(texto: 'acríl');
     expect(r.map((m) => m.nombre), ['Acrylic Studio']);
+  });
+
+  testWidgets('Tras una cita finalizada se valora desde Mis citas', (tester) async {
+    _movil(tester);
+    final repo = DemoClientaRepo(conCitaPasada: true);
+    await tester.pumpWidget(ClientaApp(repo: repo));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Mis citas').last);
+    await tester.pumpAndSettle();
+    expect(find.text('¿Qué tal fue?'), findsOneWidget);
+    await tester.tap(find.byIcon(Icons.star_outline_rounded).at(4));
+    await tester.pumpAndSettle();
+    expect(find.text('Valora tu cita con Eudy Nails'), findsOneWidget);
+    expect(find.text('¡Excelente!'), findsOneWidget);
+    await tester.enterText(find.byType(TextField), 'Me encantó');
+    await tester.tap(find.text('Publicar reseña'));
+    await tester.pumpAndSettle();
+    expect(find.text('¿Qué tal fue?'), findsNothing);
+    expect(find.text('Tu valoración'), findsOneWidget);
+    expect((await repo.resenas('m1')).first.comentario, 'Me encantó');
+    expect((await repo.misCitas()).single.misEstrellas, 5);
+  });
+
+  test('Valoración: nota, insignia y orden por mejor valoradas', () async {
+    final repo = DemoClientaRepo();
+    final r = await repo.buscar(mejorValoradas: true);
+    expect(r.first.id, 'm1');
+    expect(r.first.valoracion.nota, 4.9);
+    expect(r.first.valoracion.total, 23);
+    expect(r.last.valoracion.hay, isFalse);
+    await expectLater(repo.valorar('no-existe', 5), throwsA(isA<ErrorNailsy>()));
   });
 
   testWidgets('Sin sesión, Mis citas pide entrar', (tester) async {

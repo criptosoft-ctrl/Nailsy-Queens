@@ -8,6 +8,7 @@ import 'acceso_clienta.dart';
 import 'clienta_repo.dart';
 import '../i18n.dart';
 import '../whatsapp.dart';
+import '../widgets/resenas.dart';
 
 class MisCitasScreen extends StatefulWidget {
   const MisCitasScreen({super.key, required this.repo, required this.alBuscar});
@@ -62,6 +63,97 @@ class _MisCitasScreenState extends State<MisCitasScreen> {
   Future<void> _entrar() async {
     if (await pedirAcceso(context, widget.repo)) {
       setState(() => _cargando = true);
+      await _cargar();
+    }
+  }
+
+  /// Hoja para valorar una cita finalizada.
+  Future<void> _valorar(MiCita c, [int inicial = 0]) async {
+    final comentario = TextEditingController();
+    var estrellas = inicial;
+    var enviando = false;
+    const etiquetas = ['', 'Muy mal', 'Mal', 'Normal', 'Muy bien', '¡Excelente!'];
+    final ok = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: NailsyColors.superficie,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(26))),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setHoja) => Padding(
+          padding: EdgeInsets.fromLTRB(20, 12, 20, 20 + MediaQuery.of(ctx).viewInsets.bottom),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Center(
+                child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(color: NailsyColors.borde, borderRadius: BorderRadius.circular(2))),
+              ),
+              const SizedBox(height: 16),
+              Text(tr('Valora tu cita con {n}', {'n': c.manicurista}),
+                  textAlign: TextAlign.center, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+              const SizedBox(height: 4),
+              Text(
+                '${c.servicio} · ${DateFormat.MMMEd(codigoIdioma).add_Hm().format(c.inicio)}',
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: NailsyColors.textoSecundario, fontSize: 13),
+              ),
+              const SizedBox(height: 14),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  for (var i = 1; i <= 5; i++)
+                    IconButton(
+                      tooltip: tr('{n} estrellas', {'n': i}),
+                      iconSize: 40,
+                      onPressed: () => setHoja(() => estrellas = i),
+                      icon: Icon(i <= estrellas ? Icons.star_rounded : Icons.star_outline_rounded,
+                          color: i <= estrellas ? NailsyColors.oro : NailsyColors.textoSecundario),
+                    ),
+                ],
+              ),
+              SizedBox(
+                height: 22,
+                child: Text(estrellas == 0 ? '' : tr(etiquetas[estrellas]),
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: NailsyColors.oro, fontWeight: FontWeight.w700)),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: comentario,
+                maxLines: 3,
+                maxLength: 500,
+                textCapitalization: TextCapitalization.sentences,
+                decoration: InputDecoration(hintText: tr('Cuéntanos qué tal (opcional)')),
+              ),
+              Text(tr('Se publica con tu nombre y la inicial del apellido.'),
+                  style: const TextStyle(color: NailsyColors.textoSecundario, fontSize: 12)),
+              const SizedBox(height: 14),
+              FilledButton(
+                onPressed: estrellas == 0 || enviando
+                    ? null
+                    : () async {
+                        setHoja(() => enviando = true);
+                        try {
+                          await widget.repo.valorar(c.id, estrellas, comentario: comentario.text);
+                          if (ctx.mounted) Navigator.pop(ctx, true);
+                        } catch (e) {
+                          setHoja(() => enviando = false);
+                          if (ctx.mounted) aviso(ctx, mensajeError(e));
+                        }
+                      },
+                child: Text(tr(estrellas == 0 ? 'Elige las estrellas' : 'Publicar reseña')),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    comentario.dispose();
+    if (ok == true && mounted) {
+      aviso(context, tr('¡Gracias por tu reseña!'));
       await _cargar();
     }
   }
@@ -125,7 +217,8 @@ class _MisCitasScreenState extends State<MisCitasScreen> {
                         _TarjetaCita(cita: c, onCancelar: () => _cancelar(c), whatsapp: _whatsapp[c.manicuristaId]),
                       if (pasadas.isNotEmpty) ...[
                         TituloSeccion(tr('Anteriores y canceladas')),
-                        for (final c in pasadas) _TarjetaCita(cita: c),
+                        for (final c in pasadas)
+                          _TarjetaCita(cita: c, onValorar: c.valorable ? (n) => _valorar(c, n) : null),
                       ],
                     ],
                   ),
@@ -135,16 +228,19 @@ class _MisCitasScreenState extends State<MisCitasScreen> {
 }
 
 class _TarjetaCita extends StatelessWidget {
-  const _TarjetaCita({required this.cita, this.onCancelar, this.whatsapp});
+  const _TarjetaCita({required this.cita, this.onCancelar, this.whatsapp, this.onValorar});
 
   final MiCita cita;
   final VoidCallback? onCancelar;
+
+  /// Cita finalizada sin valorar: al tocar una estrella se abre la hoja para valorar.
+  final ValueChanged<int>? onValorar;
   final String? whatsapp;
 
   @override
   Widget build(BuildContext context) {
     final c = cita;
-    final apagada = onCancelar == null;
+    final apagada = onCancelar == null && onValorar == null && cita.misEstrellas == null;
     final fecha = DateFormat.MMMEd(codigoIdioma).add_Hm().format(c.inicio);
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
@@ -171,6 +267,38 @@ class _TarjetaCita extends StatelessWidget {
                         ? tr('A domicilio · {d}', {'d': c.direccion ?? ''})
                         : [c.direccion, c.ciudad].whereType<String>().join(', '),
                     style: const TextStyle(color: NailsyColors.textoSecundario, fontSize: 13)),
+              if (onValorar != null) ...[
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(tr('¿Qué tal fue?'),
+                          style: const TextStyle(color: NailsyColors.oro, fontWeight: FontWeight.w700)),
+                    ),
+                    for (var i = 1; i <= 5; i++)
+                      InkResponse(
+                        onTap: () => onValorar!(i),
+                        radius: 20,
+                        child: const Padding(
+                          padding: EdgeInsets.all(2),
+                          child: Icon(Icons.star_outline_rounded, size: 26, color: NailsyColors.textoSecundario),
+                        ),
+                      ),
+                  ],
+                ),
+              ],
+              if (c.misEstrellas != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 6),
+                  child: Row(
+                    children: [
+                      Text(tr('Tu valoración'),
+                          style: const TextStyle(color: NailsyColors.textoSecundario, fontSize: 13)),
+                      const SizedBox(width: 6),
+                      Estrellas(valor: c.misEstrellas!, tamano: 14),
+                    ],
+                  ),
+                ),
               if (c.estado == 'cancelada')
                 Padding(
                   padding: const EdgeInsets.only(top: 6),

@@ -73,6 +73,68 @@ class Domicilio {
       );
 }
 
+/// Reseña de una clienta tras una cita finalizada.
+class Resena {
+  const Resena({
+    required this.id,
+    required this.autor,
+    required this.estrellas,
+    required this.fecha,
+    this.comentario,
+    this.respuesta,
+    this.servicio,
+  });
+
+  final String id;
+  final String autor;
+  final int estrellas;
+  final DateTime fecha;
+  final String? comentario;
+  final String? respuesta;
+
+  /// Solo en GlamGo Pro: qué servicio fue.
+  final String? servicio;
+
+  factory Resena.fromMap(Map<String, dynamic> m) => Resena(
+        id: m['id'] as String,
+        autor: (m['autor'] as String?) ?? 'Cliente',
+        estrellas: (m['estrellas'] as num).toInt(),
+        fecha: DateTime.parse(m['creado_en'] as String).toLocal(),
+        comentario: m['comentario'] as String?,
+        respuesta: m['respuesta'] as String?,
+        servicio: (m['citas'] as Map?)?['servicios']?['nombre'] as String?,
+      );
+
+  Resena conRespuesta(String r) =>
+      Resena(id: id, autor: autor, estrellas: estrellas, fecha: fecha, comentario: comentario, respuesta: r, servicio: servicio);
+}
+
+/// Nota media y número de reseñas.
+class Valoracion {
+  const Valoracion({this.nota, this.total = 0, this.reparto = const {}});
+
+  final double? nota;
+  final int total;
+
+  /// Cuántas reseñas hay de cada número de estrellas (1..5).
+  final Map<int, int> reparto;
+
+  bool get hay => total > 0 && nota != null;
+
+  factory Valoracion.fromMap(Map<String, dynamic> m) {
+    final rep = <int, int>{};
+    final r = m['reparto'];
+    if (r is Map) {
+      r.forEach((k, v) => rep[int.parse('$k')] = (v as num).toInt());
+    }
+    return Valoracion(
+      nota: _dbl(m['nota']),
+      total: ((m['num_resenas'] as num?) ?? 0).toInt(),
+      reparto: rep,
+    );
+  }
+}
+
 /// Resultado de comprobar si una dirección cae dentro de la zona a domicilio.
 class ZonaComprobada {
   const ZonaComprobada({required this.dentro, this.distanciaKm, this.suplemento = 0, this.radioKm = 10});
@@ -105,7 +167,10 @@ class ResumenManicurista {
     this.proximoHueco,
     this.duracionDesde,
     this.domicilio = const Domicilio(),
+    this.valoracion = const Valoracion(),
   });
+
+  final Valoracion valoracion;
 
   final String id;
   final String nombre;
@@ -142,6 +207,7 @@ class ResumenManicurista {
         fotos: _lista(m['fotos']),
         duracionDesde: (m['duracion_desde'] as num?)?.toInt(),
         domicilio: Domicilio.fromMap(m, clave: 'a_domicilio'),
+        valoracion: Valoracion.fromMap(m),
         proximoHueco: m['proximo_hueco'] == null ? null : DateTime.parse(m['proximo_hueco'] as String).toLocal(),
       );
 }
@@ -165,7 +231,10 @@ class PerfilPublico {
     this.atiendeLocal = true,
     this.domicilio = const Domicilio(),
     this.whatsapp,
+    this.valoracion = const Valoracion(),
   });
+
+  final Valoracion valoracion;
 
   /// Teléfono para el botón de WhatsApp (solo si ella lo quiere mostrar).
   final String? whatsapp;
@@ -205,6 +274,7 @@ class PerfilPublico {
         atiendeLocal: (m['atiende_local'] as bool?) ?? true,
         domicilio: Domicilio.fromMap(m),
         whatsapp: m['whatsapp'] as String?,
+        valoracion: Valoracion.fromMap(m),
       );
 
   double? get precioDesde =>
@@ -227,7 +297,11 @@ class MiCita {
     this.horasCancelacion = 24,
     this.aDomicilio = false,
     this.suplemento = 0,
+    this.misEstrellas,
   });
+
+  /// Estrellas que le puse (null si aún no la valoré).
+  final int? misEstrellas;
 
   final String id;
   final DateTime inicio;
@@ -246,10 +320,13 @@ class MiCita {
   bool get activa => estado == 'confirmada' || estado == 'pendiente';
   bool get futura => inicio.isAfter(DateTime.now());
 
+  /// Se puede valorar: está finalizada y aún no tiene reseña.
+  bool get valorable => estado == 'completada' && misEstrellas == null;
+
   /// Cancelación gratuita si falta más del plazo (cuando haya pagos, si no se pierde la fianza).
   bool get cancelacionGratis => inicio.difference(DateTime.now()).inHours >= horasCancelacion;
 
-  MiCita conEstado(String e) => MiCita(
+  MiCita conEstado(String e, {int? estrellas}) => MiCita(
         id: id,
         inicio: inicio,
         fin: fin,
@@ -263,6 +340,7 @@ class MiCita {
         horasCancelacion: horasCancelacion,
         aDomicilio: aDomicilio,
         suplemento: suplemento,
+        misEstrellas: estrellas ?? misEstrellas,
       );
 
   factory MiCita.fromMap(Map<String, dynamic> m) => MiCita(
@@ -279,6 +357,7 @@ class MiCita {
         horasCancelacion: ((m['horas_cancelacion'] as num?) ?? 24).toInt(),
         aDomicilio: (m['a_domicilio'] as bool?) ?? false,
         suplemento: _dbl(m['suplemento']) ?? 0,
+        misEstrellas: (m['mis_estrellas'] as num?)?.toInt(),
       );
 }
 

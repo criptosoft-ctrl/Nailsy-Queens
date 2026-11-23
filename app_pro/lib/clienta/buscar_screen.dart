@@ -10,6 +10,7 @@ import 'clienta_repo.dart';
 import 'perfil_manicurista_screen.dart';
 import '../i18n.dart';
 import '../lugares.dart';
+import '../widgets/resenas.dart';
 
 /// Pantalla principal de la clienta ("Descubrir"): buscar manicurista por zona, estilo,
 /// cercanía o disponibilidad hoy.
@@ -55,6 +56,7 @@ class _BuscarScreenState extends State<BuscarScreen> {
   String? _estilo;
   bool _soloHoy = false;
   bool _domicilio = false;
+  bool _mejorValoradas = false;
   ({double lat, double lng})? _cerca;
 
   /// Zona escrita situada en el mapa (p. ej. "Telde"): se buscan las cercanas y las que van hasta allí.
@@ -97,6 +99,7 @@ class _BuscarScreenState extends State<BuscarScreen> {
         soloHoy: _soloHoy,
         sector: widget.sector,
         domicilio: _domicilio,
+        mejorValoradas: _mejorValoradas,
         zonaKm: lugar != null ? kmZona : null,
       );
       if (!mounted) return;
@@ -155,6 +158,7 @@ class _BuscarScreenState extends State<BuscarScreen> {
     setState(() {
       _soloHoy = false;
       _domicilio = false;
+      _mejorValoradas = false;
       _estilo = null;
       _cerca = null;
     });
@@ -294,6 +298,16 @@ class _BuscarScreenState extends State<BuscarScreen> {
                         },
                         icono: Icon(Icons.home_outlined,
                             size: 16, color: _domicilio ? _sobreAcento : const Color(0xFFE4E8F2)),
+                      ),
+                      _chip(
+                        tr('Mejor valoradas'),
+                        _mejorValoradas,
+                        () {
+                          setState(() => _mejorValoradas = !_mejorValoradas);
+                          _buscar();
+                        },
+                        icono: Icon(Icons.star_rounded,
+                            size: 16, color: _mejorValoradas ? _sobreAcento : NailsyColors.oro),
                       ),
                       // Los estilos se eligen tocando una etiqueta de la tarjeta; aquí solo se ve el activo.
                       if (_estilo != null)
@@ -483,7 +497,18 @@ class _BloqueManicurista extends StatelessWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(m.nombre, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+                                Row(
+                                  children: [
+                                    Flexible(
+                                      child: Text(m.nombre,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    InsigniaNota(valoracion: m.valoracion),
+                                  ],
+                                ),
                                 if (m.ciudad != null) ...[
                                   const SizedBox(height: 6),
                                   Row(
