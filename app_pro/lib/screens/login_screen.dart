@@ -192,17 +192,43 @@ class _LoginScreenState extends State<LoginScreen> {
                         style: const TextStyle(color: NailsyColors.oroSuave),
                       ),
                     ),
-                    const SizedBox(height: 28),
-                    const Divider(color: NailsyColors.borde),
-                    const SizedBox(height: 8),
-                    TextButton.icon(
-                      onPressed: () => launchUrl(
-                        kIsWeb ? Uri.parse('${Uri.base.origin}/') : Uri.parse('https://glamgo-es.netlify.app/'),
-                        webOnlyWindowName: '_self',
+                    const SizedBox(height: 24),
+                    // El mismo aviso que en la app de clientes, pero al revés: lleva al portal para reservar.
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: NailsyColors.superficie,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: NailsyColors.oro.withValues(alpha: 0.4)),
                       ),
-                      icon: const Icon(Icons.search, size: 18, color: NailsyColors.textoSecundario),
-                      label: const Text('¿Buscas cita? Reserva en GlamGo',
-                          style: TextStyle(color: NailsyColors.textoSecundario)),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const Text('¿Eres cliente?',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+                          const SizedBox(height: 4),
+                          const Text(
+                            'Busca manicura, barbería y más cerca de ti y reserva tu cita en GlamGo.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: NailsyColors.textoSecundario, fontSize: 13),
+                          ),
+                          const SizedBox(height: 12),
+                          OutlinedButton.icon(
+                            onPressed: () => launchUrl(
+                              kIsWeb ? Uri.parse('${Uri.base.origin}/') : Uri.parse('https://glamgo-es.netlify.app/'),
+                              webOnlyWindowName: '_self',
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: NailsyColors.oro,
+                              side: const BorderSide(color: NailsyColors.oro),
+                              minimumSize: const Size.fromHeight(46),
+                            ),
+                            icon: const Icon(Icons.calendar_month_outlined),
+                            label: const Text('Reservar una cita en GlamGo'),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
