@@ -3,9 +3,9 @@
     "short_name": "GlamGo",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#17121A",
-    "theme_color": "#17121A",
-    "description": "Encuentra tu manicurista y reserva al momento.",
+    "background_color": "#0A1530",
+    "theme_color": "#0A1530",
+    "description": "Reserva belleza cerca de ti, sin llamadas.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
